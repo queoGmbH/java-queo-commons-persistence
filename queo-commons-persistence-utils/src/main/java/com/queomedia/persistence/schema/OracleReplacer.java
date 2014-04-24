@@ -1,4 +1,4 @@
-package com.queomedia.persistence.util;
+package com.queomedia.persistence.schema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -7,7 +7,6 @@ import java.util.List;
 import org.apache.commons.lang.StringUtils;
 
 import com.queomedia.commons.checks.Check;
-import com.queomedia.persistence.schema.Dialect;
 
 /**
  * This class is used to make the created Oracle ddl file fail safe,

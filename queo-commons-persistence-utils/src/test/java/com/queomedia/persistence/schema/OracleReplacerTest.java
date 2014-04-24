@@ -1,4 +1,4 @@
-package com.queomedia.persistence.util;
+package com.queomedia.persistence.schema;
 
 import java.util.Arrays;
 import java.util.List;
@@ -6,6 +6,8 @@ import java.util.List;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.queomedia.persistence.schema.OracleReplacer;
 
 /**
  * Test the OracleReplacerTest class.

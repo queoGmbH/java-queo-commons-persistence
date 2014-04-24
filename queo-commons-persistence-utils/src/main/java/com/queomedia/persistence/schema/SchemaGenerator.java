@@ -19,7 +19,6 @@ import org.reflections.Reflections;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.schema.bugfix.ConfigurationWithBeanValidation;
-import com.queomedia.persistence.util.OracleReplacer;
 
 /**
  * The Class SchemaGenerator.
