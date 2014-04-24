@@ -18,7 +18,8 @@ public final class CreationDateComparator<T extends CreationDateAware> implement
     private static final long serialVersionUID = 5940088827747107766L;
     
     /** The only one instance. */
-    private static final CreationDateComparator<?> INSTANCE = new CreationDateComparator<>();
+    @SuppressWarnings("rawtypes")
+    private static final CreationDateComparator INSTANCE = new CreationDateComparator();
     
     /**
      * Return the instance.

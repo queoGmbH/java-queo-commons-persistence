@@ -25,7 +25,7 @@ abstract public class PropertyEntity<T extends Serializable> extends BusinessEnt
 
     /** The properties. */
     @Transient
-    private transient Map<String, Object> properties = new HashMap<>();
+    private transient Map<String, Object> properties = new HashMap<String, Object>();
 
     /**
      * Instantiates a new property entity.

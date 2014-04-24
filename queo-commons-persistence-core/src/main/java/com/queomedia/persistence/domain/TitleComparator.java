@@ -17,7 +17,8 @@ public final class TitleComparator<T extends Titled> implements Comparator<T>, S
     private static final long serialVersionUID = 5940088827747107766L;
     
     /** The only one instance. */
-    private static final TitleComparator<?> INSTANCE = new TitleComparator<>();
+    @SuppressWarnings("rawtypes")
+    private static final TitleComparator INSTANCE = new TitleComparator();
     
     /**
      * Return the instance.

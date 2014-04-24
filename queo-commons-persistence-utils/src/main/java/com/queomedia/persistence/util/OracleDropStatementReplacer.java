@@ -36,7 +36,7 @@ public class OracleDropStatementReplacer {
     public static List<String> replaceDropStatements(final List<String> original) {
         Check.notEmptyArgument(original, "original");
 
-        List<String> result = new ArrayList<>();
+        List<String> result = new ArrayList<String>();
 
         for (String line : original) {
 
