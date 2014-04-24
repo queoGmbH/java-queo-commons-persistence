@@ -1,0 +1,172 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	
+	<groupId>com.queomedia.commons.persistence</groupId>
+	<artifactId>queo-commons-persistence</artifactId>
+	<version>3.0.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	
+	<name>queo commons persistence</name>
+	<description>queo basic persistence - based on JPA (Hibernate) and Spring Data</description>
+	
+	<organization>
+		<name>queo-flow</name>
+		<url>http://www.queo-flow.com</url>
+	</organization>
+	
+	<developers>
+		<developer>
+			<organization>queo</organization>
+			<name>Ralph Engelmann</name>
+			<email>ralph.engelmann@queo-flow.com</email>
+		</developer>
+	</developers>
+
+	<properties>
+		<java.version>1.6</java.version>
+	
+		<hibernate.version>4.1.7.Final</hibernate.version>
+		<spring.version>3.2.6.RELEASE</spring.version>
+		<spring-data-jpa.version>1.6.2.RELEASE</spring-data-jpa.version>
+		<slf4j.version>1.7.5</slf4j.version>
+
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+	</properties>
+
+	<scm>
+		<connection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</connection>
+		<developerConnection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</developerConnection>
+		<url>https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</url>
+	</scm>
+
+	<distributionManagement>
+		<repository>
+			<id>com.queomedia</id>
+			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia</url>
+		</repository>
+		<snapshotRepository>
+			<id>com.queomedia-snapshot</id>
+			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia-snapshot</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<issueManagement>
+		<system>JIRA</system>
+		<url>https://jira.queo-group.com/browse/JQC-PERSISTENCE</url>
+	</issueManagement>	
+	
+	<modules>
+		<module>queo-commons-persistence-core</module>
+		<module>queo-commons-persistence-entitymanager</module>
+		<module>queo-commons-persistence-utils</module>
+	</modules>
+		
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.1</version>
+					<configuration>
+						<source>${java.version}</source>
+						<target>${java.version}</target>
+						<encoding>UTF-8</encoding>
+						<compilerArgument>-proc:none</compilerArgument>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.bsc.maven</groupId>
+					<artifactId>maven-processor-plugin</artifactId>
+					<version>2.0.2</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>2.9</version>
+				</plugin>
+				
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>1.7</version>			
+				</plugin>				
+
+				<plugin>
+					<!-- deploy src and test src -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>2.2</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>jar</goal>
+								<goal>test-jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+
+				<plugin>
+					<!-- deploy tests -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>2.4</version>
+					<executions>
+						<execution>
+							<goals>
+								<goal>test-jar</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>2.7</version>
+				</plugin>
+				
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>2.3.1</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>2.3.2</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>2.9</version>
+				</plugin>
+							
+			</plugins>
+		</pluginManagement>					
+		
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
