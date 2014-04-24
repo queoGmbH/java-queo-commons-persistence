@@ -1,66 +1,29 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.queomedia</groupId>
-	<artifactId>queo-persistence-core</artifactId>
-	<version>2.2.1-SNAPSHOT</version>
-	<name>queo persistence core</name>
+		
+	<artifactId>queo-commons-persistence-core</artifactId>
+	<name>queo commons persistence core</name>
 	<packaging>jar</packaging>
-
-	<properties>
-		<hibernate.version>4.1.7.Final</hibernate.version>
-		<spring.version>3.1.2.RELEASE</spring.version>
-		<hades.version>1.6.2.RELEASE</hades.version>
-		<slf4j.version>1.6.1</slf4j.version>
-
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>	
-	</properties>
-
-	<issueManagement>
-		<system>mantis</system>
-		<url>http://mantistest.queo.local</url>
-	</issueManagement>
-
-	<scm>
-		<connection>scm:svn:svn://skylla/queo_commons/java/queo-persistence-core/trunk</connection>
-		<developerConnection>scm:svn:svn://skylla/queo_commons/java/queo-persistence-core/trunk</developerConnection>
-		<url>http://skylla/queo_commons/java/queo-persistence-core/trunk</url>
-	</scm>
-
-	<distributionManagement>
-		<repository>
-			<id>com.queomedia</id>
-			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia</url>
-		</repository>
-		<snapshotRepository>
-			<id>com.queomedia-snapshot</id>
-			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia-snapshot</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<developers>
-		<developer>
-			<organization>queo</organization>
-			<name>Ralph Engelmann</name>
-			<email>ralph.engelmann@queo-media.com</email>
-		</developer>
-	</developers>
+	
+	<parent>
+		<groupId>com.queomedia.commons.persistence</groupId>
+		<artifactId>queo-commons-persistence</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>	
 
 	<dependencies>
 		<dependency>
 			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-checks</artifactId>
-			<version>1.1.0</version>
+			<artifactId>queo-commons-checks</artifactId>			
 		</dependency>
 
 		<dependency>
 			<groupId>commons-lang</groupId>
-			<artifactId>commons-lang</artifactId>
-			<version>2.6</version>
+			<artifactId>commons-lang</artifactId>			
 		</dependency>
 		<dependency>
 			<groupId>commons-collections</groupId>
-			<artifactId>commons-collections</artifactId>
-			<version>3.2.1</version>
+			<artifactId>commons-collections</artifactId>			
 		</dependency>
 
 		<dependency>
@@ -69,27 +32,24 @@
 			<version>${spring.version}</version>
 		</dependency>
 
+		<!-- wozu -->
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<version>${hibernate.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-ehcache</artifactId>
-			<version>${hibernate.version}</version>
 		</dependency>
 		<!-- <dependency> <groupId>org.hibernate</groupId> <artifactId>hibernate-jmx</artifactId> 
 			<version>${hibernate-jmx.version}</version> </dependency> -->
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>
-			<version>1.0.0.Final</version>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>			
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -132,26 +92,22 @@
 		<!-- unit tests -->
 		<dependency>
 			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-asserts</artifactId>
-			<version>1.0.1</version>
+			<artifactId>queo-commons-asserts</artifactId>			
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>		
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
-			<version>${slf4j.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -162,20 +118,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-					<encoding>UTF-8</encoding>
-
-					<compilerArgument>-proc:none</compilerArgument>
-				</configuration>
 			</plugin>
 
 			<plugin>
 				<groupId>org.bsc.maven</groupId>
 				<artifactId>maven-processor-plugin</artifactId>
-				<version>2.0.2</version>
 				<executions>
 					<execution>
 						<id>process</id>
@@ -197,7 +144,6 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.3</version>
 				<executions>
 					<execution>
 						<id>add-source</id>
@@ -217,42 +163,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.5</version>
-			</plugin>
-
-			<plugin>
-				<!-- deploy src and test src -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<!-- deploy tests -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.3.2</version>
 			</plugin>
 		</plugins>
 	</build>

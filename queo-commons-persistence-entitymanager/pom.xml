@@ -1,51 +1,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.queomedia</groupId>
-	<artifactId>queo-persistence-entitymanager</artifactId>
-	<name>queo persistance entitymanager</name>
-	<version>2.2.1-SNAPSHOT</version>
+	
+	<artifactId>queo-commons-persistence--entitymanager</artifactId>
+	<name>queo commons persistence entitymanager</name>
 	<packaging>jar</packaging>
 	
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-	</properties>
+	<parent>
+		<groupId>com.queomedia.commons.persistence</groupId>
+		<artifactId>queo-commons-persistence</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>	
 	
-	<issueManagement>
-		<system>mantis</system>
-		<url>http://mantistest.queo.local</url>
-	</issueManagement>
-
-	<scm>
-		<connection>scm:svn:svn://skylla/queo_commons/java/queo-persistence-entitymanager/trunk</connection>
-		<developerConnection>scm:svn:svn://skylla/queo_commons/java/queo-persistence-entitymanager/trunk</developerConnection>
-		<url>http://skylla/queo_commons/java/queo-persistence-entitymanager/trunk</url>
-	</scm>
-	
-	<distributionManagement>
-		<repository>
-			<id>com.queomedia</id>
-			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia</url>
-		</repository>
-		<snapshotRepository>
-			<id>com.queomedia-snapshot</id>
-			<url>http://java.dev.queo.local/nexus/content/repositories/com.queomedia-snapshot</url>
-		</snapshotRepository>
-	</distributionManagement>
-
-	<developers>
-		<developer>
-			<organization>queo</organization>
-			<name>Ralph Engelmann</name>
-			<email>ralph.engelmann@queo-media.com</email>
-		</developer>
-	</developers>	
-
 	<dependencies>
 		<dependency>
-			<groupId>com.queomedia</groupId>
-			<artifactId>queo-persistence-core</artifactId>
-			<version>2.2.0</version>
-		</dependency>		
+			<groupId>com.queomedia.commons.persistence</groupId>
+			<artifactId>queo-commons-persistence-core</artifactId>
+			<version>3.0.0-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -53,43 +24,11 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.3.2</version>
-				<configuration>
-					<source>1.7</source>
-					<target>1.7</target>
-				</configuration>
 			</plugin>
-			<plugin>
-				<!-- deploy src and test src -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.1.2</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>jar</goal>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<!-- deploy tests -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.3.1</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-        		<artifactId>maven-release-plugin</artifactId>
-        		<version>2.3.2</version>				
+				<artifactId>maven-surefire-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
