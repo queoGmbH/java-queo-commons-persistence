@@ -2,7 +2,8 @@
 	<modelVersion>4.0.0</modelVersion>
 		
 	<artifactId>queo-commons-persistence-extra-criteria</artifactId>
-	<name>queo commons persistence extra classes for hibernate criteria api</name>
+	<name>queo commons persistence extra criteria</name>
+	<description>queo commons persistence extra classes for hibernate criteria api</description>
 	<packaging>jar</packaging>
 	
 	<parent>

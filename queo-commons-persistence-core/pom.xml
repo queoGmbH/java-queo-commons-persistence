@@ -1,50 +1,80 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-		
+
 	<artifactId>queo-commons-persistence-core</artifactId>
 	<name>queo commons persistence core</name>
 	<packaging>jar</packaging>
-	
+
 	<parent>
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
 		<version>3.0.0-SNAPSHOT</version>
-	</parent>	
+	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-checks</artifactId>			
+			<artifactId>queo-commons-checks</artifactId>
 		</dependency>
+
+
 
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
-			<artifactId>hibernate-jpa-2.0-api</artifactId>			
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
 		</dependency>
-
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-core</artifactId>
-		</dependency>				
+			<exclusions>
+				<exclusion>
+					<artifactId>antlr</artifactId>
+					<groupId>antlr</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>javassist</artifactId>
+					<groupId>org.javassist</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>dom4j</artifactId>
+					<groupId>dom4j</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jboss-logging</artifactId>
+					<groupId>org.jboss.logging</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jboss-transaction-api_1.1_spec</artifactId>
+					<groupId>org.jboss.spec.javax.transaction</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
 
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-jpamodelgen</artifactId>
 			<scope>provided</scope>
 			<!-- only need at compile time -->
+			<exclusions>
+				<exclusion>
+					<artifactId>hibernate-jpa-2.0-api</artifactId>
+					<groupId>org.hibernate.javax.persistence</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
-		
-    <dependency>
-        <groupId>org.springframework.data</groupId>
-        <artifactId>spring-data-jpa</artifactId>
-        <version>1.5.2.RELEASE</version>
-    </dependency>
+
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-jpa</artifactId>
+			<version>1.5.2.RELEASE</version>
+		</dependency>
 
 
 		<!-- unit tests -->
 		<dependency>
 			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-asserts</artifactId>			
+			<artifactId>queo-commons-asserts</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -56,7 +86,7 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 			<scope>test</scope>
-		</dependency>		
+		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-nop</artifactId>
