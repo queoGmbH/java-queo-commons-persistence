@@ -1,19 +1,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	
+
 	<groupId>com.queomedia.commons.persistence</groupId>
 	<artifactId>queo-commons-persistence</artifactId>
 	<version>3.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	
+
 	<name>queo commons persistence</name>
 	<description>queo basic persistence - based on JPA (Hibernate) and Spring Data</description>
-	
+
 	<organization>
 		<name>queo-flow</name>
 		<url>http://www.queo-flow.com</url>
 	</organization>
-	
+
 	<developers>
 		<developer>
 			<organization>queo</organization>
@@ -24,10 +24,10 @@
 
 	<properties>
 		<java.version>1.6</java.version>
-	
+
 		<hibernate.version>4.1.7.Final</hibernate.version>
 		<spring.version>3.2.8.RELEASE</spring.version>
-		<spring-data-jpa.version>1.6.2.RELEASE</spring-data-jpa.version>
+		<spring-data-jpa.version>1.5.2.RELEASE</spring-data-jpa.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 
@@ -55,28 +55,35 @@
 	<issueManagement>
 		<system>JIRA</system>
 		<url>https://jira.queo-group.com/browse/JQC-PERSISTENCE</url>
-	</issueManagement>	
-	
+	</issueManagement>
+
 	<modules>
 		<module>queo-commons-persistence-core</module>
 		<module>queo-commons-persistence-entitymanager</module>
 		<module>queo-commons-persistence-utils</module>
 		<module>queo-commons-persistence-extra-criteria</module>
+		<module>queo-commons-persistence-extra-nullaware</module>
 	</modules>
-		
+
 	<dependencyManagement>
 		<dependencies>
 			<!-- queo commons (for main) -->
 			<dependency>
 				<groupId>com.queomedia</groupId>
-				<artifactId>queo-commons-checks</artifactId>			
+				<artifactId>queo-commons-checks</artifactId>
 				<version>1.1.0</version>
 			</dependency>
-		
+
 			<dependency>
 				<groupId>com.queomedia</groupId>
 				<artifactId>queo-commons-equals</artifactId>
 				<version>1.3.0</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia</groupId>
+				<artifactId>queo-commons-exceptions</artifactId>
+				<version>1.1.1</version>
 			</dependency>
 			
 			<!-- apache/jarkarta/... commons -->
@@ -91,6 +98,17 @@
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-tx</artifactId>
 				<version>${spring.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-jpa</artifactId>
+				<version>${spring-data-jpa.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>de.humanfork.springdatajpaextension</groupId>
+				<artifactId>spring-data-jpa-extension</artifactId>
+				<version>0.1.0-SNAPSHOT</version>
 			</dependency>
 			
 			<!-- hibernate / jpa -->
@@ -113,7 +131,7 @@
 				<groupId>org.hibernate.javax.persistence</groupId>
 				<artifactId>hibernate-jpa-2.0-api</artifactId>
 				<version>1.0.1.Final</version>
-			</dependency>		
+			</dependency>
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-jpamodelgen</artifactId>
@@ -128,7 +146,7 @@
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>
 				<version>${slf4j.version}</version>
-			</dependency>		
+			</dependency>
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-nop</artifactId>
@@ -153,7 +171,7 @@
 				<artifactId>hamcrest-library</artifactId>
 				<version>${hamcrest.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.queomedia</groupId>
 				<artifactId>queo-commons-asserts</artifactId>
@@ -161,7 +179,7 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-		
+
 	<build>
 		<pluginManagement>
 			<plugins>
@@ -188,12 +206,12 @@
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>2.9</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.7</version>			
-				</plugin>				
+					<version>1.7</version>
+				</plugin>
 
 				<plugin>
 					<!-- deploy src and test src -->
@@ -223,13 +241,13 @@
 						</execution>
 					</executions>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-deploy-plugin</artifactId>
 					<version>2.7</version>
 				</plugin>
-				
+
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-install-plugin</artifactId>
@@ -247,10 +265,10 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>2.9</version>
 				</plugin>
-							
+
 			</plugins>
-		</pluginManagement>					
-		
+		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

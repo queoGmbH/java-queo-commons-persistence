@@ -1,0 +1,42 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>queo-commons-persistence-core</artifactId>
+	<name>queo commons persistence core</name>
+	<packaging>jar</packaging>
+
+	<parent>
+		<groupId>com.queomedia.commons.persistence</groupId>
+		<artifactId>queo-commons-extra-nullaware</artifactId>
+		<version>3.0.0-SNAPSHOT</version>
+	</parent>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>de.humanfork.springdatajpaextension</groupId>
+			<artifactId>spring-data-jpa-extension</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.queomedia</groupId>
+			<artifactId>queo-commons-exceptions</artifactId>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
