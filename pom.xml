@@ -132,7 +132,7 @@
 			</dependency>
 
 			
-			<!-- slf (needed in tests) -->
+			<!-- slf4j -->
 			<dependency>
 				<groupId>org.slf4j</groupId>
 				<artifactId>slf4j-api</artifactId>

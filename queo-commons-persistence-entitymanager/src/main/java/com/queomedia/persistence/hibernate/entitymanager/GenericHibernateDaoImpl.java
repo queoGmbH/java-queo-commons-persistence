@@ -7,8 +7,6 @@ import java.util.List;
 
 import javax.persistence.PersistenceContext;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
 import org.hibernate.Query;
@@ -18,6 +16,8 @@ import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Projections;
 import org.hibernate.ejb.HibernateEntityManager;
 import org.hibernate.transform.ResultTransformer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.GenericEntityDao;
@@ -28,10 +28,12 @@ import com.queomedia.persistence.GenericEntityDao;
  *
  */
 public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
+    
     /**
-    * Logger for this class.
-    */
-    private static final Log LOGGER = LogFactory.getLog(GenericHibernateDaoImpl.class);
+     * Logger for this class.
+     */
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericHibernateDaoImpl.class);
+    
 
     /** The class type where this DAO is for. */
     private Class<T> persistentClass;

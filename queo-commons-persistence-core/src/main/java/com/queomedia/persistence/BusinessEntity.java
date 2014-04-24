@@ -14,7 +14,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
 import org.hibernate.Hibernate;
-import org.synyx.hades.domain.Persistable;
+import org.springframework.data.domain.Persistable;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessId;

@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.hibernate.criterion.Restrictions;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;
@@ -17,6 +17,7 @@ import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GenericAbstractBusinessDao;
 import com.queomedia.persistence.util.ResultUtil;
+
 
 /**
  * @param <KeyType> the Type where the Key is from
@@ -29,7 +30,7 @@ public abstract class GenericHibernateAbstractBusinessDaoImpl<KeyType extends Bu
     /**
     * Logger for this class.
     */
-    private static final Log LOGGER = LogFactory.getLog(GenericHibernateAbstractBusinessDaoImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericHibernateAbstractBusinessDaoImpl.class);
 
     @Override
     public T getByBusinessId(final BusinessId<KeyType> businessId) throws NotFoundRuntimeException {

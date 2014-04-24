@@ -17,6 +17,34 @@
 			<artifactId>queo-commons-persistence-core</artifactId>
 			<version>3.0.0-SNAPSHOT</version>
 		</dependency>
+				
+ 
+		<dependency>
+			<!-- contains the exceptions EmptyResultDataAccessException, IncorrectResultSizeDataAccessException -->
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>		
+		</dependency>				
+ 				
+ 		<!-- hibernate -->
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>			
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>								
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-entitymanager</artifactId>
+		</dependency>
+		
+		<!-- slf4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		
 	</dependencies>
 
 	<build>
