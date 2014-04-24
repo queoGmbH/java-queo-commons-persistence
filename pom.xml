@@ -63,6 +63,7 @@
 		<module>queo-commons-persistence-utils</module>
 		<module>queo-commons-persistence-extra-criteria</module>
 		<module>queo-commons-persistence-extra-nullaware</module>
+		<module>queo-commons-persistence-extra-schema</module>
 	</modules>
 
 	<dependencyManagement>
@@ -157,6 +158,12 @@
 				<artifactId>slf4j-nop</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
+			
+			<dependency>			
+				<groupId>org.reflections</groupId>
+				<artifactId>reflections</artifactId>
+				<version>0.9.8</version>
+			</dependency>			
 			
 			<!-- for test -->
 			<dependency>

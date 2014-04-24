@@ -1,8 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>queo-commons-persistence-utils</artifactId>
-	<name>queo commons persistence utils</name>
+	<artifactId>queo-commons-persistence-extra-schema</artifactId>
+	<name>queo commons persistence extra schema</name>
+	<description>schema generator</description>
 	<packaging>jar</packaging>
 
 	<parent>
@@ -19,9 +20,24 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-equals</artifactId>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<!-- for package scan to find the entities -->
+			<groupId>org.reflections</groupId>
+			<artifactId>reflections</artifactId>
+		</dependency>		
 
 		<!-- test -->
 		<dependency>
