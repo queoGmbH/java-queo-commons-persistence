@@ -1,4 +1,4 @@
-package com.queomedia.persistence.filter;
+package com.queomedia.persistence.extra.criteria;
 
 /**
  * The Class Limit.

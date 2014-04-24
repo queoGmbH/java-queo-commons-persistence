@@ -1,6 +1,7 @@
 package com.queomedia.persistence.impl;
 
-import junit.framework.Assert;
+
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -16,7 +17,7 @@ public class BusinessIdGeneratorImplTest {
         BusinessId<BusinesseEntityTestImpl> bid1 = classUnderTest.generateBusinessId();
         BusinessId<BusinesseEntityTestImpl> bid2 = classUnderTest.generateBusinessId();
         
-        Assert.assertFalse(bid1.equals(bid2));
+        assertFalse(bid1.equals(bid2));
         
     }
 

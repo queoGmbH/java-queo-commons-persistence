@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.queomedia.persistence.filter;
+package com.queomedia.persistence.extra.criteria;
 
 import java.io.Serializable;
 import java.util.ArrayList;

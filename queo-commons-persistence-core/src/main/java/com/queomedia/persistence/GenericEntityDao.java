@@ -3,8 +3,6 @@ package com.queomedia.persistence;
 import java.util.Collection;
 import java.util.List;
 
-import org.hibernate.HibernateException;
-
 /**
  * The Interface GenericEntityDao.
  * 
