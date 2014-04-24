@@ -8,22 +8,19 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Test the OracleDropStatementReplacerTest class.
+ * Test the OracleReplacerTest class.
  *
  * @author hohlfeld
  */
-public class OracleDropStatementReplacerTest {
+public class OracleReplacerTest {
 
     /**
-     * test a 2 line statement.
+     * test an illegal drop statement - IllegalArgumentException expected.
      */
-    @Test
-    public void testCorrectLineSplitting() {
+    @Test (expected = IllegalArgumentException.class)
+    public void testWrongDropStatement() {
 
-        List<String> result = OracleDropStatementReplacer.replaceDropStatements("drop me not;\nanother statement;");
-
-        Assert.assertThat(result.get(0), Matchers.equalTo("drop me not;"));
-        Assert.assertThat(result.get(1), Matchers.equalTo("another statement;"));
+        OracleReplacer.replace("drop something;");
     }
 
     /**
@@ -32,11 +29,11 @@ public class OracleDropStatementReplacerTest {
     @Test
     public void testSimpleDropTable() {
         String dropTable = "drop table test_table cascade constraints;";
-        String result = OracleDropStatementReplacer.replaceDropStatements(dropTable).get(0);
+        String result = OracleReplacer.replace(dropTable).get(0);
         Assert.assertThat("statement must be changed", result.length(), Matchers.greaterThan(dropTable.length()));
         Assert.assertThat("only trailing semicolon must be cut off from original statement",
                 result,
-                Matchers.containsString(dropTable.substring(0, dropTable.lastIndexOf(";"))));
+                Matchers.containsString(dropTable.substring(0, dropTable.length() - 1)));
     }
 
     /**
@@ -45,15 +42,29 @@ public class OracleDropStatementReplacerTest {
     @Test
     public void testSimpleDropSequence() {
         String dropSequence = "drop sequence test_sequence cascade constraints;";
-        String result = OracleDropStatementReplacer.replaceDropStatements(dropSequence).get(0);
+        String result = OracleReplacer.replace(dropSequence).get(0);
         Assert.assertThat("statement must be changed", result.length(), Matchers.greaterThan(dropSequence.length()));
         Assert.assertThat("only trailing semicolon must be cut off from original statement",
                 result,
-                Matchers.containsString(dropSequence.substring(0, dropSequence.lastIndexOf(";"))));
+                Matchers.containsString(dropSequence.substring(0, dropSequence.length() - 1)));
+    }
+
+    /**
+     * Respect comment with trailing semicolon
+     */
+    @Test
+    public void testCommentLine() {
+        String comment = "-- this is only an comment with trailing semicolon;";
+        List<String> result = OracleReplacer.replace(comment);
+        Assert.assertThat(result.size(), Matchers.equalTo(2));
+        Assert.assertThat(result.get(0), Matchers.equalTo("-- this is only an comment with trailing semicolon"));
+        Assert.assertThat(result.get(1), Matchers.equalTo("-- /"));
     }
 
     public static final List<String> sampleComplexStatement = Arrays
             .asList("SET CONSTRAINTS ALL DEFERRED;                                     ",
+                    "                                                                  ",
+                    "    -- this is a comment with trailing semicolon;                 ",
                     "                                                                  ",
                     "    drop table department cascade constraints;                    ",
                     "                                                                  ",
@@ -104,7 +115,11 @@ public class OracleDropStatementReplacerTest {
                     "    create sequence hibernate_sequence;                           ");
 
     public static final List<String> expectedResult = Arrays
-            .asList("SET CONSTRAINTS ALL DEFERRED;                                     ",
+            .asList("SET CONSTRAINTS ALL DEFERRED                                      ",
+                    "    /                                                             ",
+                    "                                                                  ",
+                    "    -- this is a comment with trailing semicolon                  ",
+                    "    -- /                                                          ",
                     "                                                                  ",
                     "    begin execute immediate 'drop table department cascade constraints'; exception when others then if sqlcode != -942 then raise; end if; end;                    ",
                     "    /                                                             ",
@@ -123,7 +138,8 @@ public class OracleDropStatementReplacerTest {
                     "        businessId number(19,0) not null unique,                  ",
                     "        title varchar2(255 char) not null unique,                 ",
                     "        primary key (id)                                          ",
-                    "    );                                                            ",
+                    "    )                                                             ",
+                    "    /                                                             ",
                     "                                                                  ",
                     "    create table test_user (                                      ",
                     "        id number(19,0) not null,                                 ",
@@ -139,36 +155,40 @@ public class OracleDropStatementReplacerTest {
                     "        passwordRenewDate timestamp not null,                     ",
                     "        department_fk number(19,0),                               ",
                     "        primary key (id)                                          ",
-                    "    );                                                            ",
+                    "    )                                                             ",
+                    "    /                                                             ",
                     "                                                                  ",
                     "    create table test_user2security_roles (                       ",
                     "        User_fk number(19,0) not null,                            ",
                     "        securityRoles varchar2(255 char)                          ",
-                    "   );                                                             ",
+                    "    )                                                             ",
+                    "    /                                                             ",
                     "                                                                  ",
                     "    alter table test_user                                         ",
                     "        add constraint FKE3DC7F9074F5AD8B                         ",
                     "        foreign key (department_fk)                               ",
-                    "        references department;                                    ",
+                    "        references department                                     ",
+                    "    /                                                             ",
                     "                                                                  ",
                     "    alter table test_user2security_roles                          ",
                     "        add constraint FK9FE5E852AB7AAE3                          ",
                     "        foreign key (User_fk)                                     ",
-                    "        references shims_user;                                    ",
+                    "        references shims_user                                     ",
+                    "    /                                                             ",
                     "                                                                  ",
-                    "    create sequence hibernate_sequence;                           ");
+                    "    create sequence hibernate_sequence                            ",
+                    "    /                                                             ");
 
     @Test
     public void testComplexSatement() {
 
-        List<String> result = OracleDropStatementReplacer
-                .replaceDropStatements(OracleDropStatementReplacerTest.sampleComplexStatement);
+        List<String> result = OracleReplacer.replace(OracleReplacerTest.sampleComplexStatement);
         Assert.assertThat("result statement must have exectly that number of lines",
-                OracleDropStatementReplacerTest.expectedResult.size(),
+                OracleReplacerTest.expectedResult.size(),
                 Matchers.equalTo(result.size()));
-        for (int i = 0; i < OracleDropStatementReplacerTest.expectedResult.size(); i++) {
+        for (int i = 0; i < OracleReplacerTest.expectedResult.size(); i++) {
             Assert.assertThat(result.get(i),
-                    Matchers.equalToIgnoringWhiteSpace(OracleDropStatementReplacerTest.expectedResult.get(i)));
+                    Matchers.equalToIgnoringWhiteSpace(OracleReplacerTest.expectedResult.get(i)));
         }
     }
 

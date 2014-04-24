@@ -19,7 +19,7 @@ import org.reflections.Reflections;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.schema.bugfix.ConfigurationWithBeanValidation;
-import com.queomedia.persistence.util.OracleDropStatementReplacer;
+import com.queomedia.persistence.util.OracleReplacer;
 
 /**
  * The Class SchemaGenerator.
@@ -158,7 +158,7 @@ public class SchemaGenerator {
 
         final List<String> withCorrectedDropStatements;
         if (dialect == Dialect.ORACLE) {
-            withCorrectedDropStatements = OracleDropStatementReplacer.replaceDropStatements(original);
+            withCorrectedDropStatements = OracleReplacer.replace(original);
         } else {
             withCorrectedDropStatements = original;
         }
