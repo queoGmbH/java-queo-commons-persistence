@@ -16,11 +16,16 @@
 		<dependency>
 			<groupId>de.humanfork.springdatajpaextension</groupId>
 			<artifactId>spring-data-jpa-extension</artifactId>
-		</dependency>
+		</dependency>		
 
 		<dependency>
 			<groupId>com.queomedia</groupId>
 			<artifactId>queo-commons-exceptions</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.hibernate.javax.persistence</groupId>
+			<artifactId>hibernate-jpa-2.0-api</artifactId>
 		</dependency>
 
 	</dependencies>
