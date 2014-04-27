@@ -1,5 +1,6 @@
 package com.queomedia.persistence.schema.bugfix;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Properties;
@@ -44,7 +45,6 @@ public class ConfigurationWithBeanValidation extends Configuration {
         super.secondPassCompile();
 
         try {
-
             // thank you, hibernate folks, for making this useful class package private ...                
             Method applyDDL = Class.forName("org.hibernate.cfg.beanvalidation.TypeSafeActivator").getMethod("applyDDL",
                     Collection.class,
@@ -52,7 +52,17 @@ public class ConfigurationWithBeanValidation extends Configuration {
                     org.hibernate.dialect.Dialect.class);
             applyDDL.setAccessible(true);
             applyDDL.invoke(null, classes.values(), getProperties(), hibernateDialect);
-        } catch (Exception e) {
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (SecurityException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
         }
 

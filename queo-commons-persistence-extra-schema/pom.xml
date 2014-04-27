@@ -18,6 +18,11 @@
 			<artifactId>queo-commons-persistence-core</artifactId>
 			<version>3.0.1-SNAPSHOT</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>com.queomedia</groupId>
+			<artifactId>queo-commons-checks</artifactId>
+		</dependency>
 
 		<dependency>
 			<groupId>commons-lang</groupId>

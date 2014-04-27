@@ -112,9 +112,6 @@ public class SchemaGenerator {
         generate("src/main/resources/" + this.ddlFileName);
     }
 
-    /** The split maker in the ddl addtional file. */
-    private static final String SPLIT_MARKER = "/* <<add at the beginning hibernate, add at the end hibernate>> */";
-
     /**
      * Add the statements from the addtional file.
      *
@@ -123,23 +120,18 @@ public class SchemaGenerator {
      * @throws IOException Signals that an I/O exception has occurred.
      */
     private void addAdditinalStatements(final String fileName, final Dialect dialect) throws IOException {
-        File additionalFile = new File("src/main/resources/ddlAdditional_" + dialect.name().toLowerCase() + ".sql");
-        System.out.println("extending with: " + additionalFile.getAbsolutePath());
 
-        String ddlAdditional = FileUtils.readFileToString(additionalFile, "utf-8");
-        String[] parts = ddlAdditional.split(Pattern.quote(SchemaGenerator.SPLIT_MARKER));
-        if (parts.length != 2) {
-            throw new RuntimeException("not exct 1 split marker not found `" + SchemaGenerator.SPLIT_MARKER + "`");
-        }
+        AdditionalScript additionalScript = AdditionalScript.load(dialect);
 
         File outputFile = new File(fileName);
         String original = FileUtils.readFileToString(outputFile, "utf-8");
-        String extended = parts[0] + original + parts[1];
+        String extended = additionalScript.getPrePart() + original + additionalScript.getPostPart();
         FileUtils.writeStringToFile(outputFile, extended);
 
         System.out.println("----Extended--------");
         System.out.println(extended);
     }
+
 
     /**
      * Add the statements from the addtional file.
@@ -168,11 +160,11 @@ public class SchemaGenerator {
         System.out.println("----With Comment--------");
         System.out.println(withComment);
     }
-
+    
+    private Pattern dropKeyStatementPattern = Pattern.compile("alter table .* drop foreign key [^;]*;");
+    
     String addCommentDropConstraintStatements(final List<String> original, final Dialect dialect) {
         StringBuilder shirnked = new StringBuilder();
-
-        Pattern dropKeyStatementPattern = Pattern.compile("alter table .* drop foreign key [^;]*;");
 
         for (int i = 0; i < original.size(); i++) {
             if ((i + 2) < original.size()) {
