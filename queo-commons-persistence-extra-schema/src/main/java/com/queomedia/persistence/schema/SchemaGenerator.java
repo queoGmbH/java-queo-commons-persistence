@@ -22,7 +22,9 @@ import com.queomedia.persistence.schema.bugfix.ConfigurationWithBeanValidation;
 
 /**
  * The Class SchemaGenerator.
+ * @deprecated use {@link SchemaGeneratorJpa}.
  */
+@Deprecated
 public class SchemaGenerator {
 
     /**

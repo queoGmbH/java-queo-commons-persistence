@@ -20,7 +20,7 @@ import com.queomedia.persistence.schema.prettyprint.MySqlPrettyPrinter;
 /**
  * JPA 2.1 based shema generator.
  */
-public class JpaSchemaGenerator {
+public class SchemaGeneratorJpa {
 
     /**
      * The file name of the generated dll.
@@ -40,7 +40,7 @@ public class JpaSchemaGenerator {
      * @param dialect the dialect
      * @throws Exception the exception
      */
-    public JpaSchemaGenerator(
+    public SchemaGeneratorJpa(
             final String ddlFileName, final Dialect dialect) throws Exception {
         Check.notNullArgument(dialect, "dialect");
 
