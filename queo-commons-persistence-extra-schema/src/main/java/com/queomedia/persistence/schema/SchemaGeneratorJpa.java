@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import javax.persistence.Persistence;
 
 import org.apache.commons.io.FileUtils;
+import org.hibernate.cfg.AvailableSettings;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.schema.prettyprint.MySqlPrettyPrinter;
@@ -87,6 +88,9 @@ public class SchemaGeneratorJpa {
         try {
             Map<String, Object> props = new HashMap<String, Object>();
 
+            /** need to disable validation, else the database connection would be used to validate (or update) the existing DB schema */
+            props.put( AvailableSettings.HBM2DDL_AUTO, "none");
+            
             props.put("javax.persistence.schema-generation.database.action", "none");
             props.put("javax.persistence.schema-generation.scripts.action", "drop-and-create");
 
