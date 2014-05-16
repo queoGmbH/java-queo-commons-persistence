@@ -62,6 +62,7 @@
 		<module>queo-commons-persistence-entitymanager</module>
 		<module>queo-commons-persistence-utils</module>
 		<module>queo-commons-persistence-extra-criteria</module>
+		<module>queo-commons-persistence-extra-springdatajpa</module>
 		<module>queo-commons-persistence-extra-nullaware</module>
 		<module>queo-commons-persistence-extra-schema</module>
 	</modules>
@@ -80,7 +81,7 @@
 				<artifactId>queo-commons-equals</artifactId>
 				<version>1.3.0</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>com.queomedia</groupId>
 				<artifactId>queo-commons-exceptions</artifactId>
@@ -165,8 +166,8 @@
 				<artifactId>slf4j-nop</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
-			
-			<dependency>			
+
+			<dependency>
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
 				<version>0.9.8</version>
@@ -178,6 +179,12 @@
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.11</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework</groupId>
+				<artifactId>spring-test</artifactId>
+				<version>${spring.version}</version>
 			</dependency>
 
 			<dependency>
@@ -195,6 +202,12 @@
 				<groupId>com.queomedia</groupId>
 				<artifactId>queo-commons-asserts</artifactId>
 				<version>1.1.3</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.h2database</groupId>
+				<artifactId>h2</artifactId>
+				<version>1.3.154</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
