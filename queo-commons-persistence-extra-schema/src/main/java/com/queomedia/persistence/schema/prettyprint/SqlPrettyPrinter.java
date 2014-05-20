@@ -1,21 +1,15 @@
 package com.queomedia.persistence.schema.prettyprint;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
 import org.apache.commons.lang.StringUtils;
-import org.hibernate.engine.jdbc.internal.BasicFormatterImpl;
-import org.hibernate.engine.jdbc.internal.Formatter;
 
 import com.queomedia.commons.checks.Check;
 
-/** The Pretty Printer does NOT modify the statments (add no separators ...) */
-public class MySqlPrettyPrinter {
-
-    private Formatter hibernateFormatter = new BasicFormatterImpl();
+/** The Pretty Printer does NOT modify the statements (add no separators ...) */
+public class SqlPrettyPrinter {
 
     /**
      *  Pretty Print the given statement.
@@ -26,7 +20,7 @@ public class MySqlPrettyPrinter {
     public String formatLineStatement(final String statement) {
         Check.notNullArgument(statement, "statement");
 
-        String formatted = this.hibernateFormatter.format(statement).trim();
+        String formatted = StringUtils.strip(statement);
 
         String lowerCase = formatted.toLowerCase(Locale.ENGLISH);
         if (lowerCase.startsWith("create table")) {
@@ -36,17 +30,47 @@ public class MySqlPrettyPrinter {
         }
     }
 
+    private static final String INDENTION = "    ";
+
     private String formatCreateTableStatment(final String statment) {
         String command = StringUtils.substringBefore(statment, "(");
         String fields = StringUtils.substringAfter(StringUtils.substringBeforeLast(statment, ")"), "(");
         String options = StringUtils.substringAfterLast(statment, ")");
 
         StringBuilder formattedFields = new StringBuilder();
-        List<String> fieldsList = Arrays.asList(fields.split(","));
-        for (Iterator<String> it = fieldsList.iterator(); it.hasNext();) {
-            formattedFields.append("    " + it.next().trim());
-            if (it.hasNext()) {
-                formattedFields.append(",\n");
+        int bracketLevel = 0;
+        //used to omit whitespaces between fields
+        boolean waitForFirstNoneWhitspace = true;
+
+        if (!fields.isEmpty()) {
+            formattedFields.append(SqlPrettyPrinter.INDENTION);
+        }
+        for (char c : fields.toCharArray()) {
+            switch (c) {
+            case '(':
+                bracketLevel++;
+                formattedFields.append(c);
+                break;
+            case ')':
+                bracketLevel--;
+                formattedFields.append(c);
+                break;
+            case ',':
+                formattedFields.append(c);
+                if (bracketLevel == 0) {
+                    waitForFirstNoneWhitspace = true;
+                    formattedFields.append('\n');
+                    formattedFields.append(SqlPrettyPrinter.INDENTION);
+                }
+                break;
+            case ' ':
+                if (!waitForFirstNoneWhitspace) {
+                    formattedFields.append(c);
+                }
+                break;
+            default:
+                waitForFirstNoneWhitspace = false;
+                formattedFields.append(c);
             }
         }
 
@@ -128,12 +152,12 @@ public class MySqlPrettyPrinter {
 
         @Override
         public String toString() {
-            return "Group [type=" + type + ", table=" + table + "]";
+            return "Group [type=" + this.type + ", table=" + this.table + "]";
         }
 
         public static Group extractFromStatment(final String statment) {
             String[] parts = StringUtils.split(statment);
-            if (parts.length > 3
+            if ((parts.length > 3)
                     && (parts[0].equalsIgnoreCase("create") || parts[0].equalsIgnoreCase("update") || parts[0]
                             .equalsIgnoreCase("alter")) && parts[1].equalsIgnoreCase("table")) {
                 return new Group(parts[0], parts[2]);

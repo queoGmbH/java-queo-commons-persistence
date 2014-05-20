@@ -1,11 +1,10 @@
 package com.queomedia.persistence.schema;
 
-import static org.junit.Assert.assertThat;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.Matchers;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class SchemaGeneratorTest {
@@ -50,11 +49,14 @@ public class SchemaGeneratorTest {
     /** scenario: alter table drop key statments should be commented out, even if they are splitted into several lines. */
     @Test
     public void testAddCommentDropConstraintStatements() throws Exception {
-        SchemaGenerator schemaGenerator = new SchemaGenerator(Arrays.asList("com.queomedia"), null, "ddl.sql", Dialect.MYSQL);
+        SchemaGenerator schemaGenerator = new SchemaGenerator(Arrays.asList("com.queomedia"),
+                null,
+                "ddl.sql",
+                Dialect.MYSQL);
 
-        String result = schemaGenerator.addCommentDropConstraintStatements(sampleContent, Dialect.MYSQL);
+        String result = schemaGenerator.addCommentDropConstraintStatements(this.sampleContent, Dialect.MYSQL);
 
-        assertThat(result,
+        Assert.assertThat(result,
                 Matchers.containsString("-- alter table password_lost_request drop foreign key FK8E76FF983A03B20A;"));
     }
 }

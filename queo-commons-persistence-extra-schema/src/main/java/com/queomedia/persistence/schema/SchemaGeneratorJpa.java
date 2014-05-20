@@ -16,10 +16,10 @@ import org.apache.commons.io.FileUtils;
 import org.hibernate.cfg.AvailableSettings;
 
 import com.queomedia.commons.checks.Check;
-import com.queomedia.persistence.schema.prettyprint.MySqlPrettyPrinter;
+import com.queomedia.persistence.schema.prettyprint.SqlPrettyPrinter;
 
 /**
- * JPA 2.1 based shema generator.
+ * JPA 2.1 based schema generator.
  */
 public class SchemaGeneratorJpa {
 
@@ -27,7 +27,6 @@ public class SchemaGeneratorJpa {
      * The file name of the generated dll.
      */
     public final String ddlFileName;
-
 
     /** The dialect. */
     private final Dialect dialect;
@@ -41,8 +40,7 @@ public class SchemaGeneratorJpa {
      * @param dialect the dialect
      * @throws Exception the exception
      */
-    public SchemaGeneratorJpa(
-            final String ddlFileName, final Dialect dialect) throws Exception {
+    public SchemaGeneratorJpa(final String ddlFileName, final Dialect dialect) throws Exception {
         Check.notNullArgument(dialect, "dialect");
 
         this.dialect = dialect;
@@ -52,24 +50,36 @@ public class SchemaGeneratorJpa {
     public void generate(String persistenceUntitName) {
         generate(persistenceUntitName, "src/main/resources/" + this.ddlFileName);
     }
-    
+
     /**
      * Method that actually creates the file.
      * @param fileName the file name
      */
     public void generate(final String persistenceUntitName, final String fileName) {
 
-        List<String> statements = generateSpringJpa21way(persistenceUntitName);        
-        statements = addSeperator(statements);
-        statements = addCommentToDropConstraintStatement(statements);
-        
-        MySqlPrettyPrinter mySqlPrettyPrinter = new MySqlPrettyPrinter();        
+        List<String> statements = generateSpringJpa21way(persistenceUntitName);
+        if (this.dialect == Dialect.MYSQL) {
+            statements = addCommentToDropConstraintStatement(statements);
+        }
+        if (this.dialect == Dialect.ORACLE) {
+            statements = addCatchExceptionAroundDropTableStatement(statements);
+            statements = addCatchExceptionAroundDropSequenceStatement(statements);
+        }
+
+        if (this.dialect == Dialect.MYSQL) {
+            statements = addSeperator(statements, ";");
+        }
+        if (this.dialect == Dialect.ORACLE) {
+            statements = addSeperator(statements, "\n/\n");
+        }
+
+        SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
         List<List<String>> groupedStatments = mySqlPrettyPrinter.groupStatments(statements);
 
         StringBuilder formattedStatements = new StringBuilder();
         for (List<String> group : groupedStatments) {
-            for (String statement : group) {
-                formattedStatements.append(mySqlPrettyPrinter.formatLineStatement(statement));
+            for (String statement : group) {                
+                formattedStatements.append(mySqlPrettyPrinter.formatLineStatement(statement));                
                 formattedStatements.append("\n");
             }
             //empty line between the groupes
@@ -89,8 +99,8 @@ public class SchemaGeneratorJpa {
             Map<String, Object> props = new HashMap<String, Object>();
 
             /** need to disable validation, else the database connection would be used to validate (or update) the existing DB schema */
-            props.put( AvailableSettings.HBM2DDL_AUTO, "none");
-            
+            props.put(AvailableSettings.HBM2DDL_AUTO, "none");
+
             props.put("javax.persistence.schema-generation.database.action", "none");
             props.put("javax.persistence.schema-generation.scripts.action", "drop-and-create");
 
@@ -134,10 +144,10 @@ public class SchemaGeneratorJpa {
         return Arrays.asList(rawScript.split("\\r?\\n"));
     }
 
-    private List<String> addSeperator(List<String> statements) {
+    private List<String> addSeperator(List<String> statements, String seperator) {
         ArrayList<String> withSeparator = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            withSeparator.add(statement + ";");
+            withSeparator.add(statement + seperator);
         }
         return withSeparator;
     }
@@ -150,22 +160,46 @@ public class SchemaGeneratorJpa {
         }
     }
 
+    private Pattern dropKeyStatementPattern = Pattern.compile("alter table \\S* drop foreign key \\S*");
 
-      
-    private Pattern dropKeyStatementPattern = Pattern.compile("alter table .* drop foreign key [^;]*;");
-
-    String addCommentToDropConstraintStatement(final String statement) {
-        if (dropKeyStatementPattern.matcher(statement).matches()) {
-            return "-- " + statement;
-        } else {
-            return statement;
-        }
-    }
-    
     List<String> addCommentToDropConstraintStatement(final List<String> statements) {
-        List<String> result = new ArrayList<String>(statements.size());        
-        for(String statement : statements) {
-            result.add(addCommentToDropConstraintStatement(statement));
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (dropKeyStatementPattern.matcher(statement).matches()) {
+                result.add("-- " + statement);
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
+    private Pattern dropTableStatementPattern = Pattern.compile("drop table \\S* cascade constraints");
+
+    List<String> addCatchExceptionAroundDropTableStatement(final List<String> statements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (dropTableStatementPattern.matcher(statement).matches()) {
+                result.add("begin execute immediate '" + statement
+                        + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
+    private Pattern dropSequenceStatementPattern = Pattern.compile("drop sequence \\S*");
+
+    List<String> addCatchExceptionAroundDropSequenceStatement(final List<String> statements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (dropSequenceStatementPattern.matcher(statement).matches()) {
+                result.add("begin execute immediate '" + statement
+                        + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+            } else {
+                result.add(statement);
+            }
         }
         return result;
     }
