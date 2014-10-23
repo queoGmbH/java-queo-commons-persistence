@@ -51,7 +51,7 @@
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
-				<artifactId>queo-commons-persistence-core</artifactId>
+				<artifactId>queo-commons-persistence-utils</artifactId>
 				<version>3.3.1-SNAPSHOT</version>
 			</dependency>
 
