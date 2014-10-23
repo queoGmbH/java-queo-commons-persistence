@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>queo-commons-persistence-bom</artifactId>
+	<name>queo commons persistence Bill of Materials</name>
+	<packaging>pom</packaging>
+
+	<parent>
+		<groupId>com.queomedia.commons.persistence</groupId>
+		<artifactId>queo-commons-persistence</artifactId>
+		<version>3.2.2-SNAPSHOT</version>
+	</parent>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-core</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-entitymanager</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-extra-criteria</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-extra-nullaware</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-extra-schema</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-extra-springdatajpa</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-core</artifactId>
+				<version>3.2.2-SNAPSHOT</version>
+			</dependency>
+
+		</dependencies>
+	</dependencyManagement>
+
+</project>

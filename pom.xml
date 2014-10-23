@@ -58,6 +58,7 @@
 	</issueManagement>
 
 	<modules>
+		<module>queo-commons-persistence-bom</module>
 		<module>queo-commons-persistence-core</module>
 		<module>queo-commons-persistence-entitymanager</module>
 		<module>queo-commons-persistence-utils</module>
