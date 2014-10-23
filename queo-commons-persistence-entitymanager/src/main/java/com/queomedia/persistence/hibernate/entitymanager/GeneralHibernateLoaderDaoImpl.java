@@ -7,7 +7,7 @@ import javax.persistence.PersistenceContext;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;

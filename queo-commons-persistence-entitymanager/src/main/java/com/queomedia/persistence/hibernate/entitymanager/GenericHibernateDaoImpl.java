@@ -14,7 +14,7 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Example;
 import org.hibernate.criterion.Projections;
-import org.hibernate.ejb.HibernateEntityManager;
+import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.transform.ResultTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +23,9 @@ import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.GenericEntityDao;
 
 /**
+ * Common base implementation for an DAO.
  * @param <T> The concrete type where this DAO is for.
  * @author Engelmann
- *
  */
 public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     
@@ -110,7 +110,7 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     public T findByHibernateId(final Long id, final boolean lock) {
         Check.notNullArgument(id, "id");
 
-        if (lock) {
+        if (lock) {            
             return (T) this.entityManager.getSession().load(this.getPersistentClass(), id, LockMode.PESSIMISTIC_WRITE);
         } else {
             return (T) this.entityManager.getSession().load(this.getPersistentClass(), id);

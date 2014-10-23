@@ -11,7 +11,7 @@ import org.hibernate.criterion.Criterion;
 import org.hibernate.criterion.Restrictions;
 
 import com.queomedia.commons.checks.Check;
-import com.queomedia.commons.exceptions.NotImplmentedCaseExecption;
+import com.queomedia.commons.exceptions.NotImplementedCaseExecption;
 
 /**
  * The Class FilterRestrictions.
@@ -59,7 +59,7 @@ public final class FilterRestrictions {
             return Restrictions.eq(propertyName, false);
 
         default:
-            throw new NotImplmentedCaseExecption("The case " + restriction + " is not implemented.");
+            throw new NotImplementedCaseExecption("The case " + restriction + " is not implemented.");
         }
     }
 
@@ -95,7 +95,7 @@ public final class FilterRestrictions {
                 break;
 
             default:
-                throw new NotImplmentedCaseExecption("The case " + regulation.getRule() + " is not implemented.");
+                throw new NotImplementedCaseExecption("The case " + regulation.getRule() + " is not implemented.");
             }
         }
 
