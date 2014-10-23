@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
-		<version>3.3.1-SNAPSHOT</version>
+		<version>3.3.1</version>
 	</parent>
 
 	<dependencyManagement>
@@ -16,43 +16,43 @@
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-core</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-entitymanager</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-extra-criteria</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-extra-nullaware</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-extra-schema</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-extra-springdatajpa</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-utils</artifactId>
-				<version>3.3.1-SNAPSHOT</version>
+				<version>3.3.1</version>
 			</dependency>
 
 		</dependencies>
