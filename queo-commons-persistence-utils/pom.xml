@@ -8,14 +8,14 @@
 	<parent>
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
-		<version>3.3.0</version>
+		<version>3.3.1-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.queomedia.commons.persistence</groupId>
 			<artifactId>queo-commons-persistence-core</artifactId>
-			<version>3.3.0</version>
+			<version>3.3.1-SNAPSHOT</version>
 		</dependency>
 
 		<dependency>
