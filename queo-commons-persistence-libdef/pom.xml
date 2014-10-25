@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
-		<version>3.3.2-SNAPSHOT</version>
+		<version>3.3.2</version>
 	</parent>
 
 	<properties>
@@ -26,7 +26,7 @@
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-bom</artifactId>
-				<version>3.3.2-SNAPSHOT</version>
+				<version>3.3.2</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
