@@ -10,7 +10,19 @@
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
 		<version>3.3.2-SNAPSHOT</version>
-	</parent>	
+	</parent>
+	
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-libdef</artifactId>
+				<version>3.3.2-SNAPSHOT</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
 		<dependency>
