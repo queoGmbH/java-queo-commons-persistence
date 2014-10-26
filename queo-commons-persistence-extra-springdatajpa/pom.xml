@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>queo-commons-persistence-extra-springdatajpa</artifactId>
-	<name>queo commons persistence core</name>
+	<name>queo commons persistence extra Spring-Data-JPA</name>
 	<packaging>jar</packaging>
 
 	<parent>
