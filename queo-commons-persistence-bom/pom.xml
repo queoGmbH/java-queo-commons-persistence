@@ -51,6 +51,12 @@
 			
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-extra-fake</artifactId>
+				<version>3.3.3-SNAPSHOT</version>
+			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-utils</artifactId>
 				<version>3.3.3-SNAPSHOT</version>
 			</dependency>
