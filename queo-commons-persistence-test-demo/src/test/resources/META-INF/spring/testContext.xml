@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:task="http://www.springframework.org/schema/task" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" xmlns:util="http://www.springframework.org/schema/util"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+
+	<description>
+		This spring configuration simulates an spring context
+		environment nearly the same like the one used for the real application
+	</description>
+
+	<!-- normal context -->
+	<import resource="classpath:/META-INF/spring/applicationContext.xml"/>
+
+	<!-- test specific replacements -->	
+	<import resource="classpath:/META-INF/spring/testContext-h2DbConfig.xml"/>
+
+</beans>

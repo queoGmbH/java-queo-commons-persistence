@@ -61,7 +61,8 @@
 		<module>queo-commons-persistence-extra-springdatajpa</module>
 		<module>queo-commons-persistence-extra-nullaware</module>
 		<module>queo-commons-persistence-extra-schema</module>
-		<module>queo-commons-persistence-extra-fake</module>		
+		<module>queo-commons-persistence-extra-fake</module>
+		<module>queo-commons-persistence-test-demo</module>
 	</modules>
 
 	<build>

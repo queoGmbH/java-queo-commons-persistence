@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+			http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc-3.0.xsd">
+
+	<description>
+		DB configuration for an in memory database without lucene enabled.
+	</description>
+
+<!--
+	<jdbc:embedded-database id="dataSource" type="H2" >
+		<jdbc:script location="classpath:ddlAdditional_h2.sql" />		
+	</jdbc:embedded-database>
+  -->
+  	
+  	<bean class="org.springframework.jdbc.datasource.init.DataSourceInitializer">
+  		<property name="dataSource" ref="dataSource"/>
+  		<property name="databasePopulator">
+  		  	<bean class="org.springframework.jdbc.datasource.init.ResourceDatabasePopulator">
+		  		<property name="scripts">
+		  			<bean class="org.springframework.core.io.ClassPathResource">
+		  				<constructor-arg value="ddlAdditional_h2.sql"/>
+		  			</bean>
+		  		</property>		
+		  	</bean>
+  		</property>
+  	</bean>
+		
+	<bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close" id="dataSource">
+		<property name="driverClassName" value="org.h2.Driver" />
+		<property name="url" value="jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1" />
+		<property name="username" value="sa" />
+		<property name="password" value="" />
+		<property name="defaultTransactionIsolation" value="1"/>
+	</bean>
+	
+	<bean
+		class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		id="entityManagerFactory">
+		<property name="persistenceUnitName" value="testH2DbPersistenceUnit" />
+		<property name="dataSource" ref="dataSource" />
+		
+		<!-- Disable Hibernate Search -->
+		<property name="jpaProperties">
+			<props>
+				<prop key="hibernate.search.autoregister_listeners">false</prop>
+			</props>
+		</property>
+
+		<!-- this is important to connect JPA and JdbcTemplate transaction control -->
+		<property name="jpaVendorAdapter">
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter">
+				<property name="showSql" value="false" />
+			</bean>
+		</property>
+	</bean>
+
+</beans>

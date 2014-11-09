@@ -14,12 +14,15 @@
 
 	<properties>
 		<hibernate.version>4.3.1.Final</hibernate.version>
+		<!-- javassist version MUST be in sync with HIBERNAT! -->
+		<javassist.version>3.18.1-GA</javassist.version>
+		
 		<spring.version>4.0.7.RELEASE</spring.version>
 		<spring-data-jpa.version>1.7.0.RELEASE</spring-data-jpa.version>
 		<slf4j.version>1.7.5</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 	</properties>
-	
+
 
 	<dependencyManagement>
 		<dependencies>
@@ -136,6 +139,23 @@
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
 				<version>0.9.8</version>
+				<exclusions>
+					<!--
+					     hibernate use the javassist too, but since 3.18, the group id is change
+					     from "javassist" to "org.javassist
+					-->
+					<exclusion>
+						<artifactId>javassist</artifactId>
+						<groupId>javassist</groupId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+
+			<!-- we specifiying javassist explicit, because we exluded it from org.reflections explicit -->
+			<dependency>
+				<groupId>org.javassist</groupId>
+				<artifactId>javassist</artifactId>
+				<version>${javassist.version}</version>
 			</dependency>			
 			
 			<!-- for test -->

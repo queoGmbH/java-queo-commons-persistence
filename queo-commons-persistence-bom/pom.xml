@@ -60,6 +60,12 @@
 				<artifactId>queo-commons-persistence-utils</artifactId>
 				<version>3.3.4-SNAPSHOT</version>
 			</dependency>
+			
+			<dependency>
+				<groupId>com.queomedia.commons.persistence</groupId>
+				<artifactId>queo-commons-persistence-test-demo</artifactId>
+				<version>3.3.4-SNAPSHOT</version>
+			</dependency>
 
 		</dependencies>
 	</dependencyManagement>
