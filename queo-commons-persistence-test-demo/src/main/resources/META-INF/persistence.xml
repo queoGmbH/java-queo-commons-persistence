@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<persistence xmlns="http://java.sun.com/xml/ns/persistence"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.0"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
-<persistence-unit name="persistenceUnit" transaction-type="RESOURCE_LOCAL">
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+          http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd" version="2.1">
+	<persistence-unit name="persistenceUnit" transaction-type="RESOURCE_LOCAL">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<properties>
-			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5InnoDBDialect"/>
 			<!-- value="create" to build a new database on each run; value="update"
 				to modify an existing database; value="create-drop" means the same as "create"
 				but also drops tables when Hibernate closes; value="validate" makes no changes
 				to the database -->
-			<property name="hibernate.hbm2ddl.auto" value="validate" />
-			<property name="hibernate.ejb.naming_strategy"
-				value="de.humanfork.persistence.hibernate.CaseSensitiveAwareNamingStrategy" />
-			<property name="hibernate.connection.charSet" value="UTF-8" />
+			<property name="hibernate.hbm2ddl.auto" value="validate"/>
+			<property name="hibernate.ejb.naming_strategy" value="de.humanfork.persistence.hibernate.CaseSensitiveAwareNamingStrategy"/>
+			<property name="hibernate.connection.charSet" value="UTF-8"/>
 			
 			
 			<!-- enable (jmx) statistics -->
@@ -27,17 +25,16 @@
 
 	<persistence-unit name="testH2DbPersistenceUnit" transaction-type="RESOURCE_LOCAL">
 		<description>
-            Persistence Unit for testing, it is the same like the normal one, but it:
-            uses a H2 DB
-            and uses hbm2ddl.auto=update
-        </description>
+			Persistence Unit for testing, it is the same like the normal one, but it:
+			uses a H2 DB
+			and uses hbm2ddl.auto=update
+		</description>
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<properties>
-			<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect" />
-			<property name="hibernate.hbm2ddl.auto" value="update" />
-			<property name="hibernate.ejb.naming_strategy"
-				value="de.humanfork.persistence.hibernate.CaseSensitiveAwareNamingStrategy" />
-			<property name="hibernate.connection.charSet" value="UTF-8" />
+			<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+			<property name="hibernate.hbm2ddl.auto" value="update"/>
+			<property name="hibernate.ejb.naming_strategy" value="de.humanfork.persistence.hibernate.CaseSensitiveAwareNamingStrategy"/>
+			<property name="hibernate.connection.charSet" value="UTF-8"/>
 			<property name="hibernate.show_sql" value="true"/>
 		</properties>
 	</persistence-unit>
