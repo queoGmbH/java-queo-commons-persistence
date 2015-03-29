@@ -83,7 +83,7 @@ public class SchemaGeneratorJpa {
         }
         generateDdlFile(persistenceUntitName, "src/main/resources/" + this.ddlFileName);
     }
-    
+
     /**
      * @Deprecated use {@link #generateDdlFile(String, String)} - it is just renamed
      */
@@ -128,6 +128,15 @@ public class SchemaGeneratorJpa {
     public String generateDdlScript(final String persistenceUntitName) {
 
         List<String> statements = generateSpringJpa21way(persistenceUntitName);
+        String primaryScript = postProcessStatements(statements);
+
+        AdditionalScript additionalScript = AdditionalScript.load(dialect);
+        String extendedScript = additionalScript.getPrePart() + primaryScript + additionalScript.getPostPart();
+
+        return extendedScript;
+    }
+
+    String postProcessStatements(List<String> statements) {
         if (this.dialect == Dialect.MYSQL) {
             statements = addCommentToDropConstraintStatement(statements);
         }
@@ -155,12 +164,7 @@ public class SchemaGeneratorJpa {
             //empty line between the groupes
             formattedStatements.append("\n");
         }
-
-        AdditionalScript additionalScript = AdditionalScript.load(dialect);
-        String extendedScript = additionalScript.getPrePart() + formattedStatements.toString()
-                + additionalScript.getPostPart();
-
-        return extendedScript;
+        return formattedStatements.toString();
     }
 
     /** Generate a Script in the JPA 2.1 way. */
