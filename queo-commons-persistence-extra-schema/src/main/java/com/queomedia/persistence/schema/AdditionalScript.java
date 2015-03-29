@@ -28,22 +28,35 @@ public class AdditionalScript {
         return postPart;
     }
 
+    /**
+     * Load the additional script for the given {@link Dialect}.
+     * 
+     * The additional script must match this file name/location:
+     * {@code src/main/resources/ddlAdditional_<lower case dialect name>.sql}
+     * When there is no such file, than the loaded {@link AdditionalScript} will be empty.
+     */
     public static AdditionalScript load(Dialect dialect) {
         String fileName = "src/main/resources/ddlAdditional_" + dialect.name().toLowerCase() + ".sql";
         File additionalFile = new File(fileName);
-        System.out.println("extending with: " + additionalFile.getAbsolutePath());
+        
 
-        try {
-            String ddlAdditional = FileUtils.readFileToString(additionalFile, "utf-8");
-            String[] parts = ddlAdditional.split(Pattern.quote(SPLIT_MARKER));
-            if (parts.length != 2) {
-                throw new RuntimeException("not exct 1 split marker not found `" + SPLIT_MARKER + "`");
+        if (additionalFile.exists()) {
+            System.out.println("extending additional script from file: " + additionalFile.getAbsolutePath());
+            try {
+                String ddlAdditional = FileUtils.readFileToString(additionalFile, "utf-8");
+                String[] parts = ddlAdditional.split(Pattern.quote(SPLIT_MARKER));
+                if (parts.length != 2) {
+                    throw new RuntimeException("not exct 1 split marker not found `" + SPLIT_MARKER + "`");
+                }
+
+                return new AdditionalScript(parts[0], parts[1]);
+            } catch (IOException e) {
+                throw new RuntimeException("Error while loading additional script `" + additionalFile.getAbsolutePath()
+                        + "`", e);
             }
-
-            return new AdditionalScript(parts[0], parts[1]);
-        } catch (IOException e) {
-            throw new RuntimeException("Error while loading additional script `" + additionalFile.getAbsolutePath()
-                    + "`", e);
+        } else {
+            System.out.println("no additional script file found: " + additionalFile.getAbsolutePath());
+            return new AdditionalScript("", "");
         }
     }
 }
