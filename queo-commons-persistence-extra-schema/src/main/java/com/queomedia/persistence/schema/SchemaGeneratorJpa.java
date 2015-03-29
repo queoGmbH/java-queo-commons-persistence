@@ -1,8 +1,11 @@
 package com.queomedia.persistence.schema;
 
-import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +15,6 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Persistence;
 
-import org.apache.commons.io.FileUtils;
 import org.hibernate.cfg.AvailableSettings;
 
 import com.queomedia.commons.checks.Check;
@@ -24,8 +26,14 @@ import com.queomedia.persistence.schema.prettyprint.SqlPrettyPrinter;
 public class SchemaGeneratorJpa {
 
     /**
-     * The file name of the generated dll.
+     * The file name of the generated ddl.
+     * 
+     * @deprecated Deprecated, because a less stateful way is to initialize the Schema-Gegerator just with the dialect an other settings,
+     * and then given them the Filename or Steam with the generate method.
+     * 
+     * Can be null
      */
+    @Deprecated
     public final String ddlFileName;
 
     /** The dialect. */
@@ -40,6 +48,23 @@ public class SchemaGeneratorJpa {
      * @param dialect the dialect
      * @throws Exception the exception
      */
+    public SchemaGeneratorJpa(final Dialect dialect) throws Exception {
+        Check.notNullArgument(dialect, "dialect");
+
+        this.dialect = dialect;
+        this.ddlFileName = null;
+    }
+
+    /**
+     * Instantiates a new schema generator.
+     *
+     * @param packageNames the package names
+     * @param namingStrategyOrNull the naming strategy, or null if none used
+     * @param ddlFileName The file name of the generated dll.
+     * @param dialect the dialect
+     * @throws Exception the exception
+     */
+    @Deprecated
     public SchemaGeneratorJpa(final String ddlFileName, final Dialect dialect) throws Exception {
         Check.notNullArgument(dialect, "dialect");
 
@@ -47,15 +72,60 @@ public class SchemaGeneratorJpa {
         this.ddlFileName = ddlFileName;
     }
 
+    /**
+     * @deprecated use {@link #generate(String, String)}  instead:
+     * {@code generateDdl(persistenceUntitName, "src/main/resources/" + ddlFileName);}  
+     */
+    @Deprecated
     public void generate(String persistenceUntitName) {
-        generate(persistenceUntitName, "src/main/resources/" + this.ddlFileName);
+        if (ddlFileName == null) {
+            throw new IllegalStateException("use method SchemaGeneratorJpa.generate(final String persistenceUntitName, final String fileName) instead ");
+        }
+        generateDdlFile(persistenceUntitName, "src/main/resources/" + this.ddlFileName);
+    }
+    
+    /**
+     * @Deprecated use {@link #generateDdlFile(String, String)} - it is just renamed
+     */
+    @Deprecated
+    public void generate(final String persistenceUntitName, final String fileName) {
+        generateDdlFile(persistenceUntitName, fileName);
     }
 
     /**
-     * Method that actually creates the file.
-     * @param fileName the file name
-     */
-    public void generate(final String persistenceUntitName, final String fileName) {
+     * Generate the DDL Script File.
+     *
+     * @param persistenceUntitName the persistence untit name
+     * @param fileName the file name where to store the generated ddl script
+    */
+    public void generateDdlFile(final String persistenceUntitName, final String fileName) {
+
+        //TODO: use try-with-resource after update to java7
+        Writer writer = null;
+        try {
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"));
+            writer.write(generateDdlScript(persistenceUntitName));
+        } catch (IOException ex) {
+            throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException("error in generate ddl script while closing file - filename=`" + fileName
+                        + "`");
+            }
+        }
+    }
+
+    /**
+     * Generate the ddl Script.
+     *
+     * @param persistenceUntitName the persistence untit name
+     * @param fileName the file name where to store the generated ddl script
+    */
+    public String generateDdlScript(final String persistenceUntitName) {
 
         List<String> statements = generateSpringJpa21way(persistenceUntitName);
         if (this.dialect == Dialect.MYSQL) {
@@ -78,8 +148,8 @@ public class SchemaGeneratorJpa {
 
         StringBuilder formattedStatements = new StringBuilder();
         for (List<String> group : groupedStatments) {
-            for (String statement : group) {                
-                formattedStatements.append(mySqlPrettyPrinter.formatLineStatement(statement));                
+            for (String statement : group) {
+                formattedStatements.append(mySqlPrettyPrinter.formatLineStatement(statement));
                 formattedStatements.append("\n");
             }
             //empty line between the groupes
@@ -89,7 +159,8 @@ public class SchemaGeneratorJpa {
         AdditionalScript additionalScript = AdditionalScript.load(dialect);
         String extendedScript = additionalScript.getPrePart() + formattedStatements.toString()
                 + additionalScript.getPostPart();
-        saveScript(fileName, extendedScript);
+
+        return extendedScript;
     }
 
     /** Generate a Script in the JPA 2.1 way. */
@@ -150,14 +221,6 @@ public class SchemaGeneratorJpa {
             withSeparator.add(statement + seperator);
         }
         return withSeparator;
-    }
-
-    private void saveScript(final String fileName, String content) {
-        try {
-            FileUtils.writeStringToFile(new File(fileName), content, "utf-8");
-        } catch (IOException e) {
-            throw new RuntimeException("could not create file `" + fileName + "`", e);
-        }
     }
 
     private Pattern dropKeyStatementPattern = Pattern.compile("alter table \\S* drop foreign key \\S*");
