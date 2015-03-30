@@ -17,9 +17,9 @@
 		<!-- javassist version MUST be in sync with HIBERNAT! -->
 		<javassist.version>3.18.1-GA</javassist.version>
 		
-		<spring.version>4.0.7.RELEASE</spring.version>
-		<spring-data-jpa.version>1.7.0.RELEASE</spring-data-jpa.version>
-		<slf4j.version>1.7.5</slf4j.version>
+		<spring.version>4.0.9.RELEASE</spring.version>
+		<spring-data-jpa.version>1.8.0.RELEASE</spring-data-jpa.version>
+		<slf4j.version>1.7.12</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 	</properties>
 
