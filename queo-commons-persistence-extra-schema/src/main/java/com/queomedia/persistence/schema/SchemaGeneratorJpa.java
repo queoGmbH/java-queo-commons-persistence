@@ -151,6 +151,11 @@ public class SchemaGeneratorJpa {
         if (this.dialect == Dialect.ORACLE) {
             statements = addSeperator(statements, "\n/\n");
         }
+        if (this.dialect == Dialect.SQL_SERVER_2012) {
+            statements = addSqlServerConditionToDropConstraintStatement(statements);
+            statements = addSqlServerConditionToDropTableStatement(statements);
+            statements = addSeperator(statements, "\n");
+        }
 
         SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
         List<List<String>> groupedStatments = mySqlPrettyPrinter.groupStatments(statements);
@@ -270,4 +275,55 @@ public class SchemaGeneratorJpa {
         }
         return result;
     }
+
+    private static Pattern SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN = Pattern
+            .compile("alter table \\S* drop constraint \\S*");
+
+    /**
+     * Build the drop constraint statements.
+     * Surround with existence check for the SQL Server.
+     *
+     * @param statements statements to manipulate
+     * @return statements to execute
+     */
+    private List<String> addSqlServerConditionToDropConstraintStatement(final List<String> statements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).matches()) {
+                String[] statementParts = statement.split(" ");
+                String constraintName = statementParts[5];
+                result.add(String.format("IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n"
+                        + "  BEGIN\n"
+                        + "    %s\n"
+                        + "  END", constraintName, statement));
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
+    private static Pattern SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN = Pattern
+            .compile("drop table \\S*");
+
+    /**
+     * Build the drop table statements.
+     * Surround with existence check for the SQL Server.
+     *
+     * @param statements statements to manipulate
+     * @return statements to execute
+     */
+    private List<String> addSqlServerConditionToDropTableStatement(final List<String> statements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN.matcher(statement).matches()) {
+                result.add(
+                        String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2]) + statement);
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
 }

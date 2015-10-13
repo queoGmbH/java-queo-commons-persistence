@@ -23,7 +23,12 @@ public enum Dialect {
     /**
      * The DB2 dialect.
      */
-    DB2("org.hibernate.dialect.DB2Dialect");
+    DB2("org.hibernate.dialect.DB2Dialect"),
+
+    /**
+     * The MS SQL dialect.
+     */
+    SQL_SERVER_2012("org.hibernate.dialect.SQLServer2012Dialect");
 
     /**
      * The dialect class.
