@@ -28,7 +28,7 @@ public class SchemaGeneratorJpa {
     /**
      * The file name of the generated ddl.
      * 
-     * @deprecated Deprecated, because a less stateful way is to initialize the Schema-Gegerator just with the dialect an other settings,
+     * @deprecated Deprecated, because a less stateful way is to initialize the Schema-Generator just with the dialect an other settings,
      * and then given them the Filename or Steam with the generate method.
      * 
      * Can be null
@@ -42,13 +42,9 @@ public class SchemaGeneratorJpa {
     /**
      * Instantiates a new schema generator.
      *
-     * @param packageNames the package names
-     * @param namingStrategyOrNull the naming strategy, or null if none used
-     * @param ddlFileName The file name of the generated dll.
      * @param dialect the dialect
-     * @throws Exception the exception
      */
-    public SchemaGeneratorJpa(final Dialect dialect) throws Exception {
+    public SchemaGeneratorJpa(final Dialect dialect) {
         Check.notNullArgument(dialect, "dialect");
 
         this.dialect = dialect;
@@ -58,14 +54,11 @@ public class SchemaGeneratorJpa {
     /**
      * Instantiates a new schema generator.
      *
-     * @param packageNames the package names
-     * @param namingStrategyOrNull the naming strategy, or null if none used
      * @param ddlFileName The file name of the generated dll.
      * @param dialect the dialect
-     * @throws Exception the exception
      */
     @Deprecated
-    public SchemaGeneratorJpa(final String ddlFileName, final Dialect dialect) throws Exception {
+    public SchemaGeneratorJpa(final String ddlFileName, final Dialect dialect) {
         Check.notNullArgument(dialect, "dialect");
 
         this.dialect = dialect;
@@ -74,37 +67,37 @@ public class SchemaGeneratorJpa {
 
     /**
      * @deprecated use {@link #generate(String, String)}  instead:
-     * {@code generateDdl(persistenceUntitName, "src/main/resources/" + ddlFileName);}  
+     * {@code generateDdl(persistenceUnitName, "src/main/resources/" + ddlFileName);}
      */
     @Deprecated
-    public void generate(String persistenceUntitName) {
+    public void generate(String persistenceUnitName) {
         if (ddlFileName == null) {
-            throw new IllegalStateException("use method SchemaGeneratorJpa.generate(final String persistenceUntitName, final String fileName) instead ");
+            throw new IllegalStateException("use method SchemaGeneratorJpa.generate(final String persistenceUnitName, final String fileName) instead ");
         }
-        generateDdlFile(persistenceUntitName, "src/main/resources/" + this.ddlFileName);
+        generateDdlFile(persistenceUnitName, "src/main/resources/" + this.ddlFileName);
     }
 
     /**
      * @Deprecated use {@link #generateDdlFile(String, String)} - it is just renamed
      */
     @Deprecated
-    public void generate(final String persistenceUntitName, final String fileName) {
-        generateDdlFile(persistenceUntitName, fileName);
+    public void generate(final String persistenceUnitName, final String fileName) {
+        generateDdlFile(persistenceUnitName, fileName);
     }
 
     /**
      * Generate the DDL Script File.
      *
-     * @param persistenceUntitName the persistence untit name
+     * @param persistenceUnitName the persistence untit name
      * @param fileName the file name where to store the generated ddl script
     */
-    public void generateDdlFile(final String persistenceUntitName, final String fileName) {
+    public void generateDdlFile(final String persistenceUnitName, final String fileName) {
 
         //TODO: use try-with-resource after update to java7
         Writer writer = null;
         try {
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"));
-            writer.write(generateDdlScript(persistenceUntitName));
+            writer.write(generateDdlScript(persistenceUnitName));
         } catch (IOException ex) {
             throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
         } finally {
@@ -122,12 +115,11 @@ public class SchemaGeneratorJpa {
     /**
      * Generate the ddl Script.
      *
-     * @param persistenceUntitName the persistence untit name
-     * @param fileName the file name where to store the generated ddl script
+     * @param persistenceUnitName the persistence untit name
     */
-    public String generateDdlScript(final String persistenceUntitName) {
+    public String generateDdlScript(final String persistenceUnitName) {
 
-        List<String> statements = generateSpringJpa21way(persistenceUntitName);
+        List<String> statements = generateSpringJpa21way(persistenceUnitName);
         String primaryScript = postProcessStatements(statements);
 
         AdditionalScript additionalScript = AdditionalScript.load(dialect);
