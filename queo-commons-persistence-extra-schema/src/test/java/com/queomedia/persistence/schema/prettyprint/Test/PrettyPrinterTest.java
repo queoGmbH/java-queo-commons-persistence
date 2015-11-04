@@ -65,6 +65,18 @@ public class PrettyPrinterTest {
         /** Expected two groups, because the table is different */
         Assert.assertEquals(Arrays.asList(Arrays.asList(statements.get(0), statements.get(1))), result);
     }
+    
+    
+    @Test
+    public void testGroupStatments_sqlServerIfStatements() throws Exception {
+
+        List<String> statements = Arrays.asList("create table body_style (id bigint not...",
+                "create table brand (id bigint not null...");
+
+        List<List<String>> result = this.prettyPrinter.groupStatments(statements);
+        /** Expected two groups, because the table is different */
+        Assert.assertEquals(Arrays.asList(Arrays.asList(statements.get(0)), Arrays.asList(statements.get(1))), result);
+    }
 
     @Test
     public void testExtractFromStatment() throws Exception {

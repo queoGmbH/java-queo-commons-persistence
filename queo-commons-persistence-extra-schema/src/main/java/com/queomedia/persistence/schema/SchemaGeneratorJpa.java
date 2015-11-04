@@ -146,7 +146,7 @@ public class SchemaGeneratorJpa {
         if (this.dialect == Dialect.SQL_SERVER_2012) {
             statements = addSqlServerConditionToDropConstraintStatement(statements);
             statements = addSqlServerConditionToDropTableStatement(statements);
-            statements = addSeperator(statements, "\n");
+            statements = addSeperator(statements, ";");
         }
 
         SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
