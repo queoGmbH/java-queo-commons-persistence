@@ -73,8 +73,9 @@
 			<dependency>
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
-				<version>1.8.3</version>
+				<version>1.9.2</version>
 			</dependency>
+
 			
 			<!-- spring -->
 			<dependency>
