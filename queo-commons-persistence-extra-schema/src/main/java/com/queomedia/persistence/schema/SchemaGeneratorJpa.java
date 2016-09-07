@@ -27,10 +27,10 @@ public class SchemaGeneratorJpa {
 
     /**
      * The file name of the generated ddl.
-     * 
+     *
      * @deprecated Deprecated, because a less stateful way is to initialize the Schema-Generator just with the dialect an other settings,
      * and then given them the Filename or Steam with the generate method.
-     * 
+     *
      * Can be null
      */
     @Deprecated
@@ -66,19 +66,26 @@ public class SchemaGeneratorJpa {
     }
 
     /**
+     * Deprecated!
+     *
+     * @param persistenceUnitName the persistence unit name
      * @deprecated use {@link #generate(String, String)}  instead:
      * {@code generateDdl(persistenceUnitName, "src/main/resources/" + ddlFileName);}
      */
     @Deprecated
-    public void generate(String persistenceUnitName) {
-        if (ddlFileName == null) {
+    public void generate(final String persistenceUnitName) {
+        if (this.ddlFileName == null) {
             throw new IllegalStateException("use method SchemaGeneratorJpa.generate(final String persistenceUnitName, final String fileName) instead ");
         }
         generateDdlFile(persistenceUnitName, "src/main/resources/" + this.ddlFileName);
     }
 
     /**
-     * @Deprecated use {@link #generateDdlFile(String, String)} - it is just renamed
+     * Deprecated!
+     *
+     * @param persistenceUnitName the persistence unit name
+     * @param fileName the file name
+     * @deprecated use {@link #generateDdlFile(String, String)} - it is just renamed
      */
     @Deprecated
     public void generate(final String persistenceUnitName, final String fileName) {
@@ -116,13 +123,14 @@ public class SchemaGeneratorJpa {
      * Generate the ddl Script.
      *
      * @param persistenceUnitName the persistence untit name
-    */
+     * @return the ddl script
+     */
     public String generateDdlScript(final String persistenceUnitName) {
 
         List<String> statements = generateSpringJpa21way(persistenceUnitName);
         String primaryScript = postProcessStatements(statements);
 
-        AdditionalScript additionalScript = AdditionalScript.load(dialect);
+        AdditionalScript additionalScript = AdditionalScript.load(this.dialect);
         String extendedScript = additionalScript.getPrePart() + primaryScript + additionalScript.getPostPart();
 
         return extendedScript;
@@ -212,11 +220,11 @@ public class SchemaGeneratorJpa {
      * Split the Script in statments,
      * This is relative easy, because one line is one statement.
      */
-    private List<String> splitJpaScriptInStatments(String rawScript) {
+    private List<String> splitJpaScriptInStatments(final String rawScript) {
         return Arrays.asList(rawScript.split("\\r?\\n"));
     }
 
-    private List<String> addSeperator(List<String> statements, String seperator) {
+    private List<String> addSeperator(final List<String> statements, final String seperator) {
         ArrayList<String> withSeparator = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             withSeparator.add(statement + seperator);
@@ -229,7 +237,7 @@ public class SchemaGeneratorJpa {
     List<String> addCommentToDropConstraintStatement(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (dropKeyStatementPattern.matcher(statement).matches()) {
+            if (this.dropKeyStatementPattern.matcher(statement).matches()) {
                 result.add("-- " + statement);
             } else {
                 result.add(statement);
@@ -243,7 +251,7 @@ public class SchemaGeneratorJpa {
     List<String> addCatchExceptionAroundDropTableStatement(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (dropTableStatementPattern.matcher(statement).matches()) {
+            if (this.dropTableStatementPattern.matcher(statement).matches()) {
                 result.add("begin execute immediate '" + statement
                         + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
             } else {
@@ -258,7 +266,7 @@ public class SchemaGeneratorJpa {
     List<String> addCatchExceptionAroundDropSequenceStatement(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (dropSequenceStatementPattern.matcher(statement).matches()) {
+            if (this.dropSequenceStatementPattern.matcher(statement).matches()) {
                 result.add("begin execute immediate '" + statement
                         + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
             } else {
@@ -268,8 +276,7 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private static Pattern SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN = Pattern
-            .compile("alter table \\S* drop constraint \\S*");
+    private static Pattern SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN = Pattern.compile("alter table \\S* drop constraint \\S*");
 
     /**
      * Build the drop constraint statements.
@@ -284,10 +291,9 @@ public class SchemaGeneratorJpa {
             if (SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).matches()) {
                 String[] statementParts = statement.split(" ");
                 String constraintName = statementParts[5];
-                result.add(String.format("IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n"
-                        + "  BEGIN\n"
-                        + "    %s\n"
-                        + "  END", constraintName, statement));
+                result.add(String.format("IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n" + "  BEGIN\n" + "    %s\n" + "  END",
+                        constraintName,
+                        statement));
             } else {
                 result.add(statement);
             }
@@ -295,8 +301,7 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private static Pattern SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN = Pattern
-            .compile("drop table \\S*");
+    private static Pattern SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN = Pattern.compile("drop table \\S*");
 
     /**
      * Build the drop table statements.
@@ -309,8 +314,8 @@ public class SchemaGeneratorJpa {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN.matcher(statement).matches()) {
-                result.add(
-                        String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2]) + statement);
+                result.add(String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2])
+                        + statement);
             } else {
                 result.add(statement);
             }

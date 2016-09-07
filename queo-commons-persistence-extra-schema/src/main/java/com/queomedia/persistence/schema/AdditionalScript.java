@@ -34,6 +34,9 @@ public class AdditionalScript {
      * The additional script must match this file name/location:
      * {@code src/main/resources/ddlAdditional_<lower case dialect name>.sql}
      * When there is no such file, than the loaded {@link AdditionalScript} will be empty.
+     *
+     * @param dialect the dialect
+     * @return the loaded additional script
      */
     public static AdditionalScript load(Dialect dialect) {
         String fileName = "src/main/resources/ddlAdditional_" + dialect.name().toLowerCase() + ".sql";

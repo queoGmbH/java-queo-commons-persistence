@@ -57,9 +57,13 @@ public class OracleReplacer {
     }
 
     /**
-     * Parses the String into a List of lines and call {@link #replace(List<String>)}
+     * Parses the String into a List of lines and replaces the incompatible parts with 
+     * 
+     * For replacement {@link #replace(List)} is used.
      *
+     * @param original the original statements
      * @return a list of Strings, representing the statement and its changes
+     * @see #replace(List)
      */
     public static List<String> replace(final String original) {
         Check.notEmptyArgument(original, "original");

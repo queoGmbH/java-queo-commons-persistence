@@ -24,7 +24,7 @@ public interface GenericEntityDao<T> {
     /**
      * Find all entities of this type.
      * 
-     * @return the list< t>
+     * @return the all entities
      */
     List<T> findAll();
 
@@ -33,7 +33,7 @@ public interface GenericEntityDao<T> {
      * 
      * @param exampleInstance the example instance
      * 
-     * @return the list< t>
+     * @return all entities that match the example
      */
     List<T> findByExample(T exampleInstance);
 
@@ -43,7 +43,7 @@ public interface GenericEntityDao<T> {
      * @param exampleInstance the example instance
      * @param excludeProperty the exclude property
      * 
-     * @return the list< t>
+     * @return all entities that match the example
      */
     List<T> findByExample(final T exampleInstance, final String[] excludeProperty);
 
@@ -52,7 +52,7 @@ public interface GenericEntityDao<T> {
      * 
      * @param entity the entity
      * 
-     * @return the t
+     * @return the entity
      */
     T makePersistent(T entity);
 
@@ -60,8 +60,6 @@ public interface GenericEntityDao<T> {
      * Make all entities persistent.
      * 
      * @param entities the entities
-     * 
-     * @return the t
      */
     void makePersistent(Collection<? extends T> entities);
 
@@ -85,15 +83,18 @@ public interface GenericEntityDao<T> {
     void makeAllTransient();
     
     /**
-     * Force this session to flush. Must be called at the end of a
-     * unit of work, before commiting the transaction and closing the
-     * session (depending on {@link #setFlushMode flush-mode},
-     * {@link Transaction#commit()} calls this method).
-     * <p/>
+     * Force this session to flush.
+     * 
+     * Must be called at the end of a unit of work, before committing the transaction and closing the
+     * session (depending on 
+     * <a href="https://docs.jboss.org/hibernate/orm/4.2/javadocs/org/hibernate/FlushMode.html">flush-mode</a>,
+     * {@link javax.transaction.Transaction#commit()} calls this method).
+     * <p>
      * <i>Flushing</i> is the process of synchronizing the underlying persistent
      * store with persistable state held in memory.
+     * </p>
      *
-     * @throws HibernateException Indicates problems flushing the session or
+     * @throws javax.persistence.PersistenceException Indicates problems flushing the session or
      * talking to the database.
      */
     void flushSession();
@@ -109,7 +110,6 @@ public interface GenericEntityDao<T> {
      * instances if the association is mapped with <tt>cascade="evict"</tt>.
      *
      * @param entity a persistent instance
-     * @throws HibernateException
      */
     void evict(T entity);
 
@@ -119,7 +119,6 @@ public interface GenericEntityDao<T> {
      * instances if the association is mapped with <tt>cascade="evict"</tt>.
      *
      * @param entities a list of persistent instances
-     * @throws HibernateException
      */
     void evict(Collection<? extends T> entities);
 
@@ -172,7 +171,7 @@ public interface GenericEntityDao<T> {
      * <br>
      * The semantics of this method are defined by JSR-220.
      *
-     * @param object a detached instance with state to be copied
+     * @param entity a detached instance with state to be copied
      * @return an updated persistent instance
      */
     T merge(T entity);

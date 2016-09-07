@@ -102,7 +102,7 @@ public class BusinessId<T> implements Serializable, Cloneable, Comparable<Busine
     /**
      * Return the internal business ID as String.
      * @return the internal business ID
-     * @Deprecated Used only for flex remoting, because flex does not support 64 bit longs.
+     * @deprecated Used only for flex remoting, because flex does not support 64 bit longs.
      */
     @Deprecated
     public String getInternalLongAsString() {
@@ -112,7 +112,7 @@ public class BusinessId<T> implements Serializable, Cloneable, Comparable<Busine
     /** 
      * Set the internal business ID from an String
      * @param internal the new value
-     * @Deprecated Used only for flex remoting, because flex does not support 64 bit longs.
+     * @deprecated Used only for flex remoting, because flex does not support 64 bit longs.
      */
     @Deprecated
     public void setInternalLongAsString(String internal) {

@@ -175,10 +175,9 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     /**
      * Create and execute a criteria api call for the defined criterons on the specified class.
      * 
-     * @param persistentClass the persistent class
      * @param criterion the criterions
      * 
-     * @return the list< t>
+     * @return the list of matching entities
      */
     protected List<T> findByCriteria(final Criterion... criterion) {
         Criteria crit = getCriteriaAPI();
@@ -202,8 +201,10 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
 
     /**
      * Find objects with a HQL statement.
+     *
      * @param queryString the HQL statement
-     * @return the matching items.
+     * @param resultTransformer the result transformer
+     * @return the matching entities.
      */
     @SuppressWarnings("unchecked")
     protected List<T> findByHQL(final String queryString, final ResultTransformer resultTransformer) {
