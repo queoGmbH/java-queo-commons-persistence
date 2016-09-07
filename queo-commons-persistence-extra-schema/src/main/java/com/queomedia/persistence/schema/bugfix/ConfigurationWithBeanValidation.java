@@ -26,7 +26,8 @@ import org.hibernate.dialect.Dialect;
  * SchemaExport, some fancy subclassing is needed to invoke the integration
  * at the right time.
  * 
- * https://forum.hibernate.org/viewtopic.php?f=1&t=1014535
+ * @see <a href="https://forum.hibernate.org/viewtopic.php?f=1&t=1014535">
+ *         SchemaExport misses javax.validation.constraints.*</a>
  */
 public class ConfigurationWithBeanValidation extends Configuration {
 

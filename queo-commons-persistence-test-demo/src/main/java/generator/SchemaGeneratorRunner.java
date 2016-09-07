@@ -4,7 +4,7 @@ import com.queomedia.persistence.schema.Dialect;
 import com.queomedia.persistence.schema.SchemaGeneratorJpa;
 
 /**
- * Start the {@link SchemaGenerator} to create an DDL Schema for this Project.
+ * Start the {@link SchemaGeneratorJpa} to create an DDL Schema for this Project.
  * It will be stored in file {@link #DDL_FILENAME}.
  */
 public final class SchemaGeneratorRunner {
@@ -28,7 +28,7 @@ public final class SchemaGeneratorRunner {
      * @throws Exception the exception
      */
     public static void main(final String[] args) throws Exception {
-        new SchemaGeneratorJpa("ddl_mysql.sql", Dialect.MYSQL).generate("persistenceUnit");
+        new SchemaGeneratorJpa(Dialect.MYSQL).generateDdlFile("persistenceUnit", "ddl_mysql.sql");
     }
 
 }

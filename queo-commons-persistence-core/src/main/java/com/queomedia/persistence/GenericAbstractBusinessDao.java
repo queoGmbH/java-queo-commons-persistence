@@ -34,8 +34,8 @@ public interface GenericAbstractBusinessDao<KeyType extends BusinessEntity<?>, T
      *
      * @param businessId the business id
      * @return the list
-     * @throws EmptyResultDataAccessException the empty result data access exception
-     * @throws IncorrectResultSizeDataAccessException the incorrect result size data access exception
+     * @throws org.springframework.dao.EmptyResultDataAccessException the empty result data access exception
+     * @throws org.springframework.dao.IncorrectResultSizeDataAccessException incorrect result size data access exception
      */
     List<T> getByBusinessId(final List<BusinessId<KeyType>> businessId)
             throws NotFoundRuntimeException;

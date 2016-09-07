@@ -93,9 +93,8 @@ abstract public class PropertyEntity<T extends Serializable> extends BusinessEnt
     /**
      * Sets a variable using class conventions to create a property key.
      * 
-     * @see {@link Conventions}
-     *
      * @param value the new property
+     * @see org.springframework.core.Conventions
      */
     public void setProperty(final Object value) {
         Check.notNullArgument(value, "value");
@@ -108,7 +107,7 @@ abstract public class PropertyEntity<T extends Serializable> extends BusinessEnt
      * if we cannot know if the property has been set but don't want an exception.
      *
      * @param value the new property
-     * @see {@link Conventions}
+     * @see org.springframework.core.Conventions
      */
     public void setOrOverwriteProperty(final Object value) {
         Check.notNullArgument(value, "value");
@@ -133,7 +132,7 @@ abstract public class PropertyEntity<T extends Serializable> extends BusinessEnt
 
     /**
      * Returns all properties as an unmodifiable Map. 
-     * This is mainly used for usage with expression language in the frontend 
+     * This is mainly used for usage with expression language in the fronted 
      * like ${object.properties['someproperty']}
      * 
      *
