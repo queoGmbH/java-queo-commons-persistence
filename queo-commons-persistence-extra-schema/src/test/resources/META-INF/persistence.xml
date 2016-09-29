@@ -10,5 +10,15 @@
 			<property name="hibernate.hbm2ddl.auto" value="validate"/>			
 		</properties>
 	</persistence-unit>
+	
+	<persistence-unit name="examplePersistenceUnitSQLServer" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.SQLServer2012Dialect"/>
+			<property name="hibernate.hbm2ddl.auto" value="validate"/>			
+		</properties>
+	</persistence-unit>
+	
+	
 
 </persistence>

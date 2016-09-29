@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,6 +17,7 @@ import java.util.regex.Pattern;
 
 import javax.persistence.Persistence;
 
+import org.apache.commons.lang.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
 
 import com.queomedia.commons.checks.Check;
@@ -107,6 +110,8 @@ public class SchemaGeneratorJpa {
             writer.write(generateDdlScript(persistenceUnitName));
         } catch (IOException ex) {
             throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
         } finally {
             try {
                 if (writer != null) {
@@ -124,8 +129,9 @@ public class SchemaGeneratorJpa {
      *
      * @param persistenceUnitName the persistence untit name
      * @return the ddl script
+     * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
      */
-    public String generateDdlScript(final String persistenceUnitName) {
+    public String generateDdlScript(final String persistenceUnitName) throws NoSuchAlgorithmException {
 
         List<String> statements = generateSpringJpa21way(persistenceUnitName);
         String primaryScript = postProcessStatements(statements);
@@ -136,7 +142,7 @@ public class SchemaGeneratorJpa {
         return extendedScript;
     }
 
-    String postProcessStatements(List<String> statements) {
+    String postProcessStatements(List<String> statements) throws NoSuchAlgorithmException {
         if (this.dialect == Dialect.MYSQL) {
             statements = addCommentToDropConstraintStatement(statements);
         }
@@ -154,6 +160,7 @@ public class SchemaGeneratorJpa {
         if (this.dialect == Dialect.SQL_SERVER_2012) {
             statements = addSqlServerConditionToDropConstraintStatement(statements);
             statements = addSqlServerConditionToDropTableStatement(statements);
+            statements = dropCheckConstraintStatementsAndAddWithConstraintName(statements);
             statements = addSeperator(statements, ";");
         }
 
@@ -321,6 +328,142 @@ public class SchemaGeneratorJpa {
             }
         }
         return result;
+    }
+
+    /**
+     * Pattern to find a check constraint in a statement.
+     */
+    private static Pattern SQL_SERVER_CHECK_CONSTRAINT_STATEMENT_PATTERN = Pattern.compile("check");
+
+    /**
+     * Drop the old check constraints and add new constraint with unique constraint name.
+     * f.e. minValue int not null check (minValue>=1) gets to:
+     *      minValue int not null,
+     *      constraint chk_NAME check (minValue>=1)
+     *
+     * Should be done in MSSQL_SERVER because with no name the check constraint has a different
+     * name in each database which is a real pain if you have to drop a constrainted column.
+     *
+     * @param statements all ddl statements
+     * @return ddl script with refined check constraint naming
+     * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
+     */
+    private List<String> dropCheckConstraintStatementsAndAddWithConstraintName(final List<String> statements)
+            throws NoSuchAlgorithmException {
+        List<String> result = new ArrayList<String>(statements.size());
+
+        for (String statement : statements) {
+            if (SQL_SERVER_CHECK_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).find()) {
+                result.add(replaceCheckConstraintColumns(statement));
+            } else {
+                result.add(statement);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Replaces all check constraint columns out of the given statement.
+     *
+     * @param statement the statement with the check constraint columns
+     * @return complete statement with replaced check constraint columns
+     * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
+     */
+    private String replaceCheckConstraintColumns(final String statement) throws NoSuchAlgorithmException {
+        StringBuilder builder = new StringBuilder();
+        String tableCreationStatement = parseTableCreationStatement(statement);
+        builder.append(tableCreationStatement);
+
+        String[] columns = parseTableColumns(statement);
+
+        List<String> refinedColumns = new ArrayList<String>();
+
+        for (String column : columns) {
+            if (SQL_SERVER_CHECK_CONSTRAINT_STATEMENT_PATTERN.matcher(column).find()) {
+                String[] columnParts = column.split("check");
+
+                // add the statement before the check constraint
+                refinedColumns.add(StringUtils.normalizeSpace(columnParts[0]));
+
+                // add the constraint with a unique name
+                String checkConstraintValue = StringUtils.normalizeSpace(columnParts[1]);
+                refinedColumns.add("CONSTRAINT chk_" + generateCheckConstraintName(tableCreationStatement, column)
+                        + " CHECK" + checkConstraintValue);
+            } else {
+                refinedColumns.add(column);
+            }
+        }
+
+        builder.append(StringUtils.join(refinedColumns.toArray(), ","));
+        builder.append(parseTableEndStatement(statement));
+        return builder.toString();
+    }
+
+    /**
+     * Parses the tables end statement starting with the closing bracket.
+     *
+     * @param statement the complete creation table statement
+     * @return return the substring after the last closing bracket
+     */
+    private String parseTableEndStatement(final String statement) {
+        return statement.substring(statement.lastIndexOf(")"));
+    }
+
+    /**
+     * Parses the table columns between the creation table brackets by splitting at each comma.
+     *
+     * @param statement the complete creation table statement
+     * @return the collection of all table columns
+     */
+    private String[] parseTableColumns(final String statement) {
+        return statement.substring(statement.indexOf("(") + 1, statement.lastIndexOf(")")).split(",");
+    }
+
+    /**
+     * Parses the "create table NAME (" out of the given statement.
+     *
+     * @param statement the statement
+     * @return String of the creation statement
+     */
+    private String parseTableCreationStatement(final String statement) {
+        return statement.substring(0, statement.indexOf("(") + 1);
+    }
+
+    /**
+     * Generate the used constraint name for the given row out of the table creation statement + the check constraint row.
+     *
+     * @param tableCreationStatement the creation statement
+     * @param rowStatement the check constraint row statement
+     * @return hashed constraint name
+     * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
+     */
+    private String generateCheckConstraintName(final String tableCreationStatement, final String rowStatement)
+            throws NoSuchAlgorithmException {
+        String normalizedRowStatement = StringUtils.normalizeSpace(rowStatement);
+        String normalizedTableCreationStatement = StringUtils.normalizeSpace(tableCreationStatement);
+
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        md.update(normalizedRowStatement.getBytes());
+        md.update(normalizedTableCreationStatement.getBytes());
+
+        byte[] bytes = md.digest();
+
+        return convertBytesArrayToHex(bytes);
+    }
+
+    /**
+     * Convert the bytes[] into hex format.
+     *
+     * @param bytes the bytes array to format
+     * @return hex string of the bytes array
+     */
+    private String convertBytesArrayToHex(final byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(Integer.toString((b & 0xff) + 0x100, 16).substring(1));
+        }
+        return sb.toString();
     }
 
 }
