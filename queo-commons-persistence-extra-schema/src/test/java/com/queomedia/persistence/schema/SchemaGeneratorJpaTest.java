@@ -2,6 +2,8 @@ package com.queomedia.persistence.schema;
 
 import static org.junit.Assert.assertEquals;
 
+import java.security.NoSuchAlgorithmException;
+
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -38,6 +40,27 @@ public class SchemaGeneratorJpaTest {
 
         Assert.assertThat(generateDdlScript,
                 Matchers.containsString("-- alter table DemoEntiyWithRelation drop foreign key FK_1yi2wnn3sol2mjdlng1yr4utf;"));
+    }
+
+    @Test
+    public void testCheckConstraintNaming() throws NoSuchAlgorithmException {
+        SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnitSQLServer");
+
+        String expectedScript = ""
+                + "id int not null," 
+                + "maxValue int not null,"
+                + "CONSTRAINT chk_94c741d885c721b1cdeb1f9a9340a32a CHECK (maxValue<=3),"
+                + "minValue int not null," 
+                + "CONSTRAINT chk_86491c8d06439ee66755326e35ee779b CHECK (minValue>=1)," 
+                + "primary key (id)";
+
+        String demoEntityWithMinConstraintPart = StringUtils.substringBefore(StringUtils.substringAfter(normalize(generateDdlScript),
+                normalize("create table DemoEntityWithMinConstraint (")),
+                normalize(");"));
+        assertEquals("found : " + demoEntityWithMinConstraintPart,
+                normalize(expectedScript),
+                demoEntityWithMinConstraintPart);
     }
 
     private String normalize(String s) {
