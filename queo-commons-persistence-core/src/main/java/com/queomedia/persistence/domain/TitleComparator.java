@@ -6,17 +6,25 @@ import java.util.Comparator;
 import com.queomedia.persistence.BusinessIdOwner;
 
 /**
- * This class is deprecated. Use {@link TitleComparatorStrict} instead.
+ * This class is deprecated use {@link TitleComparatorStrict} instead.
+ * 
+ * <p>
+ * This comparator compares titles in strict mode, in order to make this explicit use {@link TitleComparatorStrict} instead.
+ * If a case insensitive compare is needed, then use {@link TitleComparatorIgnoreCase}.
+ * </p>
+ * 
  * Comparator to compare titled BusinessIdOwners by title and, if the title is equal, by businessIds.
  *
  * The ARGUMENTS must also implement the {@link BusinessIdOwner} Interface!
  * @param <T> the generic type
+ * @see TitleComparatorStrict
+ * @see TitleComparatorIgnoreCase
  */
 @Deprecated
 public final class TitleComparator<T extends Titled> implements Comparator<T>, Serializable {
 
-    /** The Constant serialVersionUID. */
-    private static final long serialVersionUID = 5940088827747107766L;
+    /**  The Constant serialVersionUID. */
+    private static final long serialVersionUID = 5724551288058433643L;
     
     /** The only one instance. */
     @SuppressWarnings("rawtypes")

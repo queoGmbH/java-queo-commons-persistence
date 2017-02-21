@@ -7,11 +7,13 @@ import com.queomedia.persistence.BusinessIdOwner;
 import com.queomedia.persistence.util.BusinessIdOwnerUtil;
 
 /**
- * Comparator to compare titled BusinessIdOwners by title and, if the title is equal, by businessIds.
- * Tiles are compared using String.compareToIgnoreCase.
+ * Comparator to compare titled BusinessIdOwners by title (case insensitive) and, if the title is equal, by businessIds.
+ * Tiles are compared using {@link String#compareToIgnoreCase(String)} 
  * 
  * The ARGUMENTS must also implement the {@link BusinessIdOwner} Interface!
  * @param <T> the generic type
+ * 
+ * @see TitleComparatorStrict
  */
 public class TitleComparatorIgnoreCase<T extends Titled> implements Comparator<T>, Serializable {
 

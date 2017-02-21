@@ -8,10 +8,12 @@ import com.queomedia.persistence.util.BusinessIdOwnerUtil;
 
 /**
  * Comparator to compare titled BusinessIdOwners by title and, if the title is equal, by businessIds.
- * Tiles are compared using String.compareTo.
+ * Tiles are compared using {@link String#compareTo(String)}.
  *
  * The ARGUMENTS must also implement the {@link BusinessIdOwner} Interface!
  * @param <T> the generic type
+ * 
+ * @see TitleComparatorIgnoreCase
  */
 public final class TitleComparatorStrict<T extends Titled> implements Comparator<T>, Serializable {
 
