@@ -3,7 +3,7 @@ package com.queomedia.persistence.extra.springdatajpa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import javax.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +19,7 @@ import com.queomedia.persistence.extra.springdatajpa.scenario.PersistenceTestCon
 import com.queomedia.persistence.extra.springdatajpa.scenario.SomeEntity;
 import com.queomedia.persistence.extra.springdatajpa.scenario.SomeEntityRepository;
 
+@SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { PersistenceTestContext.class })
 @Transactional
