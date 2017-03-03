@@ -6,7 +6,7 @@ drop table if exists document_file_content;
 
 
 -- domain
--- alter table component_entity drop foreign key FK_af67r069qf8h2l7tsam985bgo;
+-- alter table component_entity drop foreign key FKdcoa02w8efxks7e9rqwk7ecwc;
 drop table if exists component_entity;
 drop table if exists composite_entity;
 
@@ -23,11 +23,11 @@ create table composite_entity (
     primary key (id)
 ) ENGINE=InnoDB;
 
-alter table component_entity add constraint UK_2f0v2xxs9iu5nk584p7x085cm  unique (businessId);
+alter table component_entity add constraint UK_2f0v2xxs9iu5nk584p7x085cm unique (businessId);
 
-alter table composite_entity add constraint UK_co3qq81v4wqru1l1l14ypuwtb  unique (businessId);
+alter table composite_entity add constraint UK_co3qq81v4wqru1l1l14ypuwtb unique (businessId);
 
-alter table component_entity add constraint FK_af67r069qf8h2l7tsam985bgo foreign key (compositeEntity_fk) references composite_entity (id);
+alter table component_entity add constraint FKdcoa02w8efxks7e9rqwk7ecwc foreign key (compositeEntity_fk) references composite_entity (id);
 
 
 

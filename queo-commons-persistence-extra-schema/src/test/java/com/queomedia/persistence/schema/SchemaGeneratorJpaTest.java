@@ -37,9 +37,9 @@ public class SchemaGeneratorJpaTest {
 
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.MYSQL);
         String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit");
-
+        
         Assert.assertThat(generateDdlScript,
-                Matchers.containsString("-- alter table DemoEntiyWithRelation drop foreign key FK_1yi2wnn3sol2mjdlng1yr4utf;"));
+                Matchers.containsString("-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
     }
 
     @Test

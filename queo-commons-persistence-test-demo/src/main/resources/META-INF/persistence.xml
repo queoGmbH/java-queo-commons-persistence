@@ -9,10 +9,15 @@
 				to modify an existing database; value="create-drop" means the same as "create"
 				but also drops tables when Hibernate closes; value="validate" makes no changes
 				to the database -->
-			<property name="hibernate.hbm2ddl.auto" value="validate"/>
-			<property name="hibernate.ejb.naming_strategy" value="de.humanfork.persistence.hibernate.CaseSensitiveAwareNamingStrategy"/>
+			<property name="hibernate.hbm2ddl.auto" value="validate"/>			
+			<property name="hibernate.implicit_naming_strategy" value="de.humanfork.persistence.hibernate.CaseSensitiveAwareImplicitNamingStrategy"/>
 			<property name="hibernate.connection.charSet" value="UTF-8"/>
 			
+			<!-- 
+				with hibernate 5 the default value changed to true, 
+				then MYSQL uses the SequenceStyleGenerator for the GenerationType.AUTO strategy [RUM-762]
+		    -->
+			<property name="hibernate.id.new_generator_mappings" value="false" />
 			
 			<!-- enable (jmx) statistics -->
 			<property name="hibernate.generate_statistics" value="false"/>
