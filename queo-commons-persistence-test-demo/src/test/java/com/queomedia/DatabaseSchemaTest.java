@@ -27,6 +27,7 @@ public class DatabaseSchemaTest {
                 "ddl_mysql.sql",
                 Dialect.MYSQL);
         gen.generate("persistenceUnit", temp.getAbsolutePath());
+        
 
         // At the moment we can not ensure that the fields in entitys with subclasses are in the same order in hudson and dev system.
         AssertUtil.containsExact(FileUtils.readLines(orignalFile), FileUtils.readLines(temp));
