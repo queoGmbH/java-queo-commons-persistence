@@ -65,12 +65,12 @@ public final class FilterRestrictions {
 
     /**
      * Enum filter.
-     * 
+     *
+     * @param <T> the generic type
      * @param propertyName the property name
      * @param restrictions the restrictions
-     * 
      * @return the criterion
-     */
+     */    
     protected static <T extends Enum<?>> Criterion enumFilter(final String propertyName,
             final EnumFilter<T> restrictions) {
         Check.notNullArgument(propertyName, "propertyName");
@@ -129,7 +129,8 @@ public final class FilterRestrictions {
 
     /**
      * Adds the enum filter.
-     * 
+     *
+     * @param <T> the generic type
      * @param crit the crit
      * @param propertyName the property name
      * @param restrictions the restrictions

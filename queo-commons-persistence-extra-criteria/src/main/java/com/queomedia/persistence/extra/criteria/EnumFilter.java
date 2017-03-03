@@ -16,12 +16,8 @@ import com.queomedia.commons.checks.Check;
 /**
  * The Class EnumFilter.
  * 
+ * @param <T> the generic enum type
  * @author engelmann
- */
-/**
- * @author engelmann
- *
- * @param <T>
  */
 public class EnumFilter<T extends Enum<?>> implements Serializable {
 

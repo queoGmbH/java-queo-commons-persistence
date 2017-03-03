@@ -11,7 +11,11 @@ import org.junit.Test;
 
 public class SchemaGeneratorJpaTest {
 
-    /** Test that JSR-303 Annotations are taken in account, even on embeddeds.*/
+    /**
+     *  Test that JSR-303 Annotations are taken in account, even on embeddeds.
+     *
+     * @throws Exception - no exception expected
+     */
     @Test
     public void testGenerateDdlScript() throws Exception {
 
@@ -31,7 +35,11 @@ public class SchemaGeneratorJpaTest {
         assertEquals("found : " + demoEntityPart, normalize(expectedScript), demoEntityPart);
     }
 
-    /** scenario: alter table drop key statements should be commented out, even if they are splitted into several lines. */
+    /**
+     *  scenario: alter table drop key statements should be commented out, even if they are splitted into several lines.
+     *
+     * @throws Exception - no exception expected
+     */
     @Test
     public void testPostProcessStatements() throws Exception {
 
@@ -42,6 +50,11 @@ public class SchemaGeneratorJpaTest {
                 Matchers.containsString("-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
     }
 
+    /**
+     * Test check constraint naming.
+     *
+     * @throws NoSuchAlgorithmException - no exception expected
+     */
     @Test
     public void testCheckConstraintNaming() throws NoSuchAlgorithmException {
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);

@@ -42,7 +42,7 @@ public class UniqueIdGenerator {
 
     /**
      * Generate a unique id.
-     * @return
+     * @return unique id
      */
     public long getUID() {
         return format(System.currentTimeMillis(), this.random.nextLong());
