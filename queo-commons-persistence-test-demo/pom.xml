@@ -29,24 +29,6 @@
 				<scope>import</scope>
 			</dependency>
 
-
-			<dependency>
-				<groupId>org.springframework</groupId>
-				<artifactId>spring-framework-bom</artifactId>
-				<version>4.0.7.RELEASE</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
-			<dependency>
-				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-releasetrain</artifactId>
-				<version>Evans-RELEASE</version>
-   				<!-- contains Spring Data JPA 1.7.0 -->
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
 			<dependency>
 				<groupId>de.humanfork.springdatajpaextension</groupId>
 				<artifactId>spring-data-jpa-extension</artifactId>
