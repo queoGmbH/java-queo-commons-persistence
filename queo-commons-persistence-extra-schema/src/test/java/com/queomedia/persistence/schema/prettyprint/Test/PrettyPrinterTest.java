@@ -26,7 +26,11 @@ public class PrettyPrinterTest {
                 result);
     }
 
-    /** No line break for comma within brackets (for example "counter decimal(0,10)" ) */
+    /**
+     * No line break for comma within brackets (for example "counter decimal(0,10)" ).
+     *
+     * @throws Exception the exception
+     */
     @Test
     public void testFormatLineStatement_withNestedBrackets() throws Exception {
         String result = this.prettyPrinter
