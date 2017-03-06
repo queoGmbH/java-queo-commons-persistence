@@ -19,8 +19,13 @@ public class NullawareNameControlledJpaRepositoryFactoryBean<T extends JpaReposi
 
     private static final NameControlledNullResultActionFactory nameControlledNullResultActionFactory = new NameControlledNullResultActionFactory(NotFoundRuntimeException.class);
 
-    public NullawareNameControlledJpaRepositoryFactoryBean() {
-        super(nameControlledNullResultActionFactory);
+    /**
+     * Instantiates a new nullaware name controlled jpa repository factory bean with the given repository interface.
+     *
+     * @param repositoryInterface the repository interface
+     */
+    public NullawareNameControlledJpaRepositoryFactoryBean(final Class<? extends T> repositoryInterface) {
+        super(repositoryInterface, nameControlledNullResultActionFactory);
     }
 
 }
