@@ -3,14 +3,13 @@ package com.queomedia.persistence.extra.springdatajpa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;
 import com.queomedia.persistence.BusinessId;
@@ -19,12 +18,10 @@ import com.queomedia.persistence.extra.springdatajpa.scenario.PersistenceTestCon
 import com.queomedia.persistence.extra.springdatajpa.scenario.SomeEntity;
 import com.queomedia.persistence.extra.springdatajpa.scenario.SomeEntityRepository;
 
-@SuppressWarnings("deprecation")
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = { PersistenceTestContext.class })
 @Transactional
-@TransactionConfiguration(defaultRollback = true)
-
+@Rollback
 /** Scenario: Test that one can extend the own repository from BusinessEntityRepository and the methods can used like normal. */
 public class BusinessEntityRepositoryTest {
 
