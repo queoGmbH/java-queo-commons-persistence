@@ -18,7 +18,7 @@
 		<!-- hibernate 5.0.11.Final uses javassist 3.18.1-GA -->
 		<javassist.version>3.18.1-GA</javassist.version>
 
-		<spring-data-releasetrain.version>Ingalls-SR1</spring-data-releasetrain.version>
+		<spring-data-releasetrain.version>Ingalls-SR2</spring-data-releasetrain.version>
 		<!-- contains spring data jpa 1.11.1.RELEASE -->
 		<slf4j.version>1.7.24</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
