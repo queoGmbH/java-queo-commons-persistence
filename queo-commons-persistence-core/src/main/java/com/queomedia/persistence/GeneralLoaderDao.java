@@ -1,6 +1,9 @@
 package com.queomedia.persistence;
 
 import java.io.Serializable;
+import java.util.List;
+
+import org.springframework.data.domain.Sort;
 
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;
 
@@ -57,4 +60,25 @@ public interface GeneralLoaderDao {
      */
     <Clazz extends BusinessEntity<? extends Serializable>> Clazz findByBusinessId(BusinessId<Clazz> businessId,
             Class<Clazz> entityClass);
+    
+    
+    /**
+     * Load the entity of an specific type.
+     *
+     * @param <Clazz> the class of the business object
+     * @param entityClass the entity class
+     * @return the all business entities
+     */
+    <Clazz> List<Clazz> findAll(Class<Clazz> entityClass);
+
+    /**
+     * Load the entity of an specific type and sort them.
+     *
+     * @param <Clazz> the class of the business object
+     * @param entityClass the entity class
+     * @param sort the used sorting, or null.
+     * @return the all business entities sorted
+     */
+    <Clazz> List<Clazz> findAll(Class<Clazz> entityClass, Sort sort);
+    
 }

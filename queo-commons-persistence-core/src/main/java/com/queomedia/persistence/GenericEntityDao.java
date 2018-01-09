@@ -3,6 +3,8 @@ package com.queomedia.persistence;
 import java.util.Collection;
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
+
 /**
  * The Interface GenericEntityDao.
  * 
@@ -27,6 +29,14 @@ public interface GenericEntityDao<T> {
      * @return the all entities
      */
     List<T> findAll();
+    
+    /**
+     * Find all entities and sort them.
+     *
+     * @param sort the used sorting, or null.
+     * @return the all entities sorted
+     */
+    List<T> findAll(Sort sort);
 
     /**
      * Find by example.

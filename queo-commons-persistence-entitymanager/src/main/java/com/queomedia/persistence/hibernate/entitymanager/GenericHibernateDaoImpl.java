@@ -6,6 +6,9 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.hibernate.Criteria;
 import org.hibernate.LockMode;
@@ -18,6 +21,8 @@ import org.hibernate.jpa.HibernateEntityManager;
 import org.hibernate.transform.ResultTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.repository.query.QueryUtils;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.GenericEntityDao;
@@ -75,7 +80,22 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
      * @see com.queomedia.fff.db.GenericDAO#findAll()
      */
     public List<T> findAll() {
-        return this.findByCriteria();
+        return this.findAll(null);
+    }
+
+    @Override
+    public List<T> findAll(final Sort sort) {
+        CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+
+        CriteriaQuery<T> selectAllQuery = builder.createQuery(this.persistentClass);
+        Root<T> root = selectAllQuery.from(this.persistentClass);
+        selectAllQuery.select(root);
+
+        if (sort != null) {
+            selectAllQuery.orderBy(QueryUtils.toOrders(sort, root, builder));
+        }
+
+        return this.entityManager.createQuery(selectAllQuery).getResultList();
     }
 
     /*
@@ -106,7 +126,6 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
      * @see com.queomedia.fff.db.GenericDAO#findById(long, boolean)
      */
     @Override
-    @SuppressWarnings("unchecked")
     public T findByHibernateId(final Long id, final boolean lock) {
         Check.notNullArgument(id, "id");
 
