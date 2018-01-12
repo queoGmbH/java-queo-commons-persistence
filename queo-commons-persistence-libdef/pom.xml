@@ -13,9 +13,9 @@
 	</parent>
 
 	<properties>
-		<hibernate.version>5.0.11.Final</hibernate.version>
+		<hibernate.version>5.0.12.Final</hibernate.version>
 		<!-- javassist version MUST be in sync with HIBERNAT! -->
-		<!-- hibernate 5.0.11.Final uses javassist 3.18.1-GA -->
+		<!-- hibernate 5.0.12.Final uses javassist 3.18.1-GA -->
 		<javassist.version>3.18.1-GA</javassist.version>
 
 		<spring-data-releasetrain.version>Ingalls-SR2</spring-data-releasetrain.version>
