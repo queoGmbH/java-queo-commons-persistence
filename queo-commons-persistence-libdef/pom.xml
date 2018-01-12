@@ -74,7 +74,7 @@
 				<groupId>commons-beanutils</groupId>
 				<artifactId>commons-beanutils</artifactId>
 				<version>1.9.2</version>
-			</dependency>
+			</dependency>		
 			
 			<!-- spring -->
 			<dependency>
@@ -126,7 +126,31 @@
 				<scope>provided</scope>
 				<!-- only need at compile time -->
 			</dependency>
-
+			
+			<!-- validation -->
+			<dependency>
+				<groupId>javax.validation</groupId>
+				<artifactId>validation-api</artifactId>
+				<version>2.0.1.Final</version>
+			</dependency>
+			<dependency>
+				<groupId>org.hibernate.validator</groupId>
+				<artifactId>hibernate-validator</artifactId>
+				<version>6.0.7.Final</version>
+			</dependency>
+			<dependency>
+				<!--
+			   		el-impl is needed for hibernate-validator 5 and 6 
+			   		http://stackoverflow.com/questions/19451814/java-lang-noclassdeffounderror-javax-el-propertynotfoundexception-when-i-send-i
+			   		else: ClassNotFoundException: com.sun.el.ExpressionFactoryImpl			   		
+			   		But is is typical used with scope provided			   		
+			   		with hibernate-validator 6.0.7 we use javax.el-api 3.0.0 and with the glassfish implementation 3.0.1-b08
+			 	-->
+				<groupId>org.glassfish</groupId>
+				<artifactId>javax.el</artifactId>
+				<version>3.0.1-b08</version>
+			</dependency>
+			
 			
 			<!-- slf4j -->
 			<dependency>
