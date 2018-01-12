@@ -14,7 +14,6 @@ public final class SchemaGeneratorRunner {
      */
     public static final String DDL_FILENAME = "ddl_mysql.sql";
 
-
     /** Use only the {@link #main(String[])} method. */
     private SchemaGeneratorRunner() {
         super();
@@ -28,7 +27,7 @@ public final class SchemaGeneratorRunner {
      * @throws Exception the exception
      */
     public static void main(final String[] args) throws Exception {
-        new SchemaGeneratorJpa(Dialect.MYSQL).generateDdlFile("persistenceUnit", "ddl_mysql.sql");
+        new SchemaGeneratorJpa(Dialect.MYSQL).generateDdlFile("persistenceUnit", "src/main/resources/" + DDL_FILENAME);
     }
 
 }
