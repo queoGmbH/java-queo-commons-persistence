@@ -21,6 +21,7 @@ import javax.persistence.spi.PersistenceProviderResolverHolder;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.cfg.beanvalidation.BeanValidation20IntegratorProvider;
 import org.hibernate.jpa.HibernatePersistenceProvider;
 import org.hibernate.jpa.PackageInternalInvoker;
 import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
@@ -208,6 +209,12 @@ public class SchemaGeneratorJpa {
         //        props.put("hibernate.hbm2ddl.auto", "create-drop");
         //        props.put("javax.persistence.validation.mode", "ddl");
         //        props.put("hibernate.validator.apply_to_ddl", "true");
+        
+        /** Activate pachted TypeSaveActivator that respect BeanValidation 2.0 NotEmpty and NotBlank annotations. */
+        props.put("javax.persistence.validation.mode", "NONE");
+        props.put("javax.persistence.validation20.mode", "AUTO");
+        BeanValidation20IntegratorProvider.addToConfiguration(props);
+        
         return props;
     }
 
@@ -240,6 +247,7 @@ public class SchemaGeneratorJpa {
         Check.notNullArgument(props, "props");
 
         EntityManagerFactoryBuilderImpl builder = getEntityManagerFactoryBuilder(persistenceUntitName, props);
+       
         builder.build();
         /*
          * builder.build just triggers the schema generation, so the next lines are not needed.
@@ -256,7 +264,7 @@ public class SchemaGeneratorJpa {
             final Map<String, Object> props) {
         for (PersistenceProvider provider : PersistenceProviderResolverHolder.getPersistenceProviderResolver()
                 .getPersistenceProviders()) {
-            HibernatePersistenceProvider hbpProvider = (HibernatePersistenceProvider) provider;
+            HibernatePersistenceProvider hbpProvider = (HibernatePersistenceProvider) provider;            
 
             return (EntityManagerFactoryBuilderImpl) PackageInternalInvoker
                     .getEntityManagerFactoryBuilderOrNull(hbpProvider, persistenceUntitName, props);
