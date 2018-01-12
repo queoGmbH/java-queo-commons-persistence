@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.queomedia.commons.persistence</groupId>
 		<artifactId>queo-commons-persistence</artifactId>
-		<version>3.6.1-SNAPSHOT</version>
+		<version>3.6.1</version>
 	</parent>	
 	
 	<dependencyManagement>
@@ -16,7 +16,7 @@
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-libdef</artifactId>
-				<version>3.6.1-SNAPSHOT</version>
+				<version>3.6.1</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
