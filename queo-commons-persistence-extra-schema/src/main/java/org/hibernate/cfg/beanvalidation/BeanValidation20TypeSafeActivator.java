@@ -61,7 +61,7 @@ import org.jboss.logging.Logger;
  * {@link BeanValidation20IntegratorProvider}.
  * </p>
  * Example:
- * <pre>
+ * <pre>{@code
  *   Map<String, Object> props = new HashMap<String, Object>();
  *   ...
  *   //Activate pachted TypeSaveActivator that respect BeanValidation 2.0 NotEmpty and NotBlank annotations.
@@ -70,7 +70,7 @@ import org.jboss.logging.Logger;
  *   BeanValidation20IntegratorProvider.addToConfiguration(props);
  *   ...
  *   Persistence.generateSchema(persistenceUntitName, props);
- * </pre>
+ * }</pre>
  * 
  * @author Emmanuel Bernard
  * @author Hardy Ferentschik
