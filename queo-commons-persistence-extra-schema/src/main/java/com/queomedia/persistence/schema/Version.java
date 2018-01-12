@@ -29,7 +29,7 @@ public class Version implements Comparable<Version> {
      * If the given version string contains more inforamtion after the bugfix level,
      * for example "-SNAPSHOT", ".final" or even more detailed version numbersn then this is ignored.
      *
-     * @param versionString
+     * @param versionString the version that is pared and stored in this object as major, minor and bugfix
      */
     public Version(final String versionString) {
         Check.notNullArgument(versionString, "versionString");
