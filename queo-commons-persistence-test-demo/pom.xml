@@ -131,28 +131,26 @@
 			<groupId>de.humanfork.springdatajpaextension</groupId>
 			<artifactId>spring-data-jpa-extension</artifactId>
 		</dependency>
-		
 
-		<!-- validation -->
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-			<version>4.3.2.Final</version>
-			<exclusions>
-				<exclusion>
-					<groupId>javax.xml.bind</groupId>
-					<artifactId>jaxb-api</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-impl</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
+		<!--  validation -->
 		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
-			<version>1.0.0.GA</version>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+		<dependency>
+				<!--
+			   		el-impl is needed for hibernate-validator 5 and 6 
+			   		http://stackoverflow.com/questions/19451814/java-lang-noclassdeffounderror-javax-el-propertynotfoundexception-when-i-send-i
+			   		else: ClassNotFoundException: com.sun.el.ExpressionFactoryImpl			   		
+			   		But is is typical used with scope provided			   		
+			   		with hibernate-validator 6.0.7 we use javax.el-api 3.0.0 and with the glassfish implementation 3.0.1-b08
+			 	-->
+			<groupId>org.glassfish</groupId>
+			<artifactId>javax.el</artifactId>
 		</dependency>
 
 		<dependency>
@@ -257,7 +255,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>com.queomedia</groupId>
 			<artifactId>queo-commons-asserts</artifactId>

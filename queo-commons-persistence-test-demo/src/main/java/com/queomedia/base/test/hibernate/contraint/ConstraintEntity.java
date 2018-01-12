@@ -3,8 +3,6 @@ package com.queomedia.base.test.hibernate.contraint;
 import javax.persistence.Entity;
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.queomedia.base.test.hibernate.manytoonelazy.ComponentEntity;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
@@ -22,8 +20,12 @@ public class ConstraintEntity extends BusinessEntity<ComponentEntity> {
     @NotNull
     private String notNullObject;
 
-    @NotEmpty
-    private String notEmptyString;
+    @SuppressWarnings("deprecation")
+    @org.hibernate.validator.constraints.NotEmpty
+    private String notEmptyString_hibernateValidator;
+
+    @javax.validation.constraints.NotEmpty
+    private String notEmptyString_javaxValidation;
 
     /**
      * Constructor used by Hibernate only.
@@ -43,7 +45,8 @@ public class ConstraintEntity extends BusinessEntity<ComponentEntity> {
     @Override
     public String toString() {
         return "ConstraintEntity [primitive=" + primitive + ", object=" + object + ", notNullObject=" + notNullObject
-                + ", notEmptyString=" + notEmptyString + "]";
+                + ", notEmptyString_hibernateValidator=" + notEmptyString_hibernateValidator
+                + ", notEmptyString_javaxValidation=" + notEmptyString_javaxValidation + "]";
     }
 
 }

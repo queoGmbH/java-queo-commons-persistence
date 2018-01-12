@@ -50,7 +50,11 @@ public class DatabaseSchemaTest {
         AssertUtil.containsExact(FileUtils.readLines(orignalFile), FileUtils.readLines(temp));
     }
 
-    /** A property of type String with NotEmpty annotation must lead to an not null constraint in the database. */
+    /**
+     * A property with NotNull annotation as well as primitives must least to an not null column in the database.
+     * 
+     * @throws Exception no exception expected
+     */
     @Test
     public void testDllSchemaNotEmptyConstraint() throws Exception {
         File orignalFile = ResourceUtils.getFile("classpath:" + SchemaGeneratorRunner.DDL_FILENAME);
@@ -60,11 +64,46 @@ public class DatabaseSchemaTest {
         String currentScript = gen.generateDdlScript("persistenceUnit");
         List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
 
-        assertThat(selectBySubstring("notEmptyString", currentScriptLines),
-                Matchers.endsWith("varchar(255) not null,"));
         assertThat(selectBySubstring("notNullObject", currentScriptLines), Matchers.endsWith("not null,"));
         assertThat(selectBySubstring("primitive", currentScriptLines), Matchers.endsWith("integer not null,"));
+    }
 
+    /**
+     * A property of type String with org.hibernate.validator.constraints.NotEmpty
+     * annotation must lead to an not null constraint in the database.
+     *
+     * @throws Exception no exception expected
+     */
+    @Test
+    public void testDllSchemaNotEmptyConstraint_hibernateValidatorNotEmpty() throws Exception {
+        File orignalFile = ResourceUtils.getFile("classpath:" + SchemaGeneratorRunner.DDL_FILENAME);
+        Assert.assertTrue(orignalFile.exists());
+
+        SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
+        String currentScript = gen.generateDdlScript("persistenceUnit");
+        List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
+
+        assertThat(selectBySubstring("notEmptyString_hibernateValidator", currentScriptLines),
+                Matchers.endsWith("varchar(255) not null,"));
+    }
+
+    /**
+     * A property of type String with javax.validation.constraints.NotEmpty
+     * annotation must lead to an not null constraint in the database.
+     * 
+     * @throws Exception no exception expected
+     */
+    @Test
+    public void testDllSchemaNotEmptyConstraint_javaxValidationNotEmpty() throws Exception {
+        File orignalFile = ResourceUtils.getFile("classpath:" + SchemaGeneratorRunner.DDL_FILENAME);
+        Assert.assertTrue(orignalFile.exists());
+
+        SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
+        String currentScript = gen.generateDdlScript("persistenceUnit");
+        List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
+
+        assertThat(selectBySubstring("notEmptyString_javaxValidation", currentScriptLines),
+                Matchers.endsWith("varchar(255) not null,"));
     }
 
     private String selectBySubstring(String substring, Collection<String> from) {
