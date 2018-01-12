@@ -23,7 +23,8 @@
 	</developers>
 
 	<properties>
-		<java.version>1.7</java.version>
+		<!-- Hiberante 5.2 requires Java8 -->
+		<java.version>1.8</java.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -71,7 +72,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
-					<version>3.5.1</version>
+					<version>3.7.0</version>
 					<configuration>
 						<source>${java.version}</source>
 						<target>${java.version}</target>
@@ -83,7 +84,7 @@
 				<plugin>
 					<groupId>org.bsc.maven</groupId>
 					<artifactId>maven-processor-plugin</artifactId>
-					<version>3.1.0</version>
+					<version>3.3.2</version>
 				</plugin>
 
 				<plugin>
@@ -96,7 +97,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.12</version>
+					<version>3.0.0</version>
 				</plugin>
 
 				<plugin>
