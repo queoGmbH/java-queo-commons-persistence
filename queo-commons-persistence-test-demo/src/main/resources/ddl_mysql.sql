@@ -27,7 +27,8 @@ create table composite_entity (
 create table constraint_entity (
     id bigint not null auto_increment,
     businessId bigint not null,
-    notEmptyString varchar(255) not null,
+    notEmptyString_hibernateValidator varchar(255) not null,
+    notEmptyString_javaxValidation varchar(255) not null,
     notNullObject varchar(255) not null,
     object varchar(255),
     primitive integer not null,
