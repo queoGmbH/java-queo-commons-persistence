@@ -1,8 +1,13 @@
 package com.queomedia.persistence.schema;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.hamcrest.Matchers;
@@ -29,10 +34,13 @@ public class SchemaGeneratorJpaTest {
                 + "normalString varchar(100),  " //
                 + "primary key (id)            "; //
 
-        //cut out the mapping for the "DemoEntity"
-        String demoEntityPart = StringUtils.substringBefore(StringUtils.substringAfter(normalize(generateDdlScript),
-                normalize("create table DemoEntity (")), normalize(") ENGINE=InnoDB"));
-        assertEquals("found : " + demoEntityPart, normalize(expectedScript), demoEntityPart);
+        Pattern pattern = Pattern.compile(normalize("create table DemoEntity \\((.+?)\\) ENGINE=InnoDB"), Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(normalize(generateDdlScript));
+        boolean found = matcher.find();        
+        assertTrue("not statement to create table DemoEntity found", found);        
+        String demoEntityPart = matcher.group(1);
+
+        assertEquals(normalize(expectedScript), demoEntityPart);
     }
 
     /**
@@ -45,9 +53,10 @@ public class SchemaGeneratorJpaTest {
 
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.MYSQL);
         String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit");
-        
+
         Assert.assertThat(generateDdlScript,
-                Matchers.containsString("-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
+                Matchers.containsString(
+                        "-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
     }
 
     /**
@@ -60,16 +69,12 @@ public class SchemaGeneratorJpaTest {
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);
         String generateDdlScript = generator.generateDdlScript("examplePersistenceUnitSQLServer");
 
-        String expectedScript = ""
-                + "id int not null," 
-                + "maxValue int not null,"
-                + "CONSTRAINT chk_94c741d885c721b1cdeb1f9a9340a32a CHECK (maxValue<=3),"
-                + "minValue int not null," 
-                + "CONSTRAINT chk_86491c8d06439ee66755326e35ee779b CHECK (minValue>=1)," 
-                + "primary key (id)";
+        String expectedScript = "" + "id int not null," + "maxValue int not null,"
+                + "CONSTRAINT chk_94c741d885c721b1cdeb1f9a9340a32a CHECK (maxValue<=3)," + "minValue int not null,"
+                + "CONSTRAINT chk_86491c8d06439ee66755326e35ee779b CHECK (minValue>=1)," + "primary key (id)";
 
-        String demoEntityWithMinConstraintPart = StringUtils.substringBefore(StringUtils.substringAfter(normalize(generateDdlScript),
-                normalize("create table DemoEntityWithMinConstraint (")),
+        String demoEntityWithMinConstraintPart = StringUtils.substringBefore(StringUtils
+                .substringAfter(normalize(generateDdlScript), normalize("create table DemoEntityWithMinConstraint (")),
                 normalize(");"));
         assertEquals("found : " + demoEntityWithMinConstraintPart,
                 normalize(expectedScript),
@@ -77,7 +82,28 @@ public class SchemaGeneratorJpaTest {
     }
 
     private String normalize(String s) {
-        return s.replaceAll("\\s", "");
+        return s.replaceAll("\\s", "").replaceAll("\\r", "").replaceAll("\\n", "");
+    }
+
+    /** The statements must been not doubled. */
+    @Test
+    public void testGenerateCoreStatementsJpa21way() throws Exception {
+        SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);
+        List<String> statements = generator.generateCoreStatementsJpa21way("examplePersistenceUnit");
+
+        int size = statements.size();
+        //check that no statment occures twice
+        for (int i1 = 0; i1 < size; i1++) {
+            for (int i2 = 0; i2 < size; i2++) {
+                if (i1 != i2) {
+                    if (statements.get(i1).equals(statements.get(i2))) {
+                        Assert.fail("the stamtent `" + statements.get(i1) + "` occures twice, at index " + i1 + " and "
+                                + i2);
+                    }
+                }
+            }
+        }
+
     }
 
 }

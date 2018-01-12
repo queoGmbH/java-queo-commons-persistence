@@ -9,23 +9,36 @@ drop table if exists document_file_content;
 -- alter table component_entity drop foreign key FKdcoa02w8efxks7e9rqwk7ecwc;
 drop table if exists component_entity;
 drop table if exists composite_entity;
+drop table if exists constraint_entity;
 
 create table component_entity (
     id bigint not null auto_increment,
     businessId bigint not null,
     compositeEntity_fk bigint,
     primary key (id)
-) ENGINE=InnoDB;
+) engine=InnoDB;
 
 create table composite_entity (
     id bigint not null auto_increment,
     businessId bigint not null,
     primary key (id)
-) ENGINE=InnoDB;
+) engine=InnoDB;
+
+create table constraint_entity (
+    id bigint not null auto_increment,
+    businessId bigint not null,
+    notEmptyString varchar(255) not null,
+    notNullObject varchar(255) not null,
+    object varchar(255),
+    primitive integer not null,
+    primary key (id)
+) engine=InnoDB;
 
 alter table component_entity add constraint UK_2f0v2xxs9iu5nk584p7x085cm unique (businessId);
 
 alter table composite_entity add constraint UK_co3qq81v4wqru1l1l14ypuwtb unique (businessId);
+
+alter table constraint_entity add constraint UK_4bar7hjr6vc0yomhga21l1nmn unique (businessId);
 
 alter table component_entity add constraint FKdcoa02w8efxks7e9rqwk7ecwc foreign key (compositeEntity_fk) references composite_entity (id);
 

@@ -16,9 +16,14 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import javax.persistence.Persistence;
+import javax.persistence.spi.PersistenceProvider;
+import javax.persistence.spi.PersistenceProviderResolverHolder;
 
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.cfg.AvailableSettings;
+import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.hibernate.jpa.PackageInternalInvoker;
+import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.schema.prettyprint.SqlPrettyPrinter;
@@ -78,7 +83,8 @@ public class SchemaGeneratorJpa {
     @Deprecated
     public void generate(final String persistenceUnitName) {
         if (this.ddlFileName == null) {
-            throw new IllegalStateException("use method SchemaGeneratorJpa.generate(final String persistenceUnitName, final String fileName) instead ");
+            throw new IllegalStateException(
+                    "use method SchemaGeneratorJpa.generate(final String persistenceUnitName, final String fileName) instead ");
         }
         generateDdlFile(persistenceUnitName, "src/main/resources/" + this.ddlFileName);
     }
@@ -118,8 +124,8 @@ public class SchemaGeneratorJpa {
                     writer.close();
                 }
             } catch (Exception ex) {
-                throw new RuntimeException("error in generate ddl script while closing file - filename=`" + fileName
-                        + "`");
+                throw new RuntimeException(
+                        "error in generate ddl script while closing file - filename=`" + fileName + "`");
             }
         }
     }
@@ -133,7 +139,7 @@ public class SchemaGeneratorJpa {
      */
     public String generateDdlScript(final String persistenceUnitName) throws NoSuchAlgorithmException {
 
-        List<String> statements = generateSpringJpa21way(persistenceUnitName);
+        final List<String> statements = generateCoreStatementsJpa21way(persistenceUnitName);
         String primaryScript = postProcessStatements(statements);
 
         AdditionalScript additionalScript = AdditionalScript.load(this.dialect);
@@ -142,6 +148,147 @@ public class SchemaGeneratorJpa {
         return extendedScript;
     }
 
+    /** Generate a Script in the JPA 2.1 way. */
+    List<String> generateCoreStatementsJpa21way(final String persistenceUntitName) {
+        StringWriter stringWriter = new StringWriter();
+        try {
+            Map<String, Object> props = buildPersistenceProperties(stringWriter);
+
+            if (Version.hibernateVersion().isGreatherOrEqualsThan(new Version(5, 1, 0))) {
+                hiberante51GenerateSchemaWorkarround(persistenceUntitName, props);
+            } else {
+                Persistence.generateSchema(persistenceUntitName, props);
+            }
+
+        } finally {
+            if (stringWriter != null) {
+                try {
+                    stringWriter.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        return splitJpaScriptInStatments(stringWriter.toString());
+    }
+
+    private Map<String, Object> buildPersistenceProperties(final StringWriter stringWriter) {
+        Map<String, Object> props = new HashMap<String, Object>();
+
+        /** need to disable validation, else the database connection would be used to validate (or update) the existing DB schema */
+        props.put(AvailableSettings.HBM2DDL_AUTO, "none");
+
+        props.put("javax.persistence.schema-generation.database.action", "none");
+        props.put("javax.persistence.schema-generation.scripts.action", "drop-and-create");
+        //            props.put("javax.persistence.schema-generation.scripts.action", "create-drop");
+
+        //            koennte verwendet werden um das Script einzupflecten
+        //            props.put("javax.persistence.schema-generation.drop-source", "script-then-metadata");
+        //            props.put("javax.persistence.schema-generation.create-source", "metadata-then-script");
+        //            javax.persistence.schema-generation.scripts.create-script-source
+        //            javax.persistence.schema-generation.scripts.drop-script-source
+
+        /*
+         * Needed if scripts are to be generated and no connection to target database. Values are those obtained
+         * from JDBC DatabaseMetaData.
+         */
+        //            props.put("javax.persistence.database-product-name", "MySql");
+        //            props.put("javax.persistence.database-major-version", "5");
+        //            props.put("javax.persistence.database-minor-version", "1");
+
+        props.put("javax.persistence.schema-generation-connection", new DummyConnection());
+
+        props.put("javax.persistence.schema-generation.scripts.drop-target", stringWriter);
+        props.put("javax.persistence.schema-generation.scripts.create-target", stringWriter);
+
+        //            HashSet<ValidationMode> validationModes = new HashSet<>();
+        //            validationModes.add(ValidationMode.DDL);
+        //            props.put("javax.persistence.validation.mode", validationModes);
+
+        //        props.put("hibernate.hbm2ddl.auto", "create-drop");
+        //        props.put("javax.persistence.validation.mode", "ddl");
+        //        props.put("hibernate.validator.apply_to_ddl", "true");
+        return props;
+    }
+
+    /**
+     * Create database schemas and/or tables and/or create DDL scripts as determined by the supplied properties
+     * <b>
+     * This is the workaround to make the Statement: {@code Persistence.generateSchema(persistenceUntitName, props)}
+     * work in Hibernate 5.1.0 - 5.2.12 and maybe onwards.
+     * </b>
+     *
+     * <p>
+     * The problem is that in {@link EntityManagerFactoryBuilderImpl} since version 5.1 within the method "generate".
+     * misses the statement "sfBuilder.build()"  (it was there in 5.0.12 but it was removed in 5.1).
+     * Therefore the Integrators (BeanValidatorIntegrator) is not
+     * started anymore, and therefore the Validation-Annotations are not considered for the schema generation.
+     * </p>
+     * 
+     * <p>
+     * The strange thing is, that {@code builder.build()} already start the sql generation process, so
+     *  SchemaManagementToolCoordinator.process does not need to be invoked.
+     * </p>
+     *
+     * @param persistenceUnitName the name of the persistence unit
+     * @param properties properties for schema generation; these may also contain provider-specific properties. The
+     *        values of these properties override any values that may have been configured elsewhere.
+     */
+    private void hiberante51GenerateSchemaWorkarround(final String persistenceUntitName,
+            final Map<String, Object> props) {
+        Check.notNullArgument(persistenceUntitName, "persistenceUntitName");
+        Check.notNullArgument(props, "props");
+
+        EntityManagerFactoryBuilderImpl builder = getEntityManagerFactoryBuilder(persistenceUntitName, props);
+        builder.build();
+        /*
+         * builder.build just triggers the schema generation, so the next lines are not needed.
+         */
+        //        ServiceRegistry serviceRegistry = reflectStandardServiceRegistryField(builder);
+        //
+        //                    SchemaManagementToolCoordinator.process(builder.getMetadata(),
+        //                            serviceRegistry,
+        //                            builder.getConfigurationValues(),
+        //                            DelayedDropRegistryNotAvailableImpl.INSTANCE);
+    }
+
+    private EntityManagerFactoryBuilderImpl getEntityManagerFactoryBuilder(final String persistenceUntitName,
+            final Map<String, Object> props) {
+        for (PersistenceProvider provider : PersistenceProviderResolverHolder.getPersistenceProviderResolver()
+                .getPersistenceProviders()) {
+            HibernatePersistenceProvider hbpProvider = (HibernatePersistenceProvider) provider;
+
+            return (EntityManagerFactoryBuilderImpl) PackageInternalInvoker
+                    .getEntityManagerFactoryBuilderOrNull(hbpProvider, persistenceUntitName, props);
+        }
+
+        throw new RuntimeException("Could not obtain matching EntityManagerFactoryBuilder with persistance unit name: `"
+                + persistenceUntitName + "`");
+    }
+
+    //    /**
+    //     * Read the private field "standardServiceRegistry" of class {@link EntityManagerFactoryBuilderImpl}.
+    //     *
+    //     * @param builder the builder
+    //     * @return the field value
+    //     */
+    //    private ServiceRegistry reflectStandardServiceRegistryField(final EntityManagerFactoryBuilderImpl builder) {
+    //        try {
+    //            Field ssRegistryField = EntityManagerFactoryBuilderImpl.class.getDeclaredField("standardServiceRegistry");
+    //            ssRegistryField.setAccessible(true);
+    //            ServiceRegistry serviceRegistry = (ServiceRegistry) ssRegistryField.get(builder);
+    //            return serviceRegistry;
+    //        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+    //            throw new RuntimeException("could not read field standardServiceRegistry from " + builder, e);
+    //        }
+    //    }
+
+    /**
+     * Post process the generated statements in a way that is database depentend.
+     * @param statements
+     * @return a script that contains that statements
+     * @throws NoSuchAlgorithmException
+     */
     String postProcessStatements(List<String> statements) throws NoSuchAlgorithmException {
         if (this.dialect == Dialect.MYSQL) {
             statements = addCommentToDropConstraintStatement(statements);
@@ -177,50 +324,6 @@ public class SchemaGeneratorJpa {
             formattedStatements.append("\n");
         }
         return formattedStatements.toString();
-    }
-
-    /** Generate a Script in the JPA 2.1 way. */
-    private List<String> generateSpringJpa21way(final String persistenceUntitName) {
-        StringWriter stringWriter = new StringWriter();
-        try {
-            Map<String, Object> props = new HashMap<String, Object>();
-
-            /** need to disable validation, else the database connection would be used to validate (or update) the existing DB schema */
-            props.put(AvailableSettings.HBM2DDL_AUTO, "none");
-
-            props.put("javax.persistence.schema-generation.database.action", "none");
-            props.put("javax.persistence.schema-generation.scripts.action", "drop-and-create");
-
-            //            koennte verwendet werden um das Script einzupflecten
-            //            props.put("javax.persistence.schema-generation.drop-source", "script-then-metadata");
-            //            props.put("javax.persistence.schema-generation.create-source", "metadata-then-script");
-            //            javax.persistence.schema-generation.scripts.create-script-source
-            //            javax.persistence.schema-generation.scripts.drop-script-source
-
-            /*
-             * Needed if scripts are to be generated and no connection to target database. Values are those obtained
-             * from JDBC DatabaseMetaData.
-             */
-            //            props.put("javax.persistence.database-product-name", "MySql");
-            //            props.put("javax.persistence.database-major-version", "5");
-            //            props.put("javax.persistence.database-minor-version", "1");
-
-            props.put("javax.persistence.schema-generation-connection", new DummyConnection());
-
-            props.put("javax.persistence.schema-generation.scripts.drop-target", stringWriter);
-            props.put("javax.persistence.schema-generation.scripts.create-target", stringWriter);
-
-            Persistence.generateSchema(persistenceUntitName, props);
-        } finally {
-            if (stringWriter != null) {
-                try {
-                    stringWriter.close();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        }
-        return splitJpaScriptInStatments(stringWriter.toString());
     }
 
     /**
@@ -283,7 +386,8 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private static Pattern SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN = Pattern.compile("alter table \\S* drop constraint \\S*");
+    private static Pattern SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN = Pattern
+            .compile("alter table \\S* drop constraint \\S*");
 
     /**
      * Build the drop constraint statements.
@@ -321,8 +425,8 @@ public class SchemaGeneratorJpa {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN.matcher(statement).matches()) {
-                result.add(String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2])
-                        + statement);
+                result.add(
+                        String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2]) + statement);
             } else {
                 result.add(statement);
             }
@@ -465,5 +569,4 @@ public class SchemaGeneratorJpa {
         }
         return sb.toString();
     }
-
 }
