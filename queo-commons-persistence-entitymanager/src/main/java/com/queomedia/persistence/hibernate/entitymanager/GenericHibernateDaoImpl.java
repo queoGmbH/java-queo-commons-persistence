@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.List;
 
+import javax.persistence.LockModeType;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
@@ -85,7 +86,7 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
 
     @Override
     public List<T> findAll(final Sort sort) {
-        CriteriaBuilder builder = this.entityManager.getCriteriaBuilder();
+        CriteriaBuilder builder = this.getCriteriaBuilder();
 
         CriteriaQuery<T> selectAllQuery = builder.createQuery(this.persistentClass);
         Root<T> root = selectAllQuery.from(this.persistentClass);
@@ -121,6 +122,24 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     public List<T> findByExample(final T exampleInstance) {
         return this.findByExample(exampleInstance, new String[0]);
     }
+    
+    
+    /**
+     * Find the entity by its primary key.
+     *
+     * @param id the id
+     * @param lock the lock
+     * @return the t
+     */
+    public T findByPrimaryKey(final Long id, final boolean lock) {
+        Check.notNullArgument(id, "id");
+
+        if (lock) {            
+            return (T) this.entityManager.find(this.getPersistentClass(), id, LockModeType.PESSIMISTIC_WRITE);
+        } else {
+            return (T) this.entityManager.find(this.getPersistentClass(), id);
+        }
+    }
 
     /*
      * @see com.queomedia.fff.db.GenericDAO#findById(long, boolean)
@@ -129,11 +148,7 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     public T findByHibernateId(final Long id, final boolean lock) {
         Check.notNullArgument(id, "id");
 
-        if (lock) {            
-            return (T) this.entityManager.getSession().load(this.getPersistentClass(), id, LockMode.PESSIMISTIC_WRITE);
-        } else {
-            return (T) this.entityManager.getSession().load(this.getPersistentClass(), id);
-        }
+        return findByPrimaryKey(id, lock);
     }
 
     @Override
@@ -186,7 +201,17 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
     public void clear() {
         entityManager.clear();
     }
+    
+    /**
+     * Gets the criteria builder.
+     *
+     * @return the criteria builder
+     */
+    protected CriteriaBuilder getCriteriaBuilder() {
+        return this.entityManager.getCriteriaBuilder();
+    }
 
+    @Deprecated
     protected Criteria getCriteriaAPI() {
         return entityManager.getSession().createCriteria(this.persistentClass);
     }
@@ -198,6 +223,7 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
      * 
      * @return the list of matching entities
      */
+    @Deprecated
     protected List<T> findByCriteria(final Criterion... criterion) {
         Criteria crit = getCriteriaAPI();
         for (Criterion c : criterion) {
@@ -226,8 +252,9 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
      * @return the matching entities.
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     protected List<T> findByHQL(final String queryString, final ResultTransformer resultTransformer) {
-        Query query = entityManager.getSession().createQuery(queryString);
+        Query query = entityManager.createQuery(queryString);
         query.setResultTransformer(resultTransformer);
         return query.list();
     }
@@ -269,14 +296,29 @@ public class GenericHibernateDaoImpl<T> implements GenericEntityDao<T> {
             entityManager.refresh(entity);
         }
     }
+    
+    
+    /**
+     * Determine the number of entities stored in the database.
+     * The result is the same like {@code SELECT COUNT(*) FROM table}
+     * @return the number of entities stored in the database.
+     */
+    public long count() {
+        CriteriaBuilder criteriaBuilder = this.getCriteriaBuilder();
+        
+        CriteriaQuery<Long> countQuery = criteriaBuilder.createQuery(Long.class);
+        countQuery.select(criteriaBuilder.count(countQuery.from(this.persistentClass)));
+        
+        return this.entityManager.createQuery(countQuery).getSingleResult();
+    }
 
+    /**
+     * @deprecated use {@link #count()} instead.
+     */
+    @Deprecated
     @Override
     public int numberEntities() {
-        Criteria crit = getCriteriaAPI().setProjection(Projections.rowCount());
-        Integer count = (Integer) crit.uniqueResult();
-        assert (count != null);
-
-        return count;
+        return (int) count();
     }
 
     @Override

@@ -3,14 +3,13 @@ package com.queomedia.persistence.hibernate.entitymanager;
 import java.io.Serializable;
 import java.util.List;
 
+import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
-import org.hibernate.jpa.HibernateEntityManager;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 
@@ -25,7 +24,7 @@ public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
 
     /** The entity manage injects by the container. */
     @PersistenceContext
-    private HibernateEntityManager entityManager;
+    private EntityManager entityManager;
 
     @Override
     @Deprecated
@@ -69,8 +68,9 @@ public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
      * @param entityClass the entity class
      * @return the criteria api
      */
+    @Deprecated
     protected <T> Criteria getCriteriaApi(final Class<T> entityClass) {
-        return this.entityManager.getSession().createCriteria(entityClass);
+        return ((org.hibernate.ejb.HibernateEntityManager) this.entityManager).getSession().createCriteria(entityClass);
     }
 
     /**
@@ -93,12 +93,15 @@ public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
      */
     private <T extends BusinessEntity<? extends Serializable>> List<T> loadEntitiesByBusinessId(
             final BusinessId<T> businessId, final Class<T> entityClass) {
-        Criteria crit = getCriteriaApi(entityClass);
-        crit.add(Restrictions.eq("businessId", businessId));
 
-        @SuppressWarnings("unchecked")
-        List<T> queryResult = crit.list();
-        return queryResult;
+        CriteriaBuilder builder = getCriteriaBuilder();
+
+        CriteriaQuery<T> selectByBidQuery = builder.createQuery(entityClass);
+        Root<T> root = selectByBidQuery.from(entityClass);
+        selectByBidQuery.where(builder.equal(root.get("businessId"), businessId));
+        selectByBidQuery.select(root);
+
+        return this.entityManager.createQuery(selectByBidQuery).getResultList();
     }
 
     @Override
