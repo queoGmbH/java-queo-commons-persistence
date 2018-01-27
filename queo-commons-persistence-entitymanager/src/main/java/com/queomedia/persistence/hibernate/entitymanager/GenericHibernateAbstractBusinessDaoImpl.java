@@ -5,7 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.criterion.Restrictions;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
+
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.slf4j.Logger;
@@ -17,7 +20,6 @@ import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GenericAbstractBusinessDao;
 import com.queomedia.persistence.util.ResultUtil;
-
 
 /**
  * @param <KeyType> the Type where the Key is from
@@ -36,8 +38,15 @@ public abstract class GenericHibernateAbstractBusinessDaoImpl<KeyType extends Bu
     public T getByBusinessId(final BusinessId<KeyType> businessId) throws NotFoundRuntimeException {
         Check.notNullArgument(businessId, "businessId");
 
-        return ResultUtil.requiredOneResult(findByCriteria(Restrictions.eq("businessId", businessId)), "businessId="
-                + businessId);
+        CriteriaBuilder builder = getCriteriaBuilder();
+
+        CriteriaQuery<T> selectByBidQuery = builder.createQuery(this.getPersistentClass());
+        Root<T> root = selectByBidQuery.from(this.getPersistentClass());
+        selectByBidQuery.where(builder.equal(root.get("businessId"), businessId));
+        selectByBidQuery.select(root);
+
+        return ResultUtil.requiredOneResult(this.getEntityManager().createQuery(selectByBidQuery).getResultList(),
+                "businessId=" + businessId);
     }
 
     @SuppressWarnings("unchecked")
@@ -57,7 +66,14 @@ public abstract class GenericHibernateAbstractBusinessDaoImpl<KeyType extends Bu
         }
 
         /* load */
-        List<T> found = super.findByCriteria(Restrictions.in("businessId", businessIds));
+        CriteriaBuilder builder = getCriteriaBuilder();
+        CriteriaQuery<T> selectByBidQuery = builder.createQuery(this.getPersistentClass());
+        Root<T> root = selectByBidQuery.from(this.getPersistentClass());
+
+        selectByBidQuery.where(root.get("businessId").in(businessIds));
+        selectByBidQuery.select(root);
+
+        List<T> found = this.getEntityManager().createQuery(selectByBidQuery).getResultList();
         int foundSize = found.size();
 
         /* check size */
@@ -86,11 +102,18 @@ public abstract class GenericHibernateAbstractBusinessDaoImpl<KeyType extends Bu
     }
 
     @Override
-    public T findByBusinessIdOrNull(final BusinessId<KeyType> businessId) throws IncorrectResultSizeDataAccessException {
+    public T findByBusinessIdOrNull(final BusinessId<KeyType> businessId)
+            throws IncorrectResultSizeDataAccessException {
         Check.notNullArgument(businessId, "businessId");
 
-        List<T> entities = findByCriteria(Restrictions.eq("businessId", businessId));
-        return ResultUtil.requiredOneOrNoResult(entities);
+        CriteriaBuilder builder = getCriteriaBuilder();
+
+        CriteriaQuery<T> selectByBidQuery = builder.createQuery(this.getPersistentClass());
+        Root<T> root = selectByBidQuery.from(this.getPersistentClass());
+        selectByBidQuery.where(builder.equal(root.get("businessId"), businessId));
+        selectByBidQuery.select(root);
+
+        return ResultUtil.requiredOneOrNoResult(this.getEntityManager().createQuery(selectByBidQuery).getResultList());
     }
 
 }
