@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.beanutils.BeanComparator;
@@ -42,7 +43,7 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     public AbstractGenericDaoFake(final T... alreadyExistingTs) {
         this.savedEntities = new HashSet<T>();
 
-        this.save(Arrays.asList(alreadyExistingTs));
+        this.saveAll(Arrays.asList(alreadyExistingTs));
     }
 
     public Long getId(final T entity) {
@@ -79,7 +80,7 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     }
 
     @Override
-    public <S extends T> List<S> save(final Iterable<S> entities) {
+    public <S extends T> List<S> saveAll(final Iterable<S> entities) {
         ArrayList<S> result = new ArrayList<S>();
 
         for (S entity : entities) {
@@ -96,17 +97,12 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
 
     @Override
     public T getOne(final Long primaryKey) {
-        T one = this.findOne(primaryKey);
-        if (one != null) {
-            return one;
-        } else {
-            throw new RuntimeException("not found");
-        }
+        return this.findById(primaryKey).orElseThrow(() -> new RuntimeException("not found"));
     }
 
     @Override
-    public boolean exists(final Long primaryKey) {
-        return this.findOne(primaryKey) != null;
+    public boolean existsById(final Long primaryKey) {
+        return this.findById(primaryKey).isPresent();
     }
 
     @Override
@@ -152,7 +148,7 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     }
 
     @Override
-    public void delete(final Iterable<? extends T> entities) {
+    public void deleteAll(final Iterable<? extends T> entities) {
         for (T entity : entities) {
             this.delete(entity);
         }
@@ -160,7 +156,7 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
 
     @Override
     public void deleteAll() {
-        this.delete(this.findAll());
+        this.deleteAll(this.findAll());
     }
 
     @Override
@@ -187,36 +183,33 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     }
 
     @Override
-    public T findOne(final Long primaryKey) {
+    public Optional<T> findById(final Long primaryKey) {
         for (T entity : this.getSavedEntities()) {
             if (getId(entity).equals(primaryKey)) {
-                return entity;
+                return Optional.of(entity);
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public void delete(final Long id) {
+    public void deleteById(final Long id) {
         this.delete(this.getOne(id));
     }
 
     @Override
-    public List<T> findAll(final Iterable<Long> primaryKeys) {
+    public List<T> findAllById(final Iterable<Long> primaryKeys) {
         List<T> result = new ArrayList<T>();
 
         for (Long primaryKey : primaryKeys) {
-            T found = findOne(primaryKey);
-            if (found != null) {
-                result.add(found);
-            }
+            findById(primaryKey).ifPresent(result::add);
         }
         return result;
     }
 
     @Override
     public void deleteInBatch(final Iterable<T> entities) {
-        this.delete(entities);
+        this.deleteAll(entities);
     }
 
     @Override
@@ -253,7 +246,7 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
 
     @Deprecated
     @Override
-    public <S extends T> S findOne(final Example<S> example) {
+    public <S extends T> Optional<S> findOne(final Example<S> example) {
         throw new NotImplementedCaseExecption();
     }
 
