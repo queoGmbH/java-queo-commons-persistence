@@ -23,7 +23,7 @@ import org.springframework.util.ReflectionUtils;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;
-import com.queomedia.commons.exceptions.NotImplementedCaseExecption;
+import com.queomedia.commons.exceptions.NotImplementedCaseException;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 
@@ -247,36 +247,36 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     @Deprecated
     @Override
     public <S extends T> Optional<S> findOne(final Example<S> example) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 
     @Deprecated
     @Override
     public <S extends T> Page<S> findAll(final Example<S> example, final Pageable pageable) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 
     @Deprecated
     @Override
     public <S extends T> long count(final Example<S> example) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 
     @Deprecated
     @Override
     public <S extends T> boolean exists(final Example<S> example) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 
     @Deprecated
     @Override
     public <S extends T> List<S> findAll(final Example<S> example) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 
     @Deprecated
     @Override
     public <S extends T> List<S> findAll(final Example<S> example, final Sort sort) {
-        throw new NotImplementedCaseExecption();
+        throw new NotImplementedException();
     }
 }
