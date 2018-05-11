@@ -7,28 +7,32 @@ import com.queomedia.persistence.BusinessEntity;
 
 /**
  * Compare business entity by there business id.
- *  
+ *
  * @author Ralph Engelmann
  *
  * @param <T> the concrete type.
- */ 
-public final class BusinessEntityComparator<T extends Serializable> implements Comparator<BusinessEntity<T>>{
-    
+ */
+public final class BusinessEntityComparator<T extends Serializable>
+        implements Comparator<BusinessEntity<T>>, Serializable {
+
+    /** The Constant serialVersionUID. */
+    private static final long serialVersionUID = 7294856569111397230L;
+
     /** The holy only one instance. */
     private static final BusinessEntityComparator<Serializable> INSTANCE = new BusinessEntityComparator<Serializable>();
-    
+
     /**
      * The the holy instance.
      * @param <T> the concrete type.
      * @return the Business Id Comparator.
      */
-    public static final <T extends Serializable> BusinessEntityComparator<T> getInstance() {        
+    public static final <T extends Serializable> BusinessEntityComparator<T> getInstance() {
         /** this cast is save, because it does not matter in anyway. */
         @SuppressWarnings("unchecked")
         BusinessEntityComparator<T> matching = (BusinessEntityComparator<T>) INSTANCE;
         return matching;
     }
-    
+
     /**
      * Use {@link #getInstance()} instead.
      */
@@ -37,7 +41,7 @@ public final class BusinessEntityComparator<T extends Serializable> implements C
     }
 
     @Override
-    public int compare(BusinessEntity<T> o1, BusinessEntity<T> o2) {
+    public int compare(final BusinessEntity<T> o1, final BusinessEntity<T> o2) {
         return o1.getBusinessId().compareTo(o2.getBusinessId());
     }
 
