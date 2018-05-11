@@ -76,7 +76,9 @@ public interface GeneralLoaderDao {
      *
      * @param <Clazz> the class of the business object
      * @param entityClass the entity class
-     * @param sort the used sorting, or null.
+     * @param sort the used sorting, or null - this was the same behavior in spring data jpa PagingAndSortingRepository
+     *        before 2.0 (Releas Train Kay). We keep this behavior for backward compatibility, but in next major release
+     *        of queo-commons-persistence (5.0) this parameter is not longer allowed to be null, instead use {@link Sort#unsorted()} 
      * @return the all business entities sorted
      */
     <Clazz> List<Clazz> findAll(Class<Clazz> entityClass, Sort sort);

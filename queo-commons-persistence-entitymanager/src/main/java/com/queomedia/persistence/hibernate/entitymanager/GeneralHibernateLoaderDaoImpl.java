@@ -1,7 +1,9 @@
 package com.queomedia.persistence.hibernate.entitymanager;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -10,6 +12,8 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 
 import org.hibernate.Criteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.query.QueryUtils;
 
@@ -21,6 +25,9 @@ import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.util.ResultUtil;
 
 public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
+
+    /** Logger for this class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneralHibernateLoaderDaoImpl.class);
 
     /** The entity manage injects by the container. */
     @PersistenceContext
@@ -108,13 +115,21 @@ public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
     public <T> List<T> findAll(final Class<T> entityClass) {
         Check.notNullArgument(entityClass, "entityClass");
 
-        return findAll(entityClass, null);
+        return findAll(entityClass, Sort.unsorted());
     }
 
     @Override
     public <T> List<T> findAll(final Class<T> entityClass, final Sort sort) {
         Check.notNullArgument(entityClass, "entityClass");
-        //sort can be null - this is the same behavior like in spring data jpa repositories
+        //sort can be null - but create a deprecation warning.
+
+        if (sort == null) {
+            LOGGER.warn("GeneralHibernateLoaderDaoImpl.findAll(Class, Sort) is invoked with sort=null. "
+                    + "Sort=null is deprecated (treated as Sort.unsortable), use Sort.unsortable instead. "
+                    + "This backwards compatibiliy id deprecread and will be removed in queo-commons-persistence 5.0. "
+                    + "Invocation: entityClass=" + entityClass.getName() + "." + "\nfrom:\n"
+                    + topStackTraceElements(Thread.currentThread().getStackTrace(), 1, 8));
+        }
 
         CriteriaBuilder builder = getCriteriaBuilder();
 
@@ -122,11 +137,33 @@ public class GeneralHibernateLoaderDaoImpl implements GeneralLoaderDao {
         Root<T> root = selectAllQuery.from(entityClass);
         selectAllQuery.select(root);
 
-        if (sort != null) {
+        if (sort != null) { //remove this if-check and execute this statement always, as soon as it is required: sort  != null, 
             selectAllQuery.orderBy(QueryUtils.toOrders(sort, root, builder));
         }
 
         return this.entityManager.createQuery(selectAllQuery).getResultList();
+    }
+
+    /**
+     * Return a String with the maxTopElements stack trace elements after skipTopElement.
+     *
+     * @param stackTrace - The result from {@code Thread.currentThread().getStackTrace()} The first element of the array represents the top of the stack, which is the most recent method invocation in the sequence.
+     * @param skipTopElement the elements to skip before counting maxTopElements
+     * @param maxTopElements the max top elements to return as string
+     * @return the string
+     */
+    static String topStackTraceElements(final StackTraceElement[] stackTrace, int skipTopElement, int maxTopElements) {
+        Check.notNullArgument(stackTrace, "stackTrace");
+        Check.notNegativeArgument(skipTopElement, "skipTopElement");
+        Check.notNegativeArgument(maxTopElements, "maxTopElements");
+
+        // @formatter:off
+        return Arrays.stream(stackTrace)
+                .skip(skipTopElement)
+                .limit(maxTopElements)
+                .map(StackTraceElement::toString)
+                .collect(Collectors.joining(",\n"));        
+        // @formatter:on
     }
 
 }
