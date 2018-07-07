@@ -50,12 +50,6 @@
 		</dependency>
 
 		<dependency>
-			<!-- for package scan to find the entities -->
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-		</dependency>
-		
-		<dependency>
 			<groupId>javax.validation</groupId>
 			<artifactId>validation-api</artifactId>
 			<optional>true</optional>
