@@ -164,22 +164,12 @@
 			</dependency>
 
 			<dependency>
+				<!-- https://github.com/ronmamo/reflections -->
 				<groupId>org.reflections</groupId>
 				<artifactId>reflections</artifactId>
-				<version>0.9.8</version>
-				<exclusions>
-					<!--
-					     hibernate use the javassist too, but since 3.18, the group id is change
-					     from "javassist" to "org.javassist
-					-->
-					<exclusion>
-						<artifactId>javassist</artifactId>
-						<groupId>javassist</groupId>
-					</exclusion>
-				</exclusions>
+				<version>0.9.11</version>
 			</dependency>
 
-			<!-- we specifiying javassist explicit, because we exluded it from org.reflections explicit -->
 			<dependency>
 				<groupId>org.javassist</groupId>
 				<artifactId>javassist</artifactId>
