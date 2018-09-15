@@ -42,11 +42,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.queomedia</groupId>
-			<artifactId>queo-commons-exceptions</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>commons-beanutils</groupId>
 			<artifactId>commons-beanutils</artifactId>
 		</dependency>
