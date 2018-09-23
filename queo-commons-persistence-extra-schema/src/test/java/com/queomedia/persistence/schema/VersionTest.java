@@ -92,7 +92,7 @@ public class VersionTest {
 
     /** This test check almost that there is no exception. */
     @Test
-    public void testHibernateVersion() throws Exception {
+    public void testHibernateVersion() {
         Version hibernateVersion = Version.hibernateVersion();
                 
         assertEquals(new Version(org.hibernate.Version.getVersionString()), hibernateVersion);        
