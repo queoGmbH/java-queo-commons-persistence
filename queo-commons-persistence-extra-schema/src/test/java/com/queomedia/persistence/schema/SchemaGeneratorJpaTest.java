@@ -87,7 +87,7 @@ public class SchemaGeneratorJpaTest {
 
     /** The statements must been not doubled. */
     @Test
-    public void testGenerateCoreStatementsJpa21way() throws Exception {
+    public void testGenerateCoreStatementsJpa21way() {
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);
         List<String> statements = generator.generateCoreStatementsJpa21way("examplePersistenceUnit");
 
