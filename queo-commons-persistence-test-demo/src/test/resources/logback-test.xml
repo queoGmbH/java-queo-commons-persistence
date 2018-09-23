@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--See also http://logback.qos.ch/manual/appenders.html -->
+<configuration>
+
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator"/>
+	
+	<appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%d [%t] %-5p %c - %m%n</pattern>
+		</encoder>
+	</appender>	
+
+	<logger name="com.queomedia.persistence" level="DEBUG"/>
+
+	<root level="INFO">
+		<appender-ref ref="stdout"/>
+	</root>
+
+</configuration>
