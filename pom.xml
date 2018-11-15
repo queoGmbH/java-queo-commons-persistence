@@ -151,6 +151,12 @@
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>3.0.1</version>
 				</plugin>
+				
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<version>1.4.1</version>
+				</plugin>
 
 			</plugins>
 		</pluginManagement>
@@ -169,6 +175,52 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<!-- ban all logging frameworks other than slf4j and logback -->
+									<excludes>
+										<exclude>commons-logging:commons-logging</exclude>
+										<!-- log4j 1.x -->
+										<exclude>log4j:log4j</exclude>
+										<!-- log4j 2.x -->
+										<exclude>org.apache.logging.log4j</exclude>
+										<!-- spring jcl -->
+										<exclude>org.springframework:spring-jcl</exclude>
+									</excludes>
+									<message>Use slf4j, slf4j-legacy-binding (xxx-over-slf) and logback for logging only!</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- ban findbugs (use spotbugs) -->
+									<excludes>
+										<exclude>com.google.code.findbugs:jsr305</exclude>
+										<exclude>com.google.code.findbugs:annotations</exclude>
+										<exclude>com.google.code.findbugs:findbugs-annotations</exclude>
+									</excludes>
+									<message>Use com.github.spotbugs:spotbugs-annotations!</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- groupId of Hibernate-Validator changed in Version 6 from org.hibernate to org.hibernate.validator -->
+									<excludes>
+										<exclude>org.hibernate:hibernate-validator</exclude>
+									</excludes>
+									<message>use org.hibernate.validator:hibernate-validator instead of org.hibernate:hibernate-validator</message>
+								</bannedDependencies>						
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
