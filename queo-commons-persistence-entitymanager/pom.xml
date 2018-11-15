@@ -33,7 +33,13 @@
 		<dependency>
 			<!-- contains the exceptions EmptyResultDataAccessException, IncorrectResultSizeDataAccessException -->
 			<groupId>org.springframework</groupId>
-			<artifactId>spring-tx</artifactId>		
+			<artifactId>spring-tx</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+  					<artifactId>spring-jcl</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>				
  				
  		<!-- hibernate -->

@@ -11,7 +11,7 @@
 		<artifactId>queo-commons-persistence</artifactId>
 		<version>4.1.1-SNAPSHOT</version>
 	</parent>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -29,17 +29,23 @@
 			<groupId>de.humanfork.springdatajpaextension</groupId>
 			<artifactId>spring-data-jpa-extension</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-jpa</artifactId>
-		</dependency>		
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-jcl</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 
 		<dependency>
 			<groupId>com.queomedia</groupId>
 			<artifactId>queo-commons-exceptions</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.1-api</artifactId>

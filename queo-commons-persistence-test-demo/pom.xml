@@ -14,9 +14,8 @@
 	</parent>
 
 	<properties>
-		<slf4j.version>1.7.5</slf4j.version>
-		<logback.version>1.0.13</logback.version>
-		<aspectj.version>1.8.9</aspectj.version>
+		<logback.version>1.2.3</logback.version>
+		<aspectj.version>1.9.2</aspectj.version>
 	</properties>
 
 	<dependencyManagement>
@@ -30,10 +29,65 @@
 			</dependency>
 
 			<dependency>
-				<groupId>de.humanfork.springdatajpaextension</groupId>
-				<artifactId>spring-data-jpa-extension</artifactId>
-				<version>0.2.0</version>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-core</artifactId>
+				<version>${logback.version}</version>
 			</dependency>
+			<dependency>
+				<groupId>ch.qos.logback</groupId>
+				<artifactId>logback-classic</artifactId>
+				<version>${logback.version}</version>
+			</dependency>
+			
+			<!-- cglib -->
+			<dependency>
+				<groupId>cglib</groupId>
+				<artifactId>cglib</artifactId>
+				<version>3.2.9</version>
+			</dependency>
+
+			<dependency>
+				<groupId>commons-dbcp</groupId>
+				<artifactId>commons-dbcp</artifactId>
+				<version>1.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>de.humanfork.hibernateextension</groupId>
+				<artifactId>hibernateextension</artifactId>
+				<version>1.2.0</version>
+			</dependency>
+			
+			
+			<!-- AspectJ -->
+			<!--				
+				The three jars, aspectjrt, aspectjweaver, aspectjtools are supersets of each other:
+				  aspectjrt.jar is the smallest, aspectjweaver is next and aspectjtools after that
+				So there must be at most one of them im the classpath but never two or three!				
+				
+				Spring needs aspectjweaver				
+				(AspectJ-Maven-Plugin requries aspectjtools, but this is not a part of the classpaht)
+				
+				So we use aspectjweaver and exclude every occurence of aspectjrt
+			-->
+			<!-- do not use aspectjrt, use aspectjweaver instead 
+			<dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjrt</artifactId>
+				<version>${aspectj.version}</version>
+			</dependency>
+			-->
+			<dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjweaver</artifactId>
+				<version>${aspectj.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.aspectj</groupId>
+				<artifactId>aspectjtools</artifactId>
+				<version>${aspectj.version}</version>
+			</dependency>
+
 		</dependencies>
 	</dependencyManagement>
 
@@ -74,16 +128,6 @@
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<exclusions>
-				<exclusion>
-					<groupId>cglib</groupId>
-					<artifactId>cglib</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>dom4j</groupId>
-					<artifactId>dom4j</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>
@@ -92,16 +136,6 @@
 		<dependency>
 			<groupId>org.hibernate.javax.persistence</groupId>
 			<artifactId>hibernate-jpa-2.1-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-			<version>2.2</version>
-		</dependency>
-		<dependency>
-			<groupId>javax.transaction</groupId>
-			<artifactId>jta</artifactId>
-			<version>1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -114,18 +148,18 @@
 		<dependency>
 			<groupId>de.humanfork.hibernateextension</groupId>
 			<artifactId>hibernateextension</artifactId>
-			<version>1.2.0</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>log4j</artifactId>
-					<groupId>log4j</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-jpa</artifactId>
+			<exclusions>
+			<exclusion>
+					<!-- this example application uses the full aspectjweaver instead -->
+					<groupId>org.aspectj</groupId>
+					<artifactId>aspectjrt</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>de.humanfork.springdatajpaextension</groupId>
@@ -166,7 +200,12 @@
 		<dependency>
 			<groupId>commons-dbcp</groupId>
 			<artifactId>commons-dbcp</artifactId>
-			<version>1.4</version>
+		</dependency>
+		
+		<!-- AspectJ -->
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjweaver</artifactId>
 		</dependency>
 		
 		<!-- Spring -->
@@ -175,9 +214,9 @@
 			<artifactId>spring-core</artifactId>
 			<exclusions>
 				<exclusion>
-					<groupId>commons-logging</groupId>
-					<artifactId>commons-logging</artifactId>
-				</exclusion>
+					<groupId>org.springframework</groupId>
+					<artifactId>spring-jcl</artifactId>
+				</exclusion>				
 			</exclusions>
 		</dependency>
 		<dependency>
@@ -198,12 +237,10 @@
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-core</artifactId>
-			<version>${logback.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>ch.qos.logback</groupId>
 			<artifactId>logback-classic</artifactId>
-			<version>${logback.version}</version>
 		</dependency>
 
 		<dependency>
@@ -213,17 +250,14 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jcl-over-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>log4j-over-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>jul-to-slf4j</artifactId>
-			<version>${slf4j.version}</version>
 		</dependency>
 
 		<!-- test -->
@@ -279,13 +313,8 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>aspectj-maven-plugin</artifactId>
-				<version>1.8</version>
+				<version>1.11</version>
 				<dependencies>
-					<dependency>
-						<groupId>org.aspectj</groupId>
-						<artifactId>aspectjrt</artifactId>
-						<version>${aspectj.version}</version>
-					</dependency>
 					<dependency>
 						<groupId>org.aspectj</groupId>
 						<artifactId>aspectjtools</artifactId>
@@ -317,6 +346,33 @@
 					<proc>none</proc>
 				</configuration>
 			</plugin>
+			
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>enforce-lib-ban-test-module</id>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<bannedDependencies>
+									<!-- ban aspectj aspectjrt - use aspectjweaver only! -->
+									<excludes>
+										<exclude>org.aspectj:aspectjrt</exclude>
+										<exclude>org.aspectj:aspectjtools</exclude>
+									</excludes>
+									<message>Use the super set aspectjweaver!</message>
+								</bannedDependencies>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
 		</plugins>
 	</build>
 
