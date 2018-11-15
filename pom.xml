@@ -217,6 +217,13 @@
 									</excludes>
 									<message>use org.hibernate.validator:hibernate-validator instead of org.hibernate:hibernate-validator</message>
 								</bannedDependencies>						
+								<bannedDependencies>
+									<!-- groupId of Hibernate-Validator changed in Version 6 from org.hibernate to org.hibernate.validator -->
+									<excludes>
+										<exclude>org.hibernate.javax.persistence:hibernate-jpa-2.1-api</exclude>
+									</excludes>
+									<message>use JPA 2.2 javax.persistence:javax.persistence-api:2.2 instead</message>
+								</bannedDependencies>
 							</rules>
 						</configuration>
 					</execution>
