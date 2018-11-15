@@ -144,11 +144,11 @@
 			   		http://stackoverflow.com/questions/19451814/java-lang-noclassdeffounderror-javax-el-propertynotfoundexception-when-i-send-i
 			   		else: ClassNotFoundException: com.sun.el.ExpressionFactoryImpl			   		
 			   		But is is typical used with scope provided			   		
-			   		with hibernate-validator 6.0.7 we use javax.el-api 3.0.0 and with the glassfish implementation 3.0.1-b08
+			   		with hibernate-validator 6.0.7 we use javax.el-api 3.0.0 and with the glassfish implementation 3.0.1-b10
 			 	-->
 				<groupId>org.glassfish</groupId>
 				<artifactId>javax.el</artifactId>
-				<version>3.0.1-b08</version>
+				<version>3.0.1-b10</version>
 			</dependency>
 
 			<!-- slf4j -->
