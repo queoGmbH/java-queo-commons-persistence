@@ -68,8 +68,8 @@
 			<!-- only need at compile time -->
 			<exclusions>
 				<exclusion>
-					<artifactId>hibernate-jpa-2.0-api</artifactId>
-					<groupId>org.hibernate.javax.persistence</groupId>
+					<artifactId>jboss-logging</artifactId>
+					<groupId>org.jboss.logging</groupId>
 				</exclusion>
 			</exclusions>
 		</dependency>
