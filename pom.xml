@@ -39,11 +39,11 @@
 	<distributionManagement>
 		<repository>
 			<id>com.queomedia</id>
-			<url>http://java.dev.queo-group.com/nexus/content/repositories/com.queomedia</url>
+			<url>https://nexus.dev.queo-group.com/repository/com.queomedia/</url>
 		</repository>
 		<snapshotRepository>
 			<id>com.queomedia-snapshot</id>
-			<url>http://java.dev.queo-group.com/nexus/content/repositories/com.queomedia-snapshot</url>
+			<url>https://nexus.dev.queo-group.com/repository/com.queomedia-snapshot/</url>
 		</snapshotRepository>
 	</distributionManagement>
 
