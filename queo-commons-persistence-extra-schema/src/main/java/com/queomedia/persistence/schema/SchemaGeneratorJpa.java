@@ -399,23 +399,27 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private Pattern dropTableStatementPatternOracle = Pattern.compile("drop table \\S*");
-
-    private Pattern dropTableStatementPatternOracleIfExists = Pattern.compile("drop table if exists \\S*");
+    private List<Pattern> dropTableStatementPatternOracle = Arrays.asList( 
+            Pattern.compile("drop table \\S*"),
+            Pattern.compile("drop table \\S* cascade constraints"),
+            Pattern.compile("drop table \\S*"),
+            Pattern.compile("drop table if exists \\S*  cascade constraints"));
 
     List<String> addCatchExceptionAroundDropTableStatementOracle(final List<String> statements,
             final boolean skipDropStatements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (this.dropTableStatementPatternOracle.matcher(statement).matches()) {
-                result.add((skipDropStatements ? "-- " : "") +
-                        "begin execute immediate '" + statement
-                        + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
-            } else if (this.dropTableStatementPatternOracleIfExists.matcher(statement).matches()) {
-                result.add((skipDropStatements ? "-- " : "") +
-                        "begin execute immediate '" + statement
-                        + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
-            } else {
+            boolean match = false;
+            for(Pattern pattern : dropTableStatementPatternOracle) {
+                if (pattern.matcher(statement).matches()) {
+                    result.add((skipDropStatements ? "-- " : "") +
+                            "begin execute immediate '" + statement
+                            + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
+                    match = true;
+                    break;
+                } 
+            }
+            if (!match) {
                 result.add(statement);
             }
         }
