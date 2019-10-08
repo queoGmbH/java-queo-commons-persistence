@@ -27,7 +27,7 @@ public class DatabaseSchemaTest {
         Assert.assertTrue(orignalFile.exists());
 
         SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String currentScript = gen.generateDdlScript("persistenceUnit");
+        String currentScript = gen.generateDdlScript("persistenceUnit", ";", false);
 
         List<String> originalLines = FileUtils.readLines(orignalFile);
         List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
@@ -61,7 +61,7 @@ public class DatabaseSchemaTest {
         Assert.assertTrue(orignalFile.exists());
 
         SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String currentScript = gen.generateDdlScript("persistenceUnit");
+        String currentScript = gen.generateDdlScript("persistenceUnit", ";", false);
         List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
 
         assertThat(selectBySubstring("notNullObject", currentScriptLines), Matchers.endsWith("not null,"));
@@ -80,7 +80,7 @@ public class DatabaseSchemaTest {
         Assert.assertTrue(orignalFile.exists());
 
         SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String currentScript = gen.generateDdlScript("persistenceUnit");
+        String currentScript = gen.generateDdlScript("persistenceUnit", ";", false);
         List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
 
         assertThat(selectBySubstring("notEmptyString_hibernateValidator", currentScriptLines),
@@ -99,7 +99,7 @@ public class DatabaseSchemaTest {
         Assert.assertTrue(orignalFile.exists());
 
         SchemaGeneratorJpa gen = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String currentScript = gen.generateDdlScript("persistenceUnit");
+        String currentScript = gen.generateDdlScript("persistenceUnit", ";", false);
         List<String> currentScriptLines = Arrays.asList(currentScript.split("\\r?\\n"));
 
         assertThat(selectBySubstring("notEmptyString_javaxValidation", currentScriptLines),

@@ -87,7 +87,7 @@ public class SchemaGeneratorJpa {
             throw new IllegalStateException(
                     "use method SchemaGeneratorJpa.generate(final String persistenceUnitName, final String fileName) instead ");
         }
-        generateDdlFile(persistenceUnitName, "src/main/resources/" + this.ddlFileName);
+        generateDdlFile(persistenceUnitName, "src/main/resources/" + this.ddlFileName, ";", false);
     }
 
     /**
@@ -99,7 +99,7 @@ public class SchemaGeneratorJpa {
      */
     @Deprecated
     public void generate(final String persistenceUnitName, final String fileName) {
-        generateDdlFile(persistenceUnitName, fileName);
+        generateDdlFile(persistenceUnitName, fileName, ";", false);
     }
 
     /**
@@ -107,14 +107,18 @@ public class SchemaGeneratorJpa {
      *
      * @param persistenceUnitName the persistence untit name
      * @param fileName the file name where to store the generated ddl script
+     * @param delimiter the sql statement delimiter
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
     */
-    public void generateDdlFile(final String persistenceUnitName, final String fileName) {
+    public void generateDdlFile(final String persistenceUnitName, final String fileName,
+            final String delimiter,
+            final boolean skipDropStatements) {
 
         //TODO: use try-with-resource after update to java7
         Writer writer = null;
         try {
             writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"));
-            writer.write(generateDdlScript(persistenceUnitName));
+            writer.write(generateDdlScript(persistenceUnitName, delimiter, skipDropStatements));
         } catch (IOException ex) {
             throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
         } catch (NoSuchAlgorithmException e) {
@@ -132,16 +136,29 @@ public class SchemaGeneratorJpa {
     }
 
     /**
+     * Generate the DDL Script File with ";" delimiter and include drop table statements.
+     *
+     * @param persistenceUnitName the persistence untit name
+     * @param fileName the file name where to store the generated ddl script
+    */
+    public void generateDdlFile(final String persistenceUnitName, final String fileName) {
+        this.generateDdlFile(persistenceUnitName, fileName, ";", false);
+    }
+
+    /**
      * Generate the ddl Script.
      *
      * @param persistenceUnitName the persistence untit name
+     * @param delimiter sql statement delimiter
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
      * @return the ddl script
      * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
      */
-    public String generateDdlScript(final String persistenceUnitName) throws NoSuchAlgorithmException {
+    public String generateDdlScript(final String persistenceUnitName, final String delimiter, final boolean skipDropStatements)
+            throws NoSuchAlgorithmException {
 
         final List<String> statements = generateCoreStatementsJpa21way(persistenceUnitName);
-        String primaryScript = postProcessStatements(statements);
+        String primaryScript = postProcessStatements(statements, delimiter, skipDropStatements);
 
         AdditionalScript additionalScript = AdditionalScript.load(this.dialect);
         String extendedScript = additionalScript.getPrePart() + primaryScript + additionalScript.getPostPart();
@@ -209,12 +226,12 @@ public class SchemaGeneratorJpa {
         //        props.put("hibernate.hbm2ddl.auto", "create-drop");
         //        props.put("javax.persistence.validation.mode", "ddl");
         //        props.put("hibernate.validator.apply_to_ddl", "true");
-        
+
         /** Activate pachted TypeSaveActivator that respect BeanValidation 2.0 NotEmpty and NotBlank annotations. */
         props.put("javax.persistence.validation.mode", "NONE");
         props.put("javax.persistence.validation20.mode", "AUTO");
         BeanValidation20IntegratorProvider.addToConfiguration(props);
-        
+
         return props;
     }
 
@@ -247,7 +264,7 @@ public class SchemaGeneratorJpa {
         Check.notNullArgument(props, "props");
 
         EntityManagerFactoryBuilderImpl builder = getEntityManagerFactoryBuilder(persistenceUntitName, props);
-       
+
         builder.build();
         /*
          * builder.build just triggers the schema generation, so the next lines are not needed.
@@ -264,7 +281,7 @@ public class SchemaGeneratorJpa {
             final Map<String, Object> props) {
         for (PersistenceProvider provider : PersistenceProviderResolverHolder.getPersistenceProviderResolver()
                 .getPersistenceProviders()) {
-            HibernatePersistenceProvider hbpProvider = (HibernatePersistenceProvider) provider;            
+            HibernatePersistenceProvider hbpProvider = (HibernatePersistenceProvider) provider;
 
             return (EntityManagerFactoryBuilderImpl) PackageInternalInvoker
                     .getEntityManagerFactoryBuilderOrNull(hbpProvider, persistenceUntitName, props);
@@ -294,30 +311,34 @@ public class SchemaGeneratorJpa {
     /**
      * Post process the generated statements in a way that is database depentend.
      * @param statements
+     * @param delimiter sql statement delimiter
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
+     *  
      * @return a script that contains that statements
      * @throws NoSuchAlgorithmException
      */
-    String postProcessStatements(List<String> statements) throws NoSuchAlgorithmException {
+    String postProcessStatements(List<String> statements, final String delimiter, final boolean skipDropStatements)
+            throws NoSuchAlgorithmException {
         if (this.dialect == Dialect.MYSQL) {
-            statements = addCommentToDropConstraintStatementMySql(statements);
+            if (skipDropStatements) {
+                statements = addCommentToDropTableStatementMySql(statements);
+                statements = addCommentToDropConstraintStatementMySql(statements);
+            } else {
+                //Drop CONSTRAINT statements are not needed anyway
+                statements = addCommentToDropConstraintStatementMySql(statements);
+            }
         }
         if (this.dialect == Dialect.ORACLE) {
-            statements = addCatchExceptionAroundDropTableStatementOracle(statements);
-            statements = addCatchExceptionAroundDropSequenceStatementOracle(statements);
-        }
-
-        if (this.dialect == Dialect.MYSQL) {
-            statements = addSeperator(statements, ";");
-        }
-        if (this.dialect == Dialect.ORACLE) {
-            statements = addSeperator(statements, "\n/\n");
-        }
+            statements = addCatchExceptionAroundDropTableStatementOracle(statements, skipDropStatements);
+            statements = addCatchExceptionAroundDropSequenceStatementOracle(statements, skipDropStatements);
+            statements = addCommentToDropConstraintStatementOracle(statements, skipDropStatements);
+        }        
         if (this.dialect == Dialect.SQL_SERVER_2012) {
-            statements = addConditionToDropConstraintStatementSqlServer2012(statements);
-            statements = addConditionToDropTableStatementSqlServer2012(statements);
-            statements = dropCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(statements);
-            statements = addSeperator(statements, ";");
+            statements = addConditionToDropConstraintStatementSqlServer2012(statements, skipDropStatements);
+            statements = addConditionToDropTableStatementSqlServer2012(statements, skipDropStatements);
+            statements = replaceCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(statements);
         }
+        statements = addSeperator(statements, delimiter);
 
         SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
         List<List<String>> groupedStatments = mySqlPrettyPrinter.groupStatments(statements);
@@ -350,12 +371,12 @@ public class SchemaGeneratorJpa {
         return withSeparator;
     }
 
-    private Pattern dropKeyStatementPattern = Pattern.compile("alter table \\S* drop foreign key \\S*");
+    private Pattern dropTableStatementPatternMySql = Pattern.compile("drop table if exists \\S*");
 
-    List<String> addCommentToDropConstraintStatementMySql(final List<String> statements) {
+    List<String> addCommentToDropTableStatementMySql(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (this.dropKeyStatementPattern.matcher(statement).matches()) {
+            if (this.dropTableStatementPatternMySql.matcher(statement).matches()) {
                 result.add("-- " + statement);
             } else {
                 result.add(statement);
@@ -364,13 +385,35 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private Pattern dropTableStatementPattern = Pattern.compile("drop table \\S* cascade constraints");
+    private Pattern dropKeyStatementPatternMySql = Pattern.compile("alter table \\S* drop foreign key \\S*");
 
-    List<String> addCatchExceptionAroundDropTableStatementOracle(final List<String> statements) {
+    List<String> addCommentToDropConstraintStatementMySql(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (this.dropTableStatementPattern.matcher(statement).matches()) {
-                result.add("begin execute immediate '" + statement
+            if (this.dropKeyStatementPatternMySql.matcher(statement).matches()) {
+                result.add("-- " + statement);
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
+    private Pattern dropTableStatementPatternOracle = Pattern.compile("drop table \\S*");
+
+    private Pattern dropTableStatementPatternOracleIfExists = Pattern.compile("drop table if exists \\S*");
+
+    List<String> addCatchExceptionAroundDropTableStatementOracle(final List<String> statements,
+            final boolean skipDropStatements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (this.dropTableStatementPatternOracle.matcher(statement).matches()) {
+                result.add((skipDropStatements ? "-- " : "") +
+                        "begin execute immediate '" + statement
+                        + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
+            } else if (this.dropTableStatementPatternOracleIfExists.matcher(statement).matches()) {
+                result.add((skipDropStatements ? "-- " : "") +
+                        "begin execute immediate '" + statement
                         + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
             } else {
                 result.add(statement);
@@ -379,14 +422,31 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private Pattern dropSequenceStatementPattern = Pattern.compile("drop sequence \\S*");
+    private Pattern dropSequenceStatementPatternOracle = Pattern.compile("drop sequence \\S*");
 
-    List<String> addCatchExceptionAroundDropSequenceStatementOracle(final List<String> statements) {
+    List<String> addCatchExceptionAroundDropSequenceStatementOracle(final List<String> statements,
+            final boolean skipDropStatements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            if (this.dropSequenceStatementPattern.matcher(statement).matches()) {
-                result.add("begin execute immediate '" + statement
+            if (this.dropSequenceStatementPatternOracle.matcher(statement).matches()) {
+                result.add((skipDropStatements ? "-- " : "") +
+                        "begin execute immediate '" + statement
                         + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+            } else {
+                result.add(statement);
+            }
+        }
+        return result;
+    }
+
+    private Pattern dropConstraintStatementPatternOracle = Pattern.compile("alter table \\S* drop foreign key \\S*");
+
+    List<String> addCommentToDropConstraintStatementOracle(final List<String> statements,
+            final boolean skipDropStatements) {
+        List<String> result = new ArrayList<String>(statements.size());
+        for (String statement : statements) {
+            if (this.dropConstraintStatementPatternOracle.matcher(statement).matches()) {
+                result.add("-- " + statement);
             } else {
                 result.add(statement);
             }
@@ -402,17 +462,22 @@ public class SchemaGeneratorJpa {
      * Surround with existence check for the SQL Server.
      *
      * @param statements statements to manipulate
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
      * @return statements to execute
      */
-    private List<String> addConditionToDropConstraintStatementSqlServer2012(final List<String> statements) {
+    private List<String> addConditionToDropConstraintStatementSqlServer2012(final List<String> statements,
+            final boolean skipDropStatements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).matches()) {
                 String[] statementParts = statement.split(" ");
                 String constraintName = statementParts[5];
-                result.add(String.format("IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n" + "  BEGIN\n" + "    %s\n" + "  END",
-                        constraintName,
-                        statement));
+                result.add(
+                        String.format((skipDropStatements ? "-- " : "") + "IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n"
+                                + (skipDropStatements ? "-- " : "") + "  BEGIN\n" + (skipDropStatements ? "-- " : "")
+                                + "  %s\n" + (skipDropStatements ? "-- " : "") + "  END",
+                                constraintName,
+                                statement));
             } else {
                 result.add(statement);
             }
@@ -427,14 +492,19 @@ public class SchemaGeneratorJpa {
      * Surround with existence check for the SQL Server.
      *
      * @param statements statements to manipulate
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
      * @return statements to execute
      */
-    private List<String> addConditionToDropTableStatementSqlServer2012(final List<String> statements) {
+    private List<String> addConditionToDropTableStatementSqlServer2012(final List<String> statements,
+            final boolean skipDropStatements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN.matcher(statement).matches()) {
                 result.add(
-                        String.format("IF OBJECT_ID('%s', 'U') IS NOT NULL\n\t", statement.split(" ")[2]) + statement);
+                        String.format(
+                                (skipDropStatements ? "-- " : "") + "IF OBJECT_ID('%s', 'U') IS NOT NULL\n"
+                                        + (skipDropStatements ? "-- " : "") + "\t",
+                                statement.split(" ")[2]) + statement);
             } else {
                 result.add(statement);
             }
@@ -457,10 +527,12 @@ public class SchemaGeneratorJpa {
      * name in each database which is a real pain if you have to drop a constrainted column.
      *
      * @param statements all ddl statements
+     * @param skipDropStatements if false then the sql script contains table drop statements, else not
      * @return ddl script with refined check constraint naming
      * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
      */
-    private List<String> dropCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(final List<String> statements)
+    private List<String> replaceCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(
+            final List<String> statements)
             throws NoSuchAlgorithmException {
         List<String> result = new ArrayList<String>(statements.size());
 
