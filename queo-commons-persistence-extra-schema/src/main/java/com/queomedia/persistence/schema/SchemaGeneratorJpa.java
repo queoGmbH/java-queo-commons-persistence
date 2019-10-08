@@ -402,7 +402,7 @@ public class SchemaGeneratorJpa {
     private List<Pattern> dropTableStatementPatternOracle = Arrays.asList( 
             Pattern.compile("drop table \\S*"),
             Pattern.compile("drop table \\S* cascade constraints"),
-            Pattern.compile("drop table \\S*"),
+            Pattern.compile("drop table if exists \\S*"),
             Pattern.compile("drop table if exists \\S*  cascade constraints"));
 
     List<String> addCatchExceptionAroundDropTableStatementOracle(final List<String> statements,
