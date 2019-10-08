@@ -299,11 +299,11 @@ public class SchemaGeneratorJpa {
      */
     String postProcessStatements(List<String> statements) throws NoSuchAlgorithmException {
         if (this.dialect == Dialect.MYSQL) {
-            statements = addCommentToDropConstraintStatement(statements);
+            statements = addCommentToDropConstraintStatementMySql(statements);
         }
         if (this.dialect == Dialect.ORACLE) {
-            statements = addCatchExceptionAroundDropTableStatement(statements);
-            statements = addCatchExceptionAroundDropSequenceStatement(statements);
+            statements = addCatchExceptionAroundDropTableStatementOracle(statements);
+            statements = addCatchExceptionAroundDropSequenceStatementOracle(statements);
         }
 
         if (this.dialect == Dialect.MYSQL) {
@@ -313,9 +313,9 @@ public class SchemaGeneratorJpa {
             statements = addSeperator(statements, "\n/\n");
         }
         if (this.dialect == Dialect.SQL_SERVER_2012) {
-            statements = addSqlServerConditionToDropConstraintStatement(statements);
-            statements = addSqlServerConditionToDropTableStatement(statements);
-            statements = dropCheckConstraintStatementsAndAddWithConstraintName(statements);
+            statements = addConditionToDropConstraintStatementSqlServer2012(statements);
+            statements = addConditionToDropTableStatementSqlServer2012(statements);
+            statements = dropCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(statements);
             statements = addSeperator(statements, ";");
         }
 
@@ -352,7 +352,7 @@ public class SchemaGeneratorJpa {
 
     private Pattern dropKeyStatementPattern = Pattern.compile("alter table \\S* drop foreign key \\S*");
 
-    List<String> addCommentToDropConstraintStatement(final List<String> statements) {
+    List<String> addCommentToDropConstraintStatementMySql(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (this.dropKeyStatementPattern.matcher(statement).matches()) {
@@ -366,7 +366,7 @@ public class SchemaGeneratorJpa {
 
     private Pattern dropTableStatementPattern = Pattern.compile("drop table \\S* cascade constraints");
 
-    List<String> addCatchExceptionAroundDropTableStatement(final List<String> statements) {
+    List<String> addCatchExceptionAroundDropTableStatementOracle(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (this.dropTableStatementPattern.matcher(statement).matches()) {
@@ -381,7 +381,7 @@ public class SchemaGeneratorJpa {
 
     private Pattern dropSequenceStatementPattern = Pattern.compile("drop sequence \\S*");
 
-    List<String> addCatchExceptionAroundDropSequenceStatement(final List<String> statements) {
+    List<String> addCatchExceptionAroundDropSequenceStatementOracle(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (this.dropSequenceStatementPattern.matcher(statement).matches()) {
@@ -404,7 +404,7 @@ public class SchemaGeneratorJpa {
      * @param statements statements to manipulate
      * @return statements to execute
      */
-    private List<String> addSqlServerConditionToDropConstraintStatement(final List<String> statements) {
+    private List<String> addConditionToDropConstraintStatementSqlServer2012(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).matches()) {
@@ -429,7 +429,7 @@ public class SchemaGeneratorJpa {
      * @param statements statements to manipulate
      * @return statements to execute
      */
-    private List<String> addSqlServerConditionToDropTableStatement(final List<String> statements) {
+    private List<String> addConditionToDropTableStatementSqlServer2012(final List<String> statements) {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (SQL_SERVER_DROP_TABLE_STATEMENT_PATTERN.matcher(statement).matches()) {
@@ -460,7 +460,7 @@ public class SchemaGeneratorJpa {
      * @return ddl script with refined check constraint naming
      * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
      */
-    private List<String> dropCheckConstraintStatementsAndAddWithConstraintName(final List<String> statements)
+    private List<String> dropCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(final List<String> statements)
             throws NoSuchAlgorithmException {
         List<String> result = new ArrayList<String>(statements.size());
 
