@@ -2,7 +2,6 @@ package com.queomedia.persistence.schema;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -25,7 +24,7 @@ public class SchemaGeneratorJpaTest {
     public void testGenerateDdlScript() throws Exception {
 
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit");
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit", ";", false);
 
         /* The test are the varchar(100) columns, because the 100 is set via JSR303: @Size(max=100) */
         String expectedScript = ""//
@@ -44,7 +43,8 @@ public class SchemaGeneratorJpaTest {
     }
 
     /**
-     *  scenario: alter table drop key statements should be commented out, even if they are splitted into several lines.
+     * scenario: alter table drop key statements should be commented out, even if they are splitted into several lines.
+     * but drop table statements should remain
      *
      * @throws Exception - no exception expected
      */
@@ -52,11 +52,56 @@ public class SchemaGeneratorJpaTest {
     public void testPostProcessStatements() throws Exception {
 
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.MYSQL);
-        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit");
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit", ";", false);       
 
         Assert.assertThat(generateDdlScript,
                 Matchers.containsString(
                         "-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
+        
+        Assert.assertThat(generateDdlScript, Matchers.containsString("drop table if exists DemoEntity;"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("drop table if exists DemoEntityWithMinConstraint;"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("drop table if exists DemoEntiyWithRelation;"));
+    }
+    
+    /**
+     * scenario: drop table and alter table drop key statements should be commented out.
+     *
+     * @throws Exception - no exception expected
+     */
+    @Test
+    public void testPostProcessStatementsSkipDrop() throws Exception {
+
+        SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.MYSQL);
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit", ";", true);
+        
+        Assert.assertThat(generateDdlScript,
+                Matchers.containsString(
+                        "-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd;"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- drop table if exists DemoEntity;"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- drop table if exists DemoEntityWithMinConstraint;"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- drop table if exists DemoEntiyWithRelation;"));
+    }
+    
+    
+    /**
+     * scenario: drop table and alter table drop key statements should be commented out.
+     *
+     * @throws Exception - no exception expected
+     */
+    @Test
+    public void testPostProcessStatementsSkipDropOracle() throws Exception {
+
+        SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.ORACLE);
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnit", ";", true);
+
+        System.out.println(generateDdlScript);
+        
+        Assert.assertThat(generateDdlScript,
+                Matchers.containsString(
+                        "-- alter table DemoEntiyWithRelation drop foreign key FKkx2ht41rvx878qivxu39d3hnd"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- begin execute immediate 'drop table if exists DemoEntity';"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- begin execute immediate 'drop table if exists DemoEntityWithMinConstraint';"));
+        Assert.assertThat(generateDdlScript, Matchers.containsString("-- begin execute immediate 'drop table if exists DemoEntiyWithRelation';"));
     }
 
     /**
@@ -67,7 +112,7 @@ public class SchemaGeneratorJpaTest {
     @Test
     public void testCheckConstraintNaming() throws NoSuchAlgorithmException {
         SchemaGeneratorJpa generator = new SchemaGeneratorJpa(Dialect.SQL_SERVER_2012);
-        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnitSQLServer");
+        String generateDdlScript = generator.generateDdlScript("examplePersistenceUnitSQLServer", ";", false);
 
         String expectedScript = "" + "id int not null," + "maxValue int not null,"
                 + "CONSTRAINT chk_94c741d885c721b1cdeb1f9a9340a32a CHECK (maxValue<=3)," + "minValue int not null,"
