@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>queo-commons-persistence-libdef</artifactId>
@@ -21,16 +22,20 @@
 		<!-- Lovelace-SR2 contains spring data jpa 2.1.2.RELEASE -->
 		<slf4j.version>1.7.25</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
-		
+
 		<aspectj.version>1.9.2</aspectj.version>
-		
+
 		<jaxb.version>2.3.1</jaxb.version>
 		<jaxb.runtime.version>${jaxb.version}</jaxb.runtime.version>
+
+		<jackson.version>2.9.9</jackson.version>
+		<jmock.version>2.9.0</jmock.version>
 	</properties>
 
 
 	<dependencyManagement>
 		<dependencies>
+
 			<dependency>
 				<groupId>com.queomedia.commons.persistence</groupId>
 				<artifactId>queo-commons-persistence-bom</artifactId>
@@ -38,7 +43,7 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-		
+
 			<!-- queo commons (for main) -->
 			<dependency>
 				<groupId>com.queomedia</groupId>
@@ -57,7 +62,7 @@
 				<artifactId>queo-commons-exceptions</artifactId>
 				<version>1.2.0</version>
 			</dependency>
-			
+
 			<!-- apache/jarkarta/... commons -->
 			<dependency>
 				<groupId>commons-lang</groupId>
@@ -84,8 +89,8 @@
 						<artifactId>commons-logging</artifactId>
 					</exclusion>
 				</exclusions>
-			</dependency>		
-			
+			</dependency>
+
 			<!-- spring -->
 			<dependency>
 				<groupId>org.springframework</groupId>
@@ -107,7 +112,7 @@
 				<artifactId>spring-data-jpa-extension</artifactId>
 				<version>0.4.1</version>
 			</dependency>
-			
+
 			<!-- hibernate / jpa -->
 			<dependency>
 				<groupId>org.hibernate</groupId>
@@ -127,16 +132,16 @@
 			<dependency>
 				<groupId>org.hibernate</groupId>
 				<artifactId>hibernate-jpamodelgen</artifactId>
-				<version>${hibernate.version}</version>				
+				<version>${hibernate.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>javax.persistence</groupId>
 				<artifactId>javax.persistence-api</artifactId>
 				<version>2.2</version>
-			</dependency>			
+			</dependency>
 
-			
+
 			<!-- validation -->
 			<dependency>
 				<groupId>javax.validation</groupId>
@@ -187,9 +192,9 @@
 				<artifactId>jul-to-slf4j</artifactId>
 				<version>${slf4j.version}</version>
 			</dependency>
- 
- 
- 			<dependency>
+
+
+			<dependency>
 				<groupId>net.bytebuddy</groupId>
 				<artifactId>byte-buddy</artifactId>
 				<version>${bytebuddy.version}</version>
@@ -200,7 +205,7 @@
 				<artifactId>javassist</artifactId>
 				<version>${javassist.version}</version>
 			</dependency>
-			
+
 			<!-- activation for jaxb -->
 			<dependency>
 				<groupId>javax.activiation</groupId>
@@ -220,7 +225,7 @@
 				<artifactId>jaxb-runtime</artifactId>
 				<version>${jaxb.runtime.version}</version>
 			</dependency>
-			
+
 			<dependency>
 				<groupId>org.aspectj</groupId>
 				<artifactId>aspectjrt</artifactId>
@@ -237,11 +242,52 @@
 				<version>${aspectj.version}</version>
 			</dependency>
 
+			<!-- jackson -->
+			<dependency>
+				<groupId>com.fasterxml.jackson</groupId>
+				<artifactId>jackson-bom</artifactId>
+				<version>${jackson.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
 			<!-- for test -->
 			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.12</version>
+			</dependency>
+
+			<!-- jmock -->
+			<dependency>
+				<groupId>org.jmock</groupId>
+				<artifactId>jmock</artifactId>
+				<version>${jmock.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jmock</groupId>
+				<artifactId>jmock-junit4</artifactId>
+				<version>${jmock.version}</version>
+				<exclusions>
+					<exclusion>
+						<!-- we use junit:junit -->
+						<groupId>junit</groupId>
+						<artifactId>junit-dep</artifactId>
+					</exclusion>
+				</exclusions>
+			</dependency>
+			<dependency>
+				<groupId>org.jmock</groupId>
+				<artifactId>jmock-legacy</artifactId>
+				<version>${jmock.version}</version>
+			</dependency>
+
+
+			<!-- JSONAssert (uppercase "SON") -->
+			<dependency>
+				<groupId>org.skyscreamer</groupId>
+				<artifactId>jsonassert</artifactId>
+				<version>1.5.0</version>
 			</dependency>
 
 			<dependency>
