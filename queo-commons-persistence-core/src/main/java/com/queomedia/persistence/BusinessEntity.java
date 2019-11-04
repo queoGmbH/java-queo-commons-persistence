@@ -11,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
-import javax.persistence.Transient;
 
 import org.hibernate.Hibernate;
 import org.springframework.data.domain.Persistable;
@@ -65,8 +64,7 @@ public abstract class BusinessEntity<T extends Serializable> implements Serializ
     /**
      * Used by hibernate
      * @return the hibernate id
-     */    
-    @Transient
+     */
     public Long getId() {
         return this.id;
     }
@@ -76,13 +74,10 @@ public abstract class BusinessEntity<T extends Serializable> implements Serializ
         this.id = id;
     }
     
-
-    @Transient
     public Long getHibernateId() {
         return this.id;
     }
     
-    @Transient
     public BusinessId<T> getBusinessId() {
         return this.businessId;
     }
@@ -91,7 +86,6 @@ public abstract class BusinessEntity<T extends Serializable> implements Serializ
         this.businessId = businessId;
     }
     
-    @Transient
     public long getBusinessIdValue() {
         return this.businessId.getBusinessId();
     }
