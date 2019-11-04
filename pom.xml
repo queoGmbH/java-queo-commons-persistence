@@ -64,6 +64,7 @@
 		<module>queo-commons-persistence-extra-schema</module>
 		<module>queo-commons-persistence-extra-fake</module>
 		<module>queo-commons-persistence-extra-json</module>
+		<module>queo-commons-persistence-extra-oracle</module>
 		<module>queo-commons-persistence-test-demo</module>
 	</modules>
 
