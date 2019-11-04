@@ -17,8 +17,7 @@
 		<javassist.version>3.25.0-GA</javassist.version>
 		<bytebuddy.version>1.10.1</bytebuddy.version>
 
-		<spring-data-releasetrain.version>Lovelace-SR2</spring-data-releasetrain.version>
-		<!-- Lovelace-SR2 contains spring data jpa 2.1.2.RELEASE -->
+		<spring-data-releasetrain.version>Moore-RELEASE</spring-data-releasetrain.version>
 		<slf4j.version>1.7.28</slf4j.version>
 		<hamcrest.version>2.1</hamcrest.version>
 
@@ -94,7 +93,7 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-framework-bom</artifactId>
-				<version>5.1.2.RELEASE</version>
+				<version>5.2.0.RELEASE</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

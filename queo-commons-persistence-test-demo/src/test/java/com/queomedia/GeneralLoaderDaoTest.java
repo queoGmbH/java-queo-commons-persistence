@@ -65,10 +65,10 @@ public class GeneralLoaderDaoTest {
         this.compositeEntityDao.makePersistent(compositeEntityB);
 
         AssertUtil.sameOrder(Arrays.asList(compositeEntityA, compositeEntityB),
-                this.generalLoaderDao.findAll(CompositeEntity.class, new Sort(Direction.ASC, "businessId")));
+                this.generalLoaderDao.findAll(CompositeEntity.class, Sort.by(Direction.ASC, "businessId")));
 
         AssertUtil.sameOrder(Arrays.asList(compositeEntityB, compositeEntityA),
-                this.generalLoaderDao.findAll(CompositeEntity.class, new Sort(Direction.DESC, "businessId")));
+                this.generalLoaderDao.findAll(CompositeEntity.class, Sort.by(Direction.DESC, "businessId")));
     }
 
     @Test
