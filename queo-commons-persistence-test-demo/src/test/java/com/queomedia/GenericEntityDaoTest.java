@@ -49,10 +49,10 @@ public class GenericEntityDaoTest {
         compositeEntityDao.makePersistent(compositeEntityB);
 
         AssertUtil.sameOrder(Arrays.asList(compositeEntityA, compositeEntityB),
-                compositeEntityDao.findAll(new Sort(Direction.ASC, "businessId")));
+                compositeEntityDao.findAll(Sort.by(Direction.ASC, "businessId")));
 
         AssertUtil.sameOrder(Arrays.asList(compositeEntityB, compositeEntityA),
-                compositeEntityDao.findAll(new Sort(Direction.DESC, "businessId")));
+                compositeEntityDao.findAll(Sort.by(Direction.DESC, "businessId")));
     }
 
     @Test
