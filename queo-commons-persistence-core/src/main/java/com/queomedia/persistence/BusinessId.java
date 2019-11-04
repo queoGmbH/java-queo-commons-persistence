@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import javax.persistence.Transient;
 
 import org.hibernate.Hibernate;
 
@@ -28,10 +27,6 @@ public class BusinessId<T> implements Serializable, Cloneable, Comparable<Busine
     /** The business id. */
     @Column(nullable = false, unique = true, name = "businessId")
     private long businessId;
-
-    /** This useless field is nessary for the uselesse flex remoting. */
-    @Transient
-    private String internalLongAsString;
 
     /**
      * Used by Hibernate.
