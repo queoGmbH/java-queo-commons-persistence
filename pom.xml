@@ -226,6 +226,21 @@
 									</excludes>
 									<message>use JPA 2.2 javax.persistence:javax.persistence-api:2.2 instead</message>
 								</bannedDependencies>
+								<bannedDependencies>
+									<!-- groupId of dom4j changed in Version 2 from dom4j to org.dom4j (RUM-1351)-->
+									<excludes>
+										<exclude>dom4j:dom4j</exclude>
+									</excludes>
+									<message>use org.dom4j:dom4j instead of dom4j:dom4j</message>
+								</bannedDependencies>
+								<bannedDependencies>
+									<!-- org.hamcrest:hamcrest-core and org.hamcrest:hamcrest-library was dropped in version 2.1 prior to org.hamcrest:hamcrest (RUM-1492) -->
+									<excludes>
+										<exclude>org.hamcrest:hamcrest-core</exclude>
+										<exclude>org.hamcrest:hamcrest-library</exclude>
+									</excludes>
+									<message>use org.hamcrest:hamcrest only (since version 2.1)</message>
+								</bannedDependencies>
 							</rules>
 						</configuration>
 					</execution>
