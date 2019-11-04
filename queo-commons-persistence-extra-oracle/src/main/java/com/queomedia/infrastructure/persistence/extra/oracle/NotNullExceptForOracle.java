@@ -23,7 +23,7 @@ import javax.validation.Payload;
  * 
  * <p>
  * It is intended that {@link NotNullExceptForOracle} and {@link NotNullString} are used together if one want to have
- * a String that <b>can be empty but not null<b> in the Java world. In the oracle DB it become null.
+ * a String that <b>can be empty but not null</b> in the Java world. In the oracle DB it become null.
  * usage: 
  * </p>
  * <pre><code>
