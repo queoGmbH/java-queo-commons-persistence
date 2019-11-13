@@ -38,7 +38,7 @@
 
 		<dependency>
 			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
+			<artifactId>spring-data-commons</artifactId>
 			<exclusions>
 				<exclusion>
 					<groupId>org.springframework</groupId>
@@ -46,6 +46,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+
 
 		<!-- json  -->
 		<dependency>
