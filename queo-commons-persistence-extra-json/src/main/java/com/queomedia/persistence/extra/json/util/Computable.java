@@ -8,6 +8,7 @@ package com.queomedia.persistence.extra.json.util;
  * @param <V> the generic type for the calculated value.
  * @author Brian Goetz and Tim Peierls - in Java Concurrency In Practice, page 108.
  */
+@FunctionalInterface
 public interface Computable<A, V> {
 
     /**
