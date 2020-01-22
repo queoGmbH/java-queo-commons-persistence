@@ -28,6 +28,7 @@ import org.hibernate.jpa.boot.internal.EntityManagerFactoryBuilderImpl;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.schema.prettyprint.SqlPrettyPrinter;
+import com.queomedia.persistence.schema.statmentpostprocessor.StatementPostProcessor;
 
 /**
  * JPA 2.1 based schema generator.
@@ -47,6 +48,9 @@ public class SchemaGeneratorJpa {
 
     /** The dialect. */
     private final Dialect dialect;
+    
+    /** External statment postprocessors */
+    private final List<StatementPostProcessor> statementPostProcessors = new ArrayList<>();
 
     /**
      * Instantiates a new schema generator.
@@ -101,6 +105,27 @@ public class SchemaGeneratorJpa {
     public void generate(final String persistenceUnitName, final String fileName) {
         generateDdlFile(persistenceUnitName, fileName, ";", false);
     }
+    
+    
+    /**
+     * Gets the statement post processors.
+     *
+     * @return the statement post processors
+     */
+    public List<StatementPostProcessor> getStatementPostProcessors() {
+        return statementPostProcessors;
+    }
+    
+    /**
+     * Adds the statement post processor.
+     *
+     * @param statementPostProcessor the statement postprocessor
+     * @return the schema generator jpa for fluent use
+     */
+    public SchemaGeneratorJpa addStatementPostProcessor(StatementPostProcessor statementPostProcessor) {
+        this.statementPostProcessors.add(statementPostProcessor);
+        return this;
+    }
 
     /**
      * Generate the DDL Script File.
@@ -110,8 +135,7 @@ public class SchemaGeneratorJpa {
      * @param delimiter the sql statement delimiter
      * @param skipDropStatements if false then the sql script contains table drop statements, else not
     */
-    public void generateDdlFile(final String persistenceUnitName, final String fileName,
-            final String delimiter,
+    public void generateDdlFile(final String persistenceUnitName, final String fileName, final String delimiter,
             final boolean skipDropStatements) {
 
         //TODO: use try-with-resource after update to java7
@@ -154,7 +178,8 @@ public class SchemaGeneratorJpa {
      * @return the ddl script
      * @throws NoSuchAlgorithmException thrown if the hash algorithm couldn't resolve the md5 instance
      */
-    public String generateDdlScript(final String persistenceUnitName, final String delimiter, final boolean skipDropStatements)
+    public String generateDdlScript(final String persistenceUnitName, final String delimiter,
+            final boolean skipDropStatements)
             throws NoSuchAlgorithmException {
 
         final List<String> statements = generateCoreStatementsJpa21way(persistenceUnitName);
@@ -332,12 +357,15 @@ public class SchemaGeneratorJpa {
             statements = addCatchExceptionAroundDropTableStatementOracle(statements, skipDropStatements);
             statements = addCatchExceptionAroundDropSequenceStatementOracle(statements, skipDropStatements);
             statements = addCommentToDropConstraintStatementOracle(statements, skipDropStatements);
-        }        
+        }
         if (this.dialect == Dialect.SQL_SERVER_2012) {
             statements = addConditionToDropConstraintStatementSqlServer2012(statements, skipDropStatements);
             statements = addConditionToDropTableStatementSqlServer2012(statements, skipDropStatements);
             statements = replaceCheckConstraintStatementsAndAddWithConstraintNameSqlServer2012(statements);
         }
+
+        statements = externalPostProcessStatements(statements);
+
         statements = addSeperator(statements, delimiter);
 
         SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
@@ -353,6 +381,19 @@ public class SchemaGeneratorJpa {
             formattedStatements.append("\n");
         }
         return formattedStatements.toString();
+    }    
+
+    /** Forward all statements to external statement postprocessors */
+    private List<String> externalPostProcessStatements(final List<String> statements) {
+        List<String> postProcessedStatements = new ArrayList<>(statements);
+        for (StatementPostProcessor postProcessor : statementPostProcessors) {
+            List<String> processorResult = new ArrayList<>();
+            for(String statement : postProcessedStatements) {
+                processorResult.addAll(postProcessor.postProcess(statement));
+            }
+            postProcessedStatements = processorResult;
+        }
+        return postProcessedStatements;
     }
 
     /**
@@ -399,8 +440,7 @@ public class SchemaGeneratorJpa {
         return result;
     }
 
-    private List<Pattern> dropTableStatementPatternOracle = Arrays.asList( 
-            Pattern.compile("drop table \\S*"),
+    private List<Pattern> dropTableStatementPatternOracle = Arrays.asList(Pattern.compile("drop table \\S*"),
             Pattern.compile("drop table \\S* cascade constraints"),
             Pattern.compile("drop table if exists \\S*"),
             Pattern.compile("drop table if exists \\S*  cascade constraints"));
@@ -410,14 +450,13 @@ public class SchemaGeneratorJpa {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             boolean match = false;
-            for(Pattern pattern : dropTableStatementPatternOracle) {
+            for (Pattern pattern : dropTableStatementPatternOracle) {
                 if (pattern.matcher(statement).matches()) {
-                    result.add((skipDropStatements ? "-- " : "") +
-                            "begin execute immediate '" + statement
+                    result.add((skipDropStatements ? "-- " : "") + "begin execute immediate '" + statement
                             + "'; exception when others then if sqlcode != -942 then raise; end if; end;");
                     match = true;
                     break;
-                } 
+                }
             }
             if (!match) {
                 result.add(statement);
@@ -433,8 +472,7 @@ public class SchemaGeneratorJpa {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (this.dropSequenceStatementPatternOracle.matcher(statement).matches()) {
-                result.add((skipDropStatements ? "-- " : "") +
-                        "begin execute immediate '" + statement
+                result.add((skipDropStatements ? "-- " : "") + "begin execute immediate '" + statement
                         + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
             } else {
                 result.add(statement);
@@ -476,12 +514,9 @@ public class SchemaGeneratorJpa {
             if (SQL_SERVER_DROP_CONSTRAINT_STATEMENT_PATTERN.matcher(statement).matches()) {
                 String[] statementParts = statement.split(" ");
                 String constraintName = statementParts[5];
-                result.add(
-                        String.format((skipDropStatements ? "-- " : "") + "IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n"
-                                + (skipDropStatements ? "-- " : "") + "  BEGIN\n" + (skipDropStatements ? "-- " : "")
-                                + "  %s\n" + (skipDropStatements ? "-- " : "") + "  END",
-                                constraintName,
-                                statement));
+                result.add(String.format((skipDropStatements ? "-- " : "") + "IF (OBJECT_ID('%s', 'F') IS NOT NULL)\n"
+                        + (skipDropStatements ? "-- " : "") + "  BEGIN\n" + (skipDropStatements ? "-- " : "") + "  %s\n"
+                        + (skipDropStatements ? "-- " : "") + "  END", constraintName, statement));
             } else {
                 result.add(statement);
             }
