@@ -23,16 +23,43 @@ public class SqlPrettyPrinter {
         String formatted = StringUtils.strip(statement);
 
         String lowerCase = formatted.toLowerCase(Locale.ENGLISH);
+        if (lowerCase.startsWith("begin execute immediate '") && lowerCase.endsWith("end if; end;;")) {
+            return formatCreateIfExistsTableStatment(formatted);
+        }
         if (lowerCase.startsWith("create table")) {
-            return formatCreateTableStatment(formatted);
+            return formatCreateTableStatment(formatted, 0, 4, 0);
         } else {
             return formatted;
         }
     }
 
-    private static final String INDENTION = "    ";
+    private String formatCreateIfExistsTableStatment(final String statement) {
+        String pre = StringUtils.substringBefore(statement, "'");
+        String post = StringUtils.substringAfterLast(statement, "';");
+        if (!pre.isEmpty() && !post.isEmpty()) {
+            String main = StringUtils.substringBetween(statement, pre + "'", "';" + post);
 
-    private String formatCreateTableStatment(final String statment) {
+            String formattedMain;
+            if (main.toLowerCase(Locale.ENGLISH).startsWith("create table")) {
+                formattedMain = formatCreateTableStatment(StringUtils.strip(main), 0, 4, 2);
+            } else {
+                formattedMain = main;
+            }
+
+            boolean multiLineMain = formattedMain.contains("\n");
+            if (multiLineMain) {
+                return pre.trim() + "\n  '" + formattedMain + "';\n" + post.trim();
+            } else {
+                return pre.trim() + " '" + formattedMain + "'; " + post.trim();
+            }
+
+        } else {
+            return formatCreateTableStatment(statement, 0, 4, 0);
+        }
+    }
+
+    private String formatCreateTableStatment(final String statment, int indentLevelCommand, int indentLevelFields,
+            int indentLevelOptions) {
         String command = StringUtils.substringBefore(statment, "(");
         String fields = StringUtils.substringAfter(StringUtils.substringBeforeLast(statment, ")"), "(");
         String options = StringUtils.substringAfterLast(statment, ")");
@@ -43,7 +70,7 @@ public class SqlPrettyPrinter {
         boolean waitForFirstNoneWhitspace = true;
 
         if (!fields.isEmpty()) {
-            formattedFields.append(SqlPrettyPrinter.INDENTION);
+            formattedFields.append(indent(indentLevelFields));
         }
         for (char c : fields.toCharArray()) {
             switch (c) {
@@ -60,7 +87,7 @@ public class SqlPrettyPrinter {
                 if (bracketLevel == 0) {
                     waitForFirstNoneWhitspace = true;
                     formattedFields.append('\n');
-                    formattedFields.append(SqlPrettyPrinter.INDENTION);
+                    formattedFields.append(indent(indentLevelFields));
                 }
                 break;
             case ' ':
@@ -74,7 +101,17 @@ public class SqlPrettyPrinter {
             }
         }
 
-        return command + "(\n" + formattedFields.toString() + "\n)" + options;
+        return indent(indentLevelCommand) + command + "(\n" + formattedFields.toString() + "\n"
+                + indent(indentLevelOptions) + ")" + options;
+    }
+
+    private static String indent(int indentLevel) {
+        //in java11 use " ".repeat(indentLevel);
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < indentLevel; i++) {
+            b.append(" ");
+        }
+        return b.toString();
     }
 
     public List<List<String>> groupStatments(final List<String> statements) {
@@ -156,10 +193,15 @@ public class SqlPrettyPrinter {
         }
 
         public static Group extractFromStatment(final String statment) {
-            String[] parts = StringUtils.split(statment);
-            if ((parts.length > 3)
-                    && (parts[0].equalsIgnoreCase("create") || parts[0].equalsIgnoreCase("update") || parts[0]
-                            .equalsIgnoreCase("alter")) && parts[1].equalsIgnoreCase("table")) {
+            final String[] parts;
+            if (statment.toLowerCase(Locale.ENGLISH).startsWith("begin execute immediate '")) {
+                parts = StringUtils.split(StringUtils.substringAfter(statment, "begin execute immediate '"));
+            } else {
+                parts = StringUtils.split(statment);
+            }
+
+            if ((parts.length > 3) && (parts[0].equalsIgnoreCase("create") || parts[0].equalsIgnoreCase("update")
+                    || parts[0].equalsIgnoreCase("alter")) && parts[1].equalsIgnoreCase("table")) {
                 return new Group(parts[0], parts[2]);
             } else {
                 return new Group("unknown", "unknown");
