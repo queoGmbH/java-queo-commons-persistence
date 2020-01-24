@@ -3,7 +3,7 @@
 
 	<groupId>com.queomedia.commons.persistence</groupId>
 	<artifactId>queo-commons-persistence</artifactId>
-	<version>4.6.3-SNAPSHOT</version>
+	<version>4.6.3</version>
 	<packaging>pom</packaging>
 
 	<name>queo commons persistence</name>
@@ -31,9 +31,9 @@
 	</properties>
 
 	<scm>
-		<connection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</connection>
-		<developerConnection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</developerConnection>
-		<url>https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/trunk/queo-commons-persistence</url>
+		<connection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/tags/queo-commons-persistence-4.6.3</connection>
+		<developerConnection>scm:svn:https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/tags/queo-commons-persistence-4.6.3</developerConnection>
+		<url>https://code.dev.queo-group.com/svn/queo_commons/java/queo-commons-persistence/tags/queo-commons-persistence-4.6.3</url>
 	</scm>
 
 	<distributionManagement>
