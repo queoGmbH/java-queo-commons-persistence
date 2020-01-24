@@ -116,17 +116,6 @@ public class ExplicitCreateIfNotExistsFilter implements CreateIfNotExistsFilter 
         return parts[2];
     }
 
-    /**
-     * Check if there is any element that is in collection a as well in collection b (case insentitiv).
-     *
-     * @param a the collection a
-     * @param b the collection b
-     * @return true, there is a element in "a" and element in "b" that are equals ignore case
-     */
-    private boolean intersectCaseInsentitive(final Collection<String> a, final Collection<String> b) {
-        return b.stream().anyMatch(item -> containsCaseInsentitive(a, item));
-    }
-
     private boolean containsCaseInsentitive(final Collection<String> a, final String b) {
         return a.stream().anyMatch(b::equalsIgnoreCase);
     }
