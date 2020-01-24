@@ -368,7 +368,7 @@ public class SchemaGeneratorJpa {
 
         statements = addSeperator(statements, delimiter);
 
-        SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter();
+        SqlPrettyPrinter mySqlPrettyPrinter = new SqlPrettyPrinter(delimiter);
         List<List<String>> groupedStatments = mySqlPrettyPrinter.groupStatments(statements);
 
         StringBuilder formattedStatements = new StringBuilder();
@@ -407,7 +407,13 @@ public class SchemaGeneratorJpa {
     private List<String> addSeperator(final List<String> statements, final String seperator) {
         ArrayList<String> withSeparator = new ArrayList<String>(statements.size());
         for (String statement : statements) {
-            withSeparator.add(statement + seperator);
+            boolean isComment = statement.startsWith("--");
+            
+            if (isComment) {
+                withSeparator.add(statement + seperator.replaceAll("\n", "\n-- "));
+            } else {
+                withSeparator.add(statement + seperator);
+            }
         }
         return withSeparator;
     }

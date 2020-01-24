@@ -11,6 +11,12 @@ import com.queomedia.commons.checks.Check;
 /** The Pretty Printer does NOT modify the statements (add no separators ...) */
 public class SqlPrettyPrinter {
 
+    private final String delimiter;
+
+    public SqlPrettyPrinter(final String delimiter) {    
+        this.delimiter = delimiter;
+    }
+
     /**
      *  Pretty Print the given statement.
      *
@@ -23,7 +29,7 @@ public class SqlPrettyPrinter {
         String formatted = StringUtils.strip(statement);
 
         String lowerCase = formatted.toLowerCase(Locale.ENGLISH);
-        if (lowerCase.startsWith("begin execute immediate '") && lowerCase.endsWith("end if; end;;")) {
+        if (lowerCase.startsWith("begin execute immediate '") && lowerCase.endsWith("end if; end;" + delimiter)) {
             return formatCreateIfExistsTableStatment(formatted);
         }
         if (lowerCase.startsWith("create table")) {
