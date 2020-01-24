@@ -10,7 +10,7 @@ import com.queomedia.persistence.schema.prettyprint.SqlPrettyPrinter;
 
 public class PrettyPrinterTest {
 
-    private SqlPrettyPrinter prettyPrinter = new SqlPrettyPrinter();
+    private SqlPrettyPrinter prettyPrinter = new SqlPrettyPrinter(";");
 
     @Test
     public void testFormatLineStatement() throws Exception {
