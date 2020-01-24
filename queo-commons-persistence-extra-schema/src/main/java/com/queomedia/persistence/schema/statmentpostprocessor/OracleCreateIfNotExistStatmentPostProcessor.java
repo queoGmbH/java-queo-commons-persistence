@@ -3,12 +3,36 @@ package com.queomedia.persistence.schema.statmentpostprocessor;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.queomedia.commons.checks.Check;
 
 public class OracleCreateIfNotExistStatmentPostProcessor implements StatementPostProcessor {
 
-    private static final String WRAP_START = "begin execute immediate '";
+    /**
+     * Oracle error code for a create sequence like {@code create sequence mysequence} if it already exists.
+     */
+    private static final int CREATE_SEQUENCE_EXIST_ERROR_CODE = -955;
 
-    private static final String WRAP_END = "'; exception when others then if sqlcode != -955 then raise; end if; end;";
+    /**
+     * Oracle error code for a table create statement like {@code create table mytable(...)} if it already exists.
+     */
+    private static final int CREATE_TABLE_EXIST_ERROR_CODE = -955;
+
+    /**
+     * Oracle error code for alter table add foreign key constraint like
+     * {@code alter table myTable add constraint FKmy foreign key (REV) references REVINFO}
+     * if it already exists.
+     */
+    private static final int ALTER_TABLE_FK_CONSTRAINT_EXIST_ERROR_CODE = -2275;
+
+    /**
+     * Oracle error code for alter table add unique constraint like:
+     * {@code alter table myTable add constraint UK_acmtkmfxy9b50uysodtdnmmxi unique (businessId)}
+     * if it already exists.
+     */
+    private static final int ALTER_TABLE_UNIQUE_CONSTRAINT_EXIST_ERROR_CODE = -2261;
 
     private final CreateIfNotExistTableFilter createIfNotExistTableFilter;
 
@@ -54,17 +78,23 @@ public class OracleCreateIfNotExistStatmentPostProcessor implements StatementPos
 
         if (normalizedStatment.startsWith("create table")
                 && this.createIfNotExistTableFilter.isEnabledForCreateTable(sqlStatment)) {
-            return WRAP_START + sqlStatment + WRAP_END;
+            return executeImmediateAndIgnoreException(sqlStatment, CREATE_TABLE_EXIST_ERROR_CODE);
         }
 
         if (normalizedStatment.startsWith("create sequence")
                 && this.createIfNotExistSequenceFilter.isEnabledForCreateSequcence(sqlStatment)) {
-            return WRAP_START + sqlStatment + WRAP_END;
+            return executeImmediateAndIgnoreException(sqlStatment, CREATE_SEQUENCE_EXIST_ERROR_CODE);
         }
 
         if (normalizedStatment.startsWith("alter table") && normalizedStatment.contains(" add constraint ")
                 && this.createIfNotExistConstraintFilter.isEnabledForCreateConstraint(sqlStatment)) {
-            return WRAP_START + sqlStatment + WRAP_END;
+            if (normalizedStatment.contains("foreign key")) {
+                return executeImmediateAndIgnoreException(sqlStatment, ALTER_TABLE_FK_CONSTRAINT_EXIST_ERROR_CODE);
+            }
+            if (isAlterTableAddUniqueConstraintStatement(normalizedStatment)) {
+                return executeImmediateAndIgnoreException(sqlStatment, ALTER_TABLE_UNIQUE_CONSTRAINT_EXIST_ERROR_CODE);
+            }
+            return sqlStatment;
         }
 
         return sqlStatment;
@@ -107,7 +137,29 @@ public class OracleCreateIfNotExistStatmentPostProcessor implements StatementPos
         public boolean isEnabledForCreateSequcence(final String sql) {
             return true;
         }
+    }
 
+    /**
+     * Build an execute immediate statement that catch and ignore the given exception.
+     *
+     * @param sqlStatement the sql statement that should been executed
+     * @param errorCode the error code
+     * @return the complete statment
+     */
+    private String executeImmediateAndIgnoreException(String sqlStatement, int errorCode) {
+        Check.notNullArgument(sqlStatement, "sqlStatement");
+
+        return "begin execute immediate '" + sqlStatement + "'; exception when others then if sqlcode != " + errorCode
+                + " then raise; end if; end;";
+    }
+
+    static boolean isAlterTableAddUniqueConstraintStatement(final String sqlStatement) {
+        Check.notNullArgument(sqlStatement, "sqlStatement");
+
+        Pattern pattern = Pattern.compile("alter\\s+table\\s+.*\\s+add\\s+constraint\\s+.*\\s+unique\\s*\\(.*",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+        Matcher matcher = pattern.matcher(sqlStatement.trim());
+        return matcher.matches();
     }
 
 }
