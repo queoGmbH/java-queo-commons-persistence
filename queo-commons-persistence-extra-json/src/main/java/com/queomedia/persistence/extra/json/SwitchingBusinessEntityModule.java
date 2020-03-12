@@ -12,9 +12,11 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.BeanDescription;
+import com.fasterxml.jackson.databind.BeanProperty;
 import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
@@ -24,13 +26,18 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.Module.SetupContext;
+import com.fasterxml.jackson.databind.deser.BeanDeserializerModifier;
+import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.Deserializers;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
+import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityDeserializers;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityJsonSerializer;
@@ -82,9 +89,11 @@ public class SwitchingBusinessEntityModule extends Module {
 
 //        SwitchingBusinessEntityJsonSerializer switchingBusinessEntityJsonSerializer = new SwitchingBusinessEntityJsonSerializer(
 //                switchingAnnotationScanner, new BusinessEntityJsonSerializer());
+//        context.addDeserializers(new SwitchingBusinessEntityDeserializers(this.generalLoaderDao));
 
-        context.addBeanSerializerModifier(new SwitchingBusinessEntitSerializerModifier(switchingAnnotationScanner, new BusinessEntityJsonSerializer()));
-        context.addDeserializers(new SwitchingBusinessEntityDeserializers(this.generalLoaderDao));
+        context.addBeanSerializerModifier(new SwitchingBusinessEntitSerializerModifier(switchingAnnotationScanner,
+                new BusinessEntityJsonSerializer()));
+        context.addBeanDeserializerModifier(new SwitchingBusinessEntityDeserializerModfier(this.generalLoaderDao));
     }
 
 //    static class SwitchingBusinessEntitySerializers extends Serializers.Base {
@@ -117,41 +126,39 @@ public class SwitchingBusinessEntityModule extends Module {
 //            }
 //        }
 //    }
-    
+
     public class SwitchingBusinessEntitSerializerModifier extends BeanSerializerModifier {
-        
+
         private final SwitchingAnnotationScanner switchingAnnotationScanner;
         private final BusinessEntityModule.BusinessEntityJsonSerializer businessEntityJsonSerializer;
-        
+
         public SwitchingBusinessEntitSerializerModifier(SwitchingAnnotationScanner switchingAnnotationScanner,
                 BusinessEntityJsonSerializer businessEntityJsonSerializer) {
             this.switchingAnnotationScanner = switchingAnnotationScanner;
             this.businessEntityJsonSerializer = businessEntityJsonSerializer;
         }
 
-
-
         @Override
-        public JsonSerializer<?> modifySerializer(
-          SerializationConfig config, BeanDescription beanDesc, JsonSerializer<?> serializer) {
-     
+        public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc,
+                JsonSerializer<?> serializer) {
+
             if (beanDesc.getBeanClass().isInstance(BusinessEntity.class)) {
-                return new SwitchingBusinessEntityJsonSerializer(
-                        switchingAnnotationScanner,
-                        businessEntityJsonSerializer,
-                        (JsonSerializer<Object>) serializer);
+                return new SwitchingBusinessEntityJsonSerializer(switchingAnnotationScanner,
+                        businessEntityJsonSerializer, (JsonSerializer<Object>) serializer);
+            } else {
+                return serializer;
             }
-     
-            return serializer;
         }
     }
-    
 
-    /* https://www.baeldung.com/jackson-call-default-serializer-from-custom-serializer */
+    /*
+     * https://www.baeldung.com/jackson-call-default-serializer-from-custom-
+     * serializer
+     */
     static class SwitchingBusinessEntityJsonSerializer extends StdSerializer<BusinessEntity> {
         private final SwitchingAnnotationScanner switchingAnnotationScanner;
         private final BusinessEntityModule.BusinessEntityJsonSerializer businessEntityJsonSerializer;
-        
+
         private final JsonSerializer<Object> defaultSerializer;
 
         public SwitchingBusinessEntityJsonSerializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
@@ -164,7 +171,7 @@ public class SwitchingBusinessEntityModule extends Module {
 
             this.switchingAnnotationScanner = switchingAnnotationScanner;
             this.businessEntityJsonSerializer = businessEntityJsonSerializer;
-            
+
             this.defaultSerializer = defaultSerializer;
         }
 
@@ -179,103 +186,246 @@ public class SwitchingBusinessEntityModule extends Module {
         }
     }
 
-    /**
-     * A Jackson {@link Deserializers} that provides
-     * {@link TypedBusinessEntityJsonDeserializer} for every class that extends
-     * {@link BusinessEntity}.
-     *
-     * Provide the same {@link JsonDeserializer} for equal classes.
-     */
-    static class SwitchingBusinessEntityDeserializers extends Deserializers.Base {
+    static class SwitchingBusinessEntityDeserializerModfier extends BeanDeserializerModifier {
 
-        /**
-         * The {@link com.queomedia.persistence.extra.json.util.Memorizer} that hold and
-         * create the {@link TypedBusinessEntityJsonDeserializer} for
-         * {@link BusinessEntity} classes.
-         */
-        @SuppressWarnings("rawtypes")
-        private final Memorizer<Class, SwitchingBusinessEntityJsonDeserializer> deserializerMemorizer;
+        private final GeneralLoaderDao generalLoaderDao;
 
-        /**
-         * Instantiates a new business entity deserializes.
-         *
-         * @param generalLoaderDao the general loader dao
-         */
-        @SuppressWarnings("rawtypes")
-        SwitchingBusinessEntityDeserializers(final GeneralLoaderDao generalLoaderDao) {
+        public SwitchingBusinessEntityDeserializerModfier(com.queomedia.persistence.GeneralLoaderDao generalLoaderDao) {
             Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
-
-            // CHECKSTYLE IGNORE LineLength FOR NEXT 1 LINES
-            this.deserializerMemorizer = new Memorizer<>(
-                    new Computable<Class, SwitchingBusinessEntityJsonDeserializer>() {
-
-                        @Override
-                        @SuppressWarnings("unchecked")
-                        public SwitchingBusinessEntityJsonDeserializer compute(final Class argument)
-                                throws InterruptedException {
-                            return new SwitchingBusinessEntityJsonDeserializer(
-                                    new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(argument,
-                                            generalLoaderDao),
-                                    argument);
-                        }
-                    });
+            this.generalLoaderDao = generalLoaderDao;
         }
 
-        /*
-         * (non-Javadoc)
-         *
-         * @see
-         * com.fasterxml.jackson.databind.deser.Deserializers.Base#findBeanDeserializer(
-         * com.fasterxml.jackson.databind .JavaType,
-         * com.fasterxml.jackson.databind.DeserializationConfig,
-         * com.fasterxml.jackson.databind.BeanDescription)
-         */
-        @Override
-        public JsonDeserializer<?> findBeanDeserializer(final JavaType type, final DeserializationConfig config,
-                final BeanDescription beanDesc) throws JsonMappingException {
-            Check.notNullArgument(type, "type");
+//        @Override
+//        public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc,
+//                JsonDeserializer<?> deserializer) {
+//            if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
+//                return new SwitchingBusinessEntityJsonDeserializer(
+//                        new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(), generalLoaderDao),
+//                        beanDesc.getBeanClass(),
+//                        deserializer);
+//            } else {
+//                return deserializer;
+//            }
+//        }
 
-            if (BusinessEntity.class.isAssignableFrom(type.getRawClass())) {
-                try {
-                    return this.deserializerMemorizer.compute(type.getRawClass());
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new RuntimeException("interrupted", e);
-                }
+        @Override
+        public JsonDeserializer<?> modifyDeserializer(DeserializationConfig config, BeanDescription beanDesc,
+                JsonDeserializer<?> deserializer) {
+            if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
+                return new SwitchingBusinessEntityDeserializer2(
+                         new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(), generalLoaderDao),
+                        beanDesc.getBeanClass(), deserializer, generalLoaderDao);
             } else {
-                return null;
+                return deserializer;
             }
         }
     }
 
+    public static class SwitchingBusinessEntityDeserializer2 extends StdDeserializer<BusinessEntity> implements ResolvableDeserializer
+    //, ContextualDeserializer 
+    {
+
+        private final JsonDeserializer<?> defaultDeserializer;
+        
+        private BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer;
+        private Class beanClazz;
+        
+        private GeneralLoaderDao generalLoaderDao;
+
+        public SwitchingBusinessEntityDeserializer2(BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,  
+                final Class beanClazz,
+                JsonDeserializer<?> defaultDeserializer,
+                GeneralLoaderDao generalLoaderDao) {
+            super(BusinessEntity.class);
+            
+            this.typedBusinessEntityJsonDeserializer = typedBusinessEntityJsonDeserializer;
+            this.beanClazz = beanClazz;
+            this.defaultDeserializer = defaultDeserializer;
+            this.generalLoaderDao = generalLoaderDao;
+        }
+
+        @Override
+        public BusinessEntity deserialize(JsonParser jp, DeserializationContext ctxt)
+                throws IOException, JsonProcessingException {
+//            User deserializedUser = (User) defaultDeserializer.deserialize(jp, ctxt);
+            
+//            TreeNode tree = jp.readValueAsTree();
+            
+//            ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
+            
+//            TreeNode tree = jp.getCodec().readTree(jp);
+//            TreeNode tree2 = jp.getCodec().readTree(jp);
+//            System.out.println(tree.toString());
+//            
+//            if (tree.isObject()) {
+                
+//                defaultDeserializer.
+            JsonToken currentToken = jp.currentToken();
+            System.out.println(currentToken);
+            if (currentToken == JsonToken.VALUE_STRING) {
+                String bidString = jp.readValueAs(String.class);
+                System.out.println("bidString: " + bidString);
+                System.out.println("beanClazz: " + beanClazz);
+                return this.generalLoaderDao.getByBusinessId(BusinessId.parse(bidString), beanClazz);
+            } else {
+                return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
+            }
+//                return (BusinessEntity)tree.traverse(jp.getCodec()).readValueAs(beanClazz);
+                
+//            } else {
+//                String readValueAs = jp.readValueAs(String.class);
+//                System.out.println("bid = `"+readValueAs+"`");
+//                return null;
+////                return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
+//            }
+            
+            
+//            return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
+            
+            
+//          TreeNode tree = jp.readValueAsTree();
+//
+//          
+//          
+//          if (tree.isObject()) {
+////              return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
+////                      tree.traverse(jp.getCodec()).readValueAs(targetType);
+////              System.out.println("is object");
+//              
+////              tree.
+//              
+//              return (BusinessEntity) defaultDeserializer.deserialize(tree.traverse(jp.getCodec()), ctxt);
+//          } else {              
+//              System.out.println("is number");
+//              return typedBusinessEntityJsonDeserializer.deserialize(tree.traverse(jp.getCodec()), ctxt);
+//          }
+//            
+////            return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
+//            // Special logic
+//
+////            return deserializedUser;
+        }
+
+        // for some reason you have to implement ResolvableDeserializer when modifying
+        // BeanDeserializer
+        // otherwise deserializing throws JsonMappingException??
+        @Override
+        public void resolve(DeserializationContext ctxt) throws JsonMappingException {
+            ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
+        }
+
+//        @Override
+//        public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property)
+//                throws JsonMappingException {
+//            System.out.println("property" + property);
+//            return ((ContextualDeserializer) defaultDeserializer).createContextual(ctxt, property);
+//        }
+    }
+
+//    /**
+//     * A Jackson {@link Deserializers} that provides
+//     * {@link TypedBusinessEntityJsonDeserializer} for every class that extends
+//     * {@link BusinessEntity}.
+//     *
+//     * Provide the same {@link JsonDeserializer} for equal classes.
+//     */
+//    static class SwitchingBusinessEntityDeserializers extends Deserializers.Base {
+//
+//        /**
+//         * The {@link com.queomedia.persistence.extra.json.util.Memorizer} that hold and
+//         * create the {@link TypedBusinessEntityJsonDeserializer} for
+//         * {@link BusinessEntity} classes.
+//         */
+//        @SuppressWarnings("rawtypes")
+//        private final Memorizer<Class, SwitchingBusinessEntityJsonDeserializer> deserializerMemorizer;
+//
+//        /**
+//         * Instantiates a new business entity deserializes.
+//         *
+//         * @param generalLoaderDao the general loader dao
+//         */
+//        @SuppressWarnings("rawtypes")
+//        SwitchingBusinessEntityDeserializers(final GeneralLoaderDao generalLoaderDao) {
+//            Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
+//
+//            // CHECKSTYLE IGNORE LineLength FOR NEXT 1 LINES
+//            this.deserializerMemorizer = new Memorizer<>(
+//                    new Computable<Class, SwitchingBusinessEntityJsonDeserializer>() {
+//
+//                        @Override
+//                        @SuppressWarnings("unchecked")
+//                        public SwitchingBusinessEntityJsonDeserializer compute(final Class argument)
+//                                throws InterruptedException {
+//                            return new SwitchingBusinessEntityJsonDeserializer(
+//                                    new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(argument,
+//                                            generalLoaderDao),
+//                                    argument);
+//                        }
+//                    });
+//        }
+//
+//        /*
+//         * (non-Javadoc)
+//         *
+//         * @see
+//         * com.fasterxml.jackson.databind.deser.Deserializers.Base#findBeanDeserializer(
+//         * com.fasterxml.jackson.databind .JavaType,
+//         * com.fasterxml.jackson.databind.DeserializationConfig,
+//         * com.fasterxml.jackson.databind.BeanDescription)
+//         */
+//        @Override
+//        public JsonDeserializer<?> findBeanDeserializer(final JavaType type, final DeserializationConfig config,
+//                final BeanDescription beanDesc) throws JsonMappingException {
+//            Check.notNullArgument(type, "type");
+//
+//            if (BusinessEntity.class.isAssignableFrom(type.getRawClass())) {
+//                try {
+//                    return this.deserializerMemorizer.compute(type.getRawClass());
+//                } catch (InterruptedException e) {
+//                    Thread.currentThread().interrupt();
+//                    throw new RuntimeException("interrupted", e);
+//                }
+//            } else {
+//                return null;
+//            }
+//        }
+//    }
+
     // https://stackoverflow.com/questions/18313323/how-do-i-call-the-default-deserializer-from-a-custom-deserializer-in-jackson
     static class SwitchingBusinessEntityJsonDeserializer<T extends BusinessEntity<T>> extends JsonDeserializer<T> {
-        
+
         private final BusinessEntityModule.TypedBusinessEntityJsonDeserializer<T> typedBusinessEntityJsonDeserializer;
 
         private final Class<T> targetType;
 
+        private final JsonDeserializer<?> defaultDeserializer;
+
         public SwitchingBusinessEntityJsonDeserializer(
                 final BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,
-                final Class<T> targetType) {
+                final Class<T> targetType, final JsonDeserializer<?> defaultDeserializer) {
             Check.notNullArgument(typedBusinessEntityJsonDeserializer, "typedBusinessEntityJsonDeserializer");
             Check.notNullArgument(targetType, "targetType");
-            
+            Check.notNullArgument(defaultDeserializer, "defaultDeserializer");
+
             this.typedBusinessEntityJsonDeserializer = typedBusinessEntityJsonDeserializer;
             this.targetType = targetType;
+            this.defaultDeserializer = defaultDeserializer;
         }
 
         @Override
         public T deserialize(final JsonParser jp, final DeserializationContext ctxt)
                 throws IOException, JsonProcessingException {
 
-            TreeNode tree = jp.readValueAsTree();
+            return (T) defaultDeserializer.deserialize(jp, ctxt);
 
-            if (tree.isObject()) {
-                return tree.traverse(jp.getCodec()).readValueAs(targetType);
-            } else {
-                return typedBusinessEntityJsonDeserializer.deserialize(tree.traverse(jp.getCodec()), ctxt);
-            }
+//            TreeNode tree = jp.readValueAsTree();
+//
+//            if (tree.isObject()) {
+//                return (T) defaultDeserializer.deserialize(tree.traverse(jp.getCodec()), ctxt);
+////                        tree.traverse(jp.getCodec()).readValueAs(targetType);
+//            } else {
+//                return typedBusinessEntityJsonDeserializer.deserialize(tree.traverse(jp.getCodec()), ctxt);
+//            }
         }
 
     }
