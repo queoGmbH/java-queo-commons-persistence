@@ -12,4 +12,14 @@ import java.lang.annotation.Target;
 @Target({ TYPE, FIELD, METHOD })
 public @interface SwitchingBusinessEntityAnnotation {
 
+    public  BusinessEntitySerialization value();
+            
+    public static enum BusinessEntitySerialization {
+        
+        BUSINESS_ID,
+        
+        ENTITY;
+        
+    }
+            
 }
