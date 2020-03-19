@@ -1,5 +1,6 @@
 package com.queomedia.persistence.extra.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -7,8 +8,11 @@ import java.io.IOException;
 import org.jmock.Expectations;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.jmock.lib.legacy.ClassImposteriser;
+import org.json.JSONException;
 import org.junit.Rule;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -65,11 +69,15 @@ public class SwitchingBusinessEntityModuleTest {
         assertEquals(expected.getContent(), actual.getContent());
     }
 
-    public static ObjectMapper configureObjectMapper(GeneralLoaderDao generalLoaderDao) {
+    public static ObjectMapper configuredObjectMapper(GeneralLoaderDao generalLoaderDao) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModules(new SwitchingBusinessEntityModule(generalLoaderDao), new BusinessEntityOmitIdModule(),
                 new BusinessIdModule());
         return mapper;
+    }
+
+    public ObjectMapper configuredObjectMapper() {
+        return configuredObjectMapper(this.context.mock(GeneralLoaderDao.class));
     }
 
     @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.BUSINESS_ID)
@@ -79,6 +87,10 @@ public class SwitchingBusinessEntityModuleTest {
         private DemoBusinessEntity demoBusinessEntity;
 
         private String value2;
+
+        public DemoContainerClassBid() {
+            super();
+        }
 
         public DemoContainerClassBid(String value1, DemoBusinessEntity demoBusinessEntity, String value2) {
             this.value1 = value1;
@@ -108,6 +120,10 @@ public class SwitchingBusinessEntityModuleTest {
 
         private String value2;
 
+        public DemoContainerClassEntity() {
+            super();
+        }
+
         public DemoContainerClassEntity(String value1, DemoBusinessEntity demoBusinessEntity, String value2) {
             this.value1 = value1;
             this.demoBusinessEntity = demoBusinessEntity;
@@ -130,10 +146,10 @@ public class SwitchingBusinessEntityModuleTest {
     /**
      * Scenario: serialize a Business Entity.
      *
-     * @throws JsonProcessingException - should not been thrown in this test case
+     * @throws JException - no exception expected
      */
     @Test
-    public void testSerializerForBusinessEntity() throws JsonProcessingException {
+    public void testSerializerForBusinessEntity() throws Exception {
         /* given: a Business Entity */
         BusinessId<DemoBusinessEntity> businessId = new BusinessId<>(123);
         DemoBusinessEntity businessEntity = new DemoBusinessEntity(businessId, "Hello World");
@@ -142,12 +158,11 @@ public class SwitchingBusinessEntityModuleTest {
          * when: using jackson with the BussinessEntiyModule to serialize the Business
          * entity
          */
-        ObjectMapper mapper = configureObjectMapper(this.context.mock(GeneralLoaderDao.class));
-
-        String jsonString = mapper.writeValueAsString(businessEntity);
+        String jsonResult = configuredObjectMapper().writeValueAsString(businessEntity);
 
         /* then: the returned json string is just the business id json-string */
-        assertEquals("{\"businessId\":\"123\",\"content\":\"Hello World\"}", jsonString);
+        JSONAssert.assertEquals("{'businessId':'123', 'content':'Hello World'}", jsonResult,
+                JSONCompareMode.NON_EXTENSIBLE);
     }
 
     /**
@@ -179,9 +194,8 @@ public class SwitchingBusinessEntityModuleTest {
          * when: using jackson with the BussinessEntiyModule to deserialize the Business
          * entity
          */
-        ObjectMapper mapper = configureObjectMapper(generalLoaderDao);
-
-        DemoBusinessEntity result = mapper.readValue(jsonString, DemoBusinessEntity.class);
+        DemoBusinessEntity result = configuredObjectMapper(generalLoaderDao).readValue(jsonString,
+                DemoBusinessEntity.class);
 
         /* then: the json string is just the business id json-string */
         assertDeepEquals(businessEntity, result);
@@ -195,20 +209,15 @@ public class SwitchingBusinessEntityModuleTest {
     @Test
     public void testDeserializerForBusinessEntity_content() throws Exception {
         /* given: a json string that represent a business id and the business entity */
-        final String jsonString = "{\"businessId\":\"123\",\"content\":\"Hello World\"}";
-        final BusinessId<DemoBusinessEntity> businessId = new BusinessId<>(123);
+        final String jsonString = "{\"businessId\":\"1234\",\"content\":\"Hello World\"}";
+        final BusinessId<DemoBusinessEntity> businessId = new BusinessId<>(1234);
         final DemoBusinessEntity businessEntity = new DemoBusinessEntity(businessId, "Hello World");
-
-        /* then: no invocation expected */
-        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
 
         /*
          * when: using jackson with the BussinessEntiyModule to deserialize the Business
          * entity
          */
-        ObjectMapper mapper = configureObjectMapper(generalLoaderDao);
-
-        DemoBusinessEntity result = mapper.readValue(jsonString, DemoBusinessEntity.class);
+        DemoBusinessEntity result = configuredObjectMapper().readValue(jsonString, DemoBusinessEntity.class);
 
         /* then: the json string is just the business id json-string */
         assertDeepEquals(businessEntity, result);
@@ -217,10 +226,8 @@ public class SwitchingBusinessEntityModuleTest {
     @Test
     public void testJson() throws JsonParseException, JsonMappingException, IOException {
         final String jsonString = "{\"businessId\":\"123\",\"content\":\"Hello World\"}";
-        
-        ObjectMapper mapper = configureObjectMapper(this.context.mock(GeneralLoaderDao.class));
-       
-        DemoBusinessEntity result = mapper.readValue(jsonString, DemoBusinessEntity.class);
+
+        DemoBusinessEntity result = configuredObjectMapper().readValue(jsonString, DemoBusinessEntity.class);
 
         /* then: the json string is just the business id json-string */
         final BusinessId<DemoBusinessEntity> businessId = new BusinessId<>(123);
@@ -235,13 +242,61 @@ public class SwitchingBusinessEntityModuleTest {
      */
     @Test
     public void testSerializeDemoContainerClassBid() throws Exception {
+        DemoContainerClassBid container = new DemoContainerClassBid("v1",
+                new DemoBusinessEntity(new BusinessId<>(123), "Hello World"), "v2");
 
-        DemoContainerClassBid container = new DemoContainerClassBid("value1",
-                new DemoBusinessEntity(new BusinessId<>(123), "Hello Worls"), "value2");
-        
-        ObjectMapper mapper = configureObjectMapper(this.context.mock(GeneralLoaderDao.class));
-        
-        mapper.writeValueAsString(container); 
+        String jsonResult = configuredObjectMapper().writeValueAsString(container);
+        JSONAssert.assertEquals("{'value1':'v1', 'demoBusinessEntity':'123', 'value2':'v2'}", jsonResult,
+                JSONCompareMode.NON_EXTENSIBLE);
+    }
 
+    @Test
+    public void testDeserializeDemoContaintClassBid() throws Exception {
+        final String jsonString = "{'value1':'v1', 'demoBusinessEntity':'123', 'value2':'v2'}".replace("'", "\"");
+
+        DemoBusinessEntity businessEntity = new DemoBusinessEntity(new BusinessId<>(123), "Hello World");
+
+        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
+        this.context.checking(new Expectations() {
+            {
+                oneOf(generalLoaderDao).getByBusinessId(businessEntity.getBusinessId(),
+                        SwitchingBusinessEntityModuleTest.DemoBusinessEntity.class);
+                will(returnValue(businessEntity));
+            }
+        });
+
+        DemoContainerClassBid result = configuredObjectMapper(generalLoaderDao).readValue(jsonString,
+                DemoContainerClassBid.class);
+
+        assertThat(result).usingRecursiveComparison().isEqualTo(new DemoContainerClassBid("v1", businessEntity, "v2"));
+    }
+
+    /**
+     * Scenario: deserialize to a Business Entity.
+     *
+     * @throws Exception - no exception should not been thrown in this test case
+     */
+    @Test
+    public void testSerializeDemoContainerClassEntity() throws Exception {
+        DemoContainerClassEntity container = new DemoContainerClassEntity("v1",
+                new DemoBusinessEntity(new BusinessId<>(123), "Hello World"), "v2");
+
+        String jsonResult = configuredObjectMapper().writeValueAsString(container);
+
+        JSONAssert.assertEquals(
+                "{'value1':'v1', 'demoBusinessEntity':{'businessId':'123', 'content':'Hello World'},  'value2':'v2'}",
+                jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+    }
+
+    @Test
+    public void testDeserializeDemoContaintClassEntity() throws Exception {
+        final String jsonString = "{'value1':'v1', 'demoBusinessEntity':{'businessId':'123', 'content':'Hello World'},  'value2':'v2'}"
+                .replace("'", "\"");
+
+        DemoContainerClassEntity result = configuredObjectMapper().readValue(jsonString,
+                DemoContainerClassEntity.class);
+
+        assertThat(result).usingRecursiveComparison().isEqualTo(
+                new DemoContainerClassEntity("v1", new DemoBusinessEntity(new BusinessId<>(123), "Hello World"), "v2"));
     }
 }

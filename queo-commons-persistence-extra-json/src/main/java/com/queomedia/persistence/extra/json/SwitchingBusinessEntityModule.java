@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import com.queomedia.commons.checks.Check;
+import com.queomedia.commons.exceptions.NotImplementedCaseException;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
@@ -43,6 +44,7 @@ import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityD
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityJsonSerializer;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntitySerializers;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.TypedBusinessEntityJsonDeserializer;
+import com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation.BusinessEntitySerialization;
 import com.queomedia.persistence.extra.json.util.Computable;
 import com.queomedia.persistence.extra.json.util.Memorizer;
 
@@ -142,7 +144,7 @@ public class SwitchingBusinessEntityModule extends Module {
         public JsonSerializer<?> modifySerializer(SerializationConfig config, BeanDescription beanDesc,
                 JsonSerializer<?> serializer) {
 
-            if (beanDesc.getBeanClass().isInstance(BusinessEntity.class)) {
+            if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
                 return new SwitchingBusinessEntityJsonSerializer(switchingAnnotationScanner,
                         businessEntityJsonSerializer, (JsonSerializer<Object>) serializer);
             } else {
@@ -178,10 +180,18 @@ public class SwitchingBusinessEntityModule extends Module {
         @Override
         public void serialize(final BusinessEntity businessEntity, final JsonGenerator jgen,
                 final SerializerProvider provider) throws IOException {
-            if (switchingAnnotationScanner.isSwitchEnabled(jgen.getOutputContext())) {
+
+            BusinessEntitySerialization mode = switchingAnnotationScanner
+                    .detectSwitchDefinition(jgen.getOutputContext()).orElse(BusinessEntitySerialization.ENTITY);
+            switch (mode) {
+            case BUSINESS_ID:
                 businessEntityJsonSerializer.serialize(businessEntity, jgen, provider);
-            } else {
+                return;
+            case ENTITY:
                 provider.defaultSerializeValue(businessEntity, jgen);
+                return;
+            default:
+                throw new NotImplementedCaseException(mode);
             }
         }
     }
@@ -213,7 +223,8 @@ public class SwitchingBusinessEntityModule extends Module {
                 JsonDeserializer<?> deserializer) {
             if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
                 return new SwitchingBusinessEntityDeserializer2(
-                         new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(), generalLoaderDao),
+                        new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(),
+                                generalLoaderDao),
                         beanDesc.getBeanClass(), deserializer, generalLoaderDao);
             } else {
                 return deserializer;
@@ -221,23 +232,23 @@ public class SwitchingBusinessEntityModule extends Module {
         }
     }
 
-    public static class SwitchingBusinessEntityDeserializer2 extends StdDeserializer<BusinessEntity> implements ResolvableDeserializer
-    //, ContextualDeserializer 
+    public static class SwitchingBusinessEntityDeserializer2 extends StdDeserializer<BusinessEntity>
+            implements ResolvableDeserializer
+    // , ContextualDeserializer
     {
 
         private final JsonDeserializer<?> defaultDeserializer;
-        
+
         private BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer;
         private Class beanClazz;
-        
+
         private GeneralLoaderDao generalLoaderDao;
 
-        public SwitchingBusinessEntityDeserializer2(BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,  
-                final Class beanClazz,
-                JsonDeserializer<?> defaultDeserializer,
-                GeneralLoaderDao generalLoaderDao) {
+        public SwitchingBusinessEntityDeserializer2(
+                BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,
+                final Class beanClazz, JsonDeserializer<?> defaultDeserializer, GeneralLoaderDao generalLoaderDao) {
             super(BusinessEntity.class);
-            
+
             this.typedBusinessEntityJsonDeserializer = typedBusinessEntityJsonDeserializer;
             this.beanClazz = beanClazz;
             this.defaultDeserializer = defaultDeserializer;
@@ -248,17 +259,17 @@ public class SwitchingBusinessEntityModule extends Module {
         public BusinessEntity deserialize(JsonParser jp, DeserializationContext ctxt)
                 throws IOException, JsonProcessingException {
 //            User deserializedUser = (User) defaultDeserializer.deserialize(jp, ctxt);
-            
+
 //            TreeNode tree = jp.readValueAsTree();
-            
+
 //            ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
-            
+
 //            TreeNode tree = jp.getCodec().readTree(jp);
 //            TreeNode tree2 = jp.getCodec().readTree(jp);
 //            System.out.println(tree.toString());
 //            
 //            if (tree.isObject()) {
-                
+
 //                defaultDeserializer.
             JsonToken currentToken = jp.currentToken();
             System.out.println(currentToken);
@@ -271,18 +282,16 @@ public class SwitchingBusinessEntityModule extends Module {
                 return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
             }
 //                return (BusinessEntity)tree.traverse(jp.getCodec()).readValueAs(beanClazz);
-                
+
 //            } else {
 //                String readValueAs = jp.readValueAs(String.class);
 //                System.out.println("bid = `"+readValueAs+"`");
 //                return null;
 ////                return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
 //            }
-            
-            
+
 //            return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
-            
-            
+
 //          TreeNode tree = jp.readValueAsTree();
 //
 //          
@@ -432,9 +441,8 @@ public class SwitchingBusinessEntityModule extends Module {
 
     static class SwitchingAnnotationScanner {
 
-        boolean isSwitchEnabled(final JsonStreamContext context) {
-            Optional<SwitchingBusinessEntityAnnotation> annotation = findSwitchingBusinessEntityAnnotation(context);
-            return annotation.isPresent();
+        Optional<BusinessEntitySerialization> detectSwitchDefinition(final JsonStreamContext context) {
+            return findSwitchingBusinessEntityAnnotation(context).map(SwitchingBusinessEntityAnnotation::value);
         }
 
         Optional<SwitchingBusinessEntityAnnotation> findSwitchingBusinessEntityAnnotation(
@@ -454,7 +462,7 @@ public class SwitchingBusinessEntityModule extends Module {
 
                         Field field = currentClass.getDeclaredField(context.getCurrentName());
                         Optional<SwitchingBusinessEntityAnnotation> fieldAnnotation = Optional
-                                .of(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                                .ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
                         if (fieldAnnotation.isPresent()) {
                             return fieldAnnotation;
                         }
@@ -470,7 +478,7 @@ public class SwitchingBusinessEntityModule extends Module {
                          */
                         Method method = currentClass.getMethod(getterName(context.getCurrentName()));
                         Optional<SwitchingBusinessEntityAnnotation> methodAnnotation = Optional
-                                .of(method.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                                .ofNullable(method.getAnnotation(SwitchingBusinessEntityAnnotation.class));
                         if (methodAnnotation.isPresent()) {
                             return methodAnnotation;
                         }
@@ -478,7 +486,7 @@ public class SwitchingBusinessEntityModule extends Module {
                     }
                 }
                 Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
-                        .of(currentClass.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                        .ofNullable(currentClass.getAnnotation(SwitchingBusinessEntityAnnotation.class));
                 if (classAnnotation.isPresent()) {
                     return classAnnotation;
                 }
