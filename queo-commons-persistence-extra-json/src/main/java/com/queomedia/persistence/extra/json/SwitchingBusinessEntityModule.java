@@ -188,7 +188,7 @@ public class SwitchingBusinessEntityModule extends Module {
                 businessEntityJsonSerializer.serialize(businessEntity, jgen, provider);
                 return;
             case ENTITY:
-                provider.defaultSerializeValue(businessEntity, jgen);
+                defaultSerializer.serialize(businessEntity, jgen, provider);
                 return;
             default:
                 throw new NotImplementedCaseException(mode);
