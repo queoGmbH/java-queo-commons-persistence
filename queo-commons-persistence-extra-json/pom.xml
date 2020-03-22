@@ -96,6 +96,13 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<!-- for tests with java.util.Optional -->
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jdk8</artifactId>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
