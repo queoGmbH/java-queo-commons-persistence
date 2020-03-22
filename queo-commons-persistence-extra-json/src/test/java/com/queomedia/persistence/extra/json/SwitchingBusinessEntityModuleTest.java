@@ -537,18 +537,16 @@ public class SwitchingBusinessEntityModuleTest {
         final String entityJsonString = 
                   "{'content':"
                 + "  {                                              "
-                + "     'value1':'v1',                              "
                 + "     'businessId':'123',                         "
                 + "     'content':'Hello World',                    "
-                + "     'value2':'v2'                               "
+                + "     'value':'something'                         "
                 + "  }                                              "
                 + "}";        
         // @formatter:on
         final String bidJsonString = 
                   "{'content':                                        " 
-                + "  {                                                "
-                + "     'value1':'v1',                                " 
-                + "     'demoBusinessEntity':'123',                   "
+                + "  {                                                " 
+                + "     'businessId':'123',                           "
                 + "     'value':'something'                           " 
                 + "  }                                                " 
                 + "}";
@@ -557,6 +555,8 @@ public class SwitchingBusinessEntityModuleTest {
         assertEntityWrapperSerialization(container, entityJsonString);
         assertEntityWrapperDeserialization(entityJsonString, container);
 
+        //https://michael-simons.github.io/simple-meetup/unwrapping-custom-jackson-serializer ? 
+        //https://stackoverflow.com/questions/14714328/jackson-how-to-add-custom-property-to-the-json-without-modifying-the-pojo
         assertBidWrapperSerialization(container, bidJsonString);
         assertBidWrapperDeserialization(bidJsonString, container, entity);
     }
