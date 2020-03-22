@@ -19,6 +19,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
+
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,7 +31,6 @@ import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation.BusinessEntitySerialization;
 
-//TODO Tests with Wrappers that use @JsonUnwarp
 public class SwitchingBusinessEntityModuleTest {
 
     /** JMock Context */
@@ -42,8 +43,12 @@ public class SwitchingBusinessEntityModuleTest {
 
     public static ObjectMapper configuredObjectMapper(GeneralLoaderDao generalLoaderDao) {
         ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModules(new Jdk8Module(), new SwitchingBusinessEntityModule(generalLoaderDao),
-                new BusinessEntityOmitIdModule(), new BusinessIdModule());
+        mapper.registerModules(
+                new Jdk8Module(),
+                new SwitchingBusinessEntityModule(generalLoaderDao),
+                new BusinessEntityOmitIdModule(),
+                new BusinessIdModule()
+                );
         return mapper;
     }
 
@@ -252,6 +257,36 @@ public class SwitchingBusinessEntityModuleTest {
         }
     }
 
+    static class JsonUnwrappedContainer {
+
+        @JsonUnwrapped
+        private DemoBusinessEntity demoBusinessEntity;
+
+        private String value;
+
+        public JsonUnwrappedContainer() {
+            super();
+        }
+
+        public JsonUnwrappedContainer(DemoBusinessEntity demoBusinessEntity, String value) {
+            this.demoBusinessEntity = demoBusinessEntity;
+            this.value = value;
+        }
+
+        public DemoBusinessEntity getDemoBusinessEntity() {
+            return demoBusinessEntity;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return "DemoContainerClassEntity [demoBusinessEntity=" + demoBusinessEntity + ", value=" + value + "]";
+        }
+    }
+
     @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)
     static class GenericEntityWrapper<T> {
         /** can be null */
@@ -419,7 +454,7 @@ public class SwitchingBusinessEntityModuleTest {
         assertBidWrapperSerialization(listContainer, bidJsonString);
         assertBidWrapperDeserialization(bidJsonString, listContainer, element1, element2);
     }
-    
+
     @Ignore("Map Keys are currently not supported")
     @Test
     public void testMapEntityKey() {
@@ -492,6 +527,40 @@ public class SwitchingBusinessEntityModuleTest {
         assertBidWrapperSerialization(mapContainer, bidJsonString);
         assertBidWrapperDeserialization(bidJsonString, mapContainer, element1, element2);
     }
+    
+    @Test
+    public void testJsonUnwrappedContainer() {
+        DemoBusinessEntity entity = new DemoBusinessEntity(new BusinessId<>(123), "Hello World");
+        JsonUnwrappedContainer container = new JsonUnwrappedContainer(entity, "something");
+
+        // @formatter:off
+        final String entityJsonString = 
+                  "{'content':"
+                + "  {                                              "
+                + "     'value1':'v1',                              "
+                + "     'businessId':'123',                         "
+                + "     'content':'Hello World',                    "
+                + "     'value2':'v2'                               "
+                + "  }                                              "
+                + "}";        
+        // @formatter:on
+        final String bidJsonString = 
+                  "{'content':                                        " 
+                + "  {                                                "
+                + "     'value1':'v1',                                " 
+                + "     'demoBusinessEntity':'123',                   "
+                + "     'value':'something'                           " 
+                + "  }                                                " 
+                + "}";
+        // @formatter:on        
+
+        assertEntityWrapperSerialization(container, entityJsonString);
+        assertEntityWrapperDeserialization(entityJsonString, container);
+
+        assertBidWrapperSerialization(container, bidJsonString);
+        assertBidWrapperDeserialization(bidJsonString, container, entity);
+    }
+    
 
     /**
      * Perform a test to verify a JavaObject ({@code serializContent}) become
