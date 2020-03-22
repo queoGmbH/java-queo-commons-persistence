@@ -1,11 +1,11 @@
 package com.queomedia.persistence.extra.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.jmock.Expectations;
@@ -15,9 +15,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.skyscreamer.jsonassert.JSONCompareMode;
-import org.springframework.core.ConfigurableObjectInputStream;
-
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -67,6 +66,12 @@ public class SwitchingBusinessEntityModuleTest {
         public String getContent() {
             return content;
         }
+
+        @Override
+        public String toString() {
+            return "DemoBusinessEntity [content=" + content + "]";
+        }
+
     }
 
     public static void assertDeepEquals(DemoBusinessEntity expected, DemoBusinessEntity actual) {
@@ -81,33 +86,65 @@ public class SwitchingBusinessEntityModuleTest {
         return mapper;
     }
 
-    public ObjectMapper configuredObjectMapper() {
-        return configuredObjectMapper(this.context.mock(GeneralLoaderDao.class));
-    }
+//    public ObjectMapper configuredObjectMapper() {
+//        return configuredObjectMapper(this.context.mock(GeneralLoaderDao.class));
+//    }
+//
+//    /**
+//     * Build a Jackson Object Mappwer with {@link SwitchingBusinessEntityModule}
+//     * that use a {@link GeneralLoaderDao}-mock that expect exactly one invocation
+//     * of {@link GeneralLoaderDao#getByBusinessId(BusinessId, Class)} for the given
+//     * {@code entity}.
+//     * 
+//     * @param entity the entity that is returned by the
+//     *               {@link GeneralLoaderDao}-mock
+//     * @return a Jackson Object mapper with {@link SwitchingBusinessEntityModule}
+//     *         and mocked {@link GeneralLoaderDao}
+//     */
+//    @SuppressWarnings("unchecked")
+//    public <T extends BusinessEntity<? extends Serializable>> ObjectMapper configuredObjectMapper(
+//            final BusinessEntity<T> entity) {
+//        Check.notNullArgument(entity, "entity");
+//
+//        GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
+//        this.context.checking(new Expectations() {
+//            {
+//                oneOf(generalLoaderDao).getByBusinessId(entity.getBusinessId(), (Class<T>) entity.getClass());
+//                will(returnValue(entity));
+//            }
+//        });
+//
+//        return configuredObjectMapper(generalLoaderDao);
+//    }
+
+    private int generalLoaderDaoMockCounter = 0;
 
     /**
      * Build a Jackson Object Mappwer with {@link SwitchingBusinessEntityModule}
      * that use a {@link GeneralLoaderDao}-mock that expect exactly one invocation
-     * of {@link GeneralLoaderDao#getByBusinessId(BusinessId, Class)} for the given
-     * {@code entity}.
+     * of {@link GeneralLoaderDao#getByBusinessId(BusinessId, Class)} for each given
+     * entity (from {@code entities}).
      * 
-     * @param entity the entity that is returned by the
-     *               {@link GeneralLoaderDao}-mock
+     * @param entities the entities that is returned by the
+     *                 {@link GeneralLoaderDao}-mock
      * @return a Jackson Object mapper with {@link SwitchingBusinessEntityModule}
      *         and mocked {@link GeneralLoaderDao}
      */
-    @SuppressWarnings("unchecked")
-    public <T extends BusinessEntity<? extends Serializable>> ObjectMapper configuredObjectMapper(
-            final BusinessEntity<T> entity) {
-        Check.notNullArgument(entity, "entity");
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public ObjectMapper configuredObjectMapper(final BusinessEntity... entities) {
+        Check.notNullArgument(entities, "entities");
 
-        GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
-        this.context.checking(new Expectations() {
-            {
-                oneOf(generalLoaderDao).getByBusinessId(entity.getBusinessId(), (Class<T>) entity.getClass());
-                will(returnValue(entity));
-            }
-        });
+        generalLoaderDaoMockCounter++;
+        GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class,
+                "GeneralLoaderDaoMock" + generalLoaderDaoMockCounter);
+        for (BusinessEntity entity : entities) {
+            this.context.checking(new Expectations() {
+                {
+                    oneOf(generalLoaderDao).getByBusinessId(entity.getBusinessId(), entity.getClass());
+                    will(returnValue(entity));
+                }
+            });
+        }
 
         return configuredObjectMapper(generalLoaderDao);
     }
@@ -142,6 +179,12 @@ public class SwitchingBusinessEntityModuleTest {
             return value2;
         }
 
+        @Override
+        public String toString() {
+            return "DemoContainerClassBid [value1=" + value1 + ", demoBusinessEntity=" + demoBusinessEntity
+                    + ", value2=" + value2 + "]";
+        }
+
     }
 
     @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)
@@ -173,26 +216,39 @@ public class SwitchingBusinessEntityModuleTest {
         public String getValue2() {
             return value2;
         }
+
+        @Override
+        public String toString() {
+            return "DemoContainerClassEntity [value1=" + value1 + ", demoBusinessEntity=" + demoBusinessEntity
+                    + ", value2=" + value2 + "]";
+        }
+
     }
 
     public static class ListContainer {
-        private List<DemoBusinessEntity> list;
+        private List<DemoBusinessEntity> demoBusinessEntitys;
 
         public ListContainer() {
             super();
         }
 
         public ListContainer(List<DemoBusinessEntity> list) {
-            this.list = new ArrayList<>(list);
+            this.demoBusinessEntitys = new ArrayList<>(list);
         }
 
-        public List<DemoBusinessEntity> getList() {
-            return list;
+        public List<DemoBusinessEntity> getDemoBusinessEntitys() {
+            return demoBusinessEntitys;
         }
 
-        public void setList(List<DemoBusinessEntity> list) {
-            this.list = list;
+        public void setDemoBusinessEntitys(List<DemoBusinessEntity> list) {
+            this.demoBusinessEntitys = list;
         }
+
+        @Override
+        public String toString() {
+            return "ListContainer [demoBusinessEntitys=" + demoBusinessEntitys + "]";
+        }
+
     }
 
     @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)
@@ -215,6 +271,11 @@ public class SwitchingBusinessEntityModuleTest {
             this.content = content;
         }
 
+        @Override
+        public String toString() {
+            return "GenericEntityWrapper [content=" + content + "]";
+        }
+
     }
 
     @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.BUSINESS_ID)
@@ -235,6 +296,11 @@ public class SwitchingBusinessEntityModuleTest {
 
         public void setContent(T content) {
             this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "GenericBusinessIdWrapper [content=" + content + "]";
         }
 
     }
@@ -274,23 +340,10 @@ public class SwitchingBusinessEntityModuleTest {
         final DemoBusinessEntity businessEntity = new DemoBusinessEntity(businessId, "Hello World");
 
         /*
-         * then: the deserializer use the GeneralLoaderDao to load the entity by its
-         * business id
-         */
-        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
-        this.context.checking(new Expectations() {
-            {
-                oneOf(generalLoaderDao).getByBusinessId(businessId,
-                        SwitchingBusinessEntityModuleTest.DemoBusinessEntity.class);
-                will(returnValue(businessEntity));
-            }
-        });
-
-        /*
          * when: using jackson with the BussinessEntiyModule to deserialize the Business
          * entity
          */
-        DemoBusinessEntity result = configuredObjectMapper(generalLoaderDao).readValue(jsonString,
+        DemoBusinessEntity result = configuredObjectMapper(businessEntity).readValue(jsonString,
                 DemoBusinessEntity.class);
 
         /* then: the json string is just the business id json-string */
@@ -352,19 +405,11 @@ public class SwitchingBusinessEntityModuleTest {
 
         DemoBusinessEntity businessEntity = new DemoBusinessEntity(new BusinessId<>(123), "Hello World");
 
-        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
-        this.context.checking(new Expectations() {
-            {
-                oneOf(generalLoaderDao).getByBusinessId(businessEntity.getBusinessId(),
-                        SwitchingBusinessEntityModuleTest.DemoBusinessEntity.class);
-                will(returnValue(businessEntity));
-            }
-        });
-
-        DemoContainerClassBid result = configuredObjectMapper(generalLoaderDao).readValue(jsonString,
+        DemoContainerClassBid result = configuredObjectMapper(businessEntity).readValue(jsonString,
                 DemoContainerClassBid.class);
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(new DemoContainerClassBid("v1", businessEntity, "v2"));
+        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals()
+                .isEqualTo(new DemoContainerClassBid("v1", businessEntity, "v2"));
     }
 
     /**
@@ -392,7 +437,7 @@ public class SwitchingBusinessEntityModuleTest {
         DemoContainerClassEntity result = configuredObjectMapper().readValue(jsonString,
                 DemoContainerClassEntity.class);
 
-        assertThat(result).usingRecursiveComparison().isEqualTo(
+        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals().isEqualTo(
                 new DemoContainerClassEntity("v1", new DemoBusinessEntity(new BusinessId<>(123), "Hello World"), "v2"));
     }
 
@@ -419,7 +464,7 @@ public class SwitchingBusinessEntityModuleTest {
 
         DemoBusinessEntity expectedContent = new DemoBusinessEntity(new BusinessId<>(123), "Hello World");
         GenericEntityWrapper<DemoBusinessEntity> expectedContainer = new GenericEntityWrapper<>(expectedContent);
-        assertThat(result).usingRecursiveComparison().isEqualTo(expectedContainer);
+        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals().isEqualTo(expectedContainer);
     }
 
     @Test
@@ -434,18 +479,166 @@ public class SwitchingBusinessEntityModuleTest {
 
     @Test
     public void testDeserializeDemoBusinessEntityDemo_withBidWrapper() throws Exception {
-
-        final String jsonString = "{'content':'123'}".replace("'", "\"");
-
+        final String jsonString = "{'content':'123'}";
         DemoBusinessEntity businessEntity = new DemoBusinessEntity(new BusinessId<>(123), "Hello World");
-        ObjectMapper jacksonMapper = configuredObjectMapper(businessEntity);
-        GenericBusinessIdWrapper<DemoBusinessEntity> result = jacksonMapper.readValue(jsonString,
-                new TypeReference<GenericBusinessIdWrapper<DemoBusinessEntity>>() {
-                });
-       
         
-        GenericBusinessIdWrapper<DemoBusinessEntity> expectedContainer = new GenericBusinessIdWrapper<>(businessEntity);
-        assertThat(result).usingRecursiveComparison().isEqualTo(expectedContainer);
+        assertBidWrapperDeserialization(jsonString, businessEntity, businessEntity);
     }
 
+    /* ListContainer */
+    @Test
+    public void testSerializeListContainer_withEntityWrapper() throws Exception {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+        ListContainer listContainer = new ListContainer(Arrays.asList(element1, element2));
+        GenericEntityWrapper<ListContainer> enityMarkerContainer = new GenericEntityWrapper<>(listContainer);
+
+        String jsonResult = configuredObjectMapper().writeValueAsString(enityMarkerContainer);
+
+        // @formatter:off
+        JSONAssert.assertEquals(
+                "{'content':{'demoBusinessEntitys':["
+                        + "{'businessId':'123', 'content':'Hello World1'},"
+                        + "{'businessId':'456', 'content':'Hello World2'}"
+                 + "]}}",
+                jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+        // @formatter:on
+    }
+
+    @Test
+    public void testDeserializeListContainer_withEntityWrapper() throws Exception {
+
+        // @formatter:off
+        final String jsonString = (
+                "{'content':{'demoBusinessEntitys':["
+                        + "{'businessId':'123', 'content':'Hello World1'},"
+                        + "{'businessId':'456', 'content':'Hello World2'}"
+                 + "]}}"
+                )
+                .replace("'", "\"");
+        // @formatter:on
+
+        ObjectMapper jacksonMapper = configuredObjectMapper();
+        GenericEntityWrapper<DemoBusinessEntity> result = jacksonMapper.readValue(jsonString,
+                new TypeReference<GenericEntityWrapper<ListContainer>>() {
+                });
+
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+        ListContainer listContainer = new ListContainer(Arrays.asList(element1, element2));
+        GenericEntityWrapper<ListContainer> expectedEnityMarkerContainer = new GenericEntityWrapper<>(listContainer);
+
+        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals()
+                .isEqualTo(expectedEnityMarkerContainer);
+    }
+
+    @Test
+    public void testSerializeListContainer_withBidWrapper() throws Exception {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+        ListContainer listContainer = new ListContainer(Arrays.asList(element1, element2));
+        GenericBusinessIdWrapper<ListContainer> enityMarkerContainer = new GenericBusinessIdWrapper<>(listContainer);
+
+        String jsonResult = configuredObjectMapper().writeValueAsString(enityMarkerContainer);
+        // @formatter:off
+        JSONAssert.assertEquals(
+                   "{'content':{'demoBusinessEntitys':["
+                 + "    '123',                         "
+                 + "    '456'                          "
+                 + "]}}",
+                jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+        // @formatter:on
+    }
+
+//    @Test
+//    public void testDeserializeListContainer_withBidWrapper() throws Exception {
+//
+//        // @formatter:off
+//        final String jsonString = (
+//                   "{'content':{'demoBusinessEntitys':["
+//                 + "    '123',                         "
+//                 + "    '456'                          "
+//                 + "]}}"
+//                 )
+//                 .replace("'", "\"");
+//        // @formatter:on
+//
+//        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+//        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+//
+//        ObjectMapper jacksonMapper = configuredObjectMapper(element1, element2);
+//        GenericBusinessIdWrapper<DemoBusinessEntity> result = jacksonMapper.readValue(jsonString,
+//                new TypeReference<GenericBusinessIdWrapper<ListContainer>>() {
+//                });
+//
+//        ListContainer listContainer = new ListContainer(Arrays.asList(element1, element2));
+//        GenericBusinessIdWrapper<ListContainer> expectedBusinessIdMarkerContainer = new GenericBusinessIdWrapper<>(
+//                listContainer);
+//
+//        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals()
+//                .isEqualTo(expectedBusinessIdMarkerContainer);
+//    }
+
+    @Test
+    public void testDeserializeListContainer_withBidWrapper() throws Exception {
+
+        // @formatter:off
+        final String jsonString = (
+                   "{'content':{'demoBusinessEntitys':["
+                 + "    '123',                         "
+                 + "    '456'                          "
+                 + "]}}"
+                 )
+                 .replace("'", "\"");
+        // @formatter:on
+
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+
+        assertBidWrapperDeserialization(jsonString, new ListContainer(Arrays.asList(element1, element2)), element1,
+                element2);
+    }
+
+    public <C> void assertBidWrapperDeserialization(String jsonString, C content,
+            final BusinessEntity<?>... generalLoaderEntities) {
+
+        String json = jsonString.replace("'", "\"");
+        asserIsValidJason(json);
+
+        ObjectMapper jacksonMapper = configuredObjectMapper(generalLoaderEntities);
+        try {
+            JavaType deserializationType = jacksonMapper.getTypeFactory()
+                    .constructParametricType(GenericBusinessIdWrapper.class, content.getClass());
+
+            GenericBusinessIdWrapper<DemoBusinessEntity> result = jacksonMapper.readValue(json, deserializationType);
+
+            GenericBusinessIdWrapper<C> expectedBusinessIdMarkerContainer = new GenericBusinessIdWrapper<>(content);
+            assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals()
+                    .isEqualTo(expectedBusinessIdMarkerContainer);
+
+        } catch (IOException e) {
+            throw new RuntimeException("error while parse json: `" + json + "`");
+        }
+    }
+
+    public boolean isValidJson(String json) {
+        try {
+            configuredObjectMapper().readTree(json);
+            return true;
+        } catch (JsonProcessingException e) {
+            return false;
+        } catch (IOException e) {
+            throw new RuntimeException("error while parse json: `" + json + "`");
+        }
+    }
+
+    public void asserIsValidJason(String json) {
+        try {
+            configuredObjectMapper().readTree(json);
+        } catch (JsonProcessingException e) {
+            fail("String `%s` is no valid json: %s", json, e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException("error while parse json: `" + json + "`");
+        }
+    }
 }
