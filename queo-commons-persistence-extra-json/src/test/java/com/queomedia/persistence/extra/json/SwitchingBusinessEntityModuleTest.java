@@ -5,13 +5,16 @@ import static org.assertj.core.api.Assertions.fail;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.jmock.Expectations;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.json.JSONException;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
@@ -27,7 +30,6 @@ import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation.BusinessEntitySerialization;
 
 //TODO Tests with Wrappers that use @JsonUnwarp
-//TODO Test Map - key, value 
 public class SwitchingBusinessEntityModuleTest {
 
     /** JMock Context */
@@ -192,6 +194,56 @@ public class SwitchingBusinessEntityModuleTest {
 
         public void setDemoBusinessEntitys(List<DemoBusinessEntity> list) {
             this.demoBusinessEntitys = list;
+        }
+
+        @Override
+        public String toString() {
+            return "ListContainer [demoBusinessEntitys=" + demoBusinessEntitys + "]";
+        }
+    }
+
+    static class MapEntityKeyContainer {
+        private Map<DemoBusinessEntity, Integer> intByEntity;
+
+        public MapEntityKeyContainer() {
+            super();
+        }
+
+        public MapEntityKeyContainer(Map<DemoBusinessEntity, Integer> map) {
+            this.intByEntity = new HashMap<>(map);
+        }
+
+        public Map<DemoBusinessEntity, Integer> getIntByEntity() {
+            return intByEntity;
+        }
+
+        public void setIntByEntity(Map<DemoBusinessEntity, Integer> intByEntity) {
+            this.intByEntity = intByEntity;
+        }
+
+        @Override
+        public String toString() {
+            return "ListContainer [demoBusinessEntitys=" + intByEntity + "]";
+        }
+    }
+
+    static class MapEntityValueContainer {
+        private Map<Integer, DemoBusinessEntity> demoBusinessEntitys;
+
+        public MapEntityValueContainer() {
+            super();
+        }
+
+        public MapEntityValueContainer(Map<Integer, DemoBusinessEntity> map) {
+            this.demoBusinessEntitys = new HashMap<>(map);
+        }
+
+        public Map<Integer, DemoBusinessEntity> getDemoBusinessEntitys() {
+            return demoBusinessEntitys;
+        }
+
+        public void setDemoBusinessEntitys(Map<Integer, DemoBusinessEntity> map) {
+            this.demoBusinessEntitys = map;
         }
 
         @Override
@@ -367,6 +419,79 @@ public class SwitchingBusinessEntityModuleTest {
         assertBidWrapperSerialization(listContainer, bidJsonString);
         assertBidWrapperDeserialization(bidJsonString, listContainer, element1, element2);
     }
+    
+    @Ignore("Map Keys are currently not supported")
+    @Test
+    public void testMapEntityKey() {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+        Map<DemoBusinessEntity, Integer> map = new HashMap<>();
+        map.put(element1, 1);
+        map.put(element2, 2);
+        MapEntityKeyContainer mapContainer = new MapEntityKeyContainer(map);
+
+        // @formatter:off
+        final String entityJsonString =
+                   "{'content':{'intByEntity':                         "
+                 + "   {                                                       "
+                 + "     '1' : {'businessId':'123', 'content':'Hello World1'}, "
+                 + "     '2' : {'businessId':'456', 'content':'Hello World2'}  "
+                 + "   }                                                       "
+                 + "}}                                                         ";
+        // @formatter:on
+
+        // @formatter:off
+        final String bidJsonString =
+                "{'content':{'intByEntity':   "
+              + "   {                                 "
+              + "      '123' : '1',                   "
+              + "      '456' : '2'                    "
+              + "   }                                 "
+              + "}}                                   ";
+        // @formatter:on
+
+        assertEntityWrapperSerialization(mapContainer, entityJsonString);
+        assertEntityWrapperDeserialization(entityJsonString, mapContainer);
+
+        assertBidWrapperSerialization(mapContainer, bidJsonString);
+        assertBidWrapperDeserialization(bidJsonString, mapContainer, element1, element2);
+    }
+
+    @Test
+    public void testMapEntityValue() {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123), "Hello World1");
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456), "Hello World2");
+        Map<Integer, DemoBusinessEntity> map = new HashMap<>();
+        map.put(1, element1);
+        map.put(2, element2);
+        MapEntityValueContainer mapContainer = new MapEntityValueContainer(map);
+
+        // @formatter:off
+        final String entityJsonString =
+                   "{'content':{'demoBusinessEntitys':                         "
+                 + "   {                                                       "
+                 + "     '1' : {'businessId':'123', 'content':'Hello World1'}, "
+                 + "     '2' : {'businessId':'456', 'content':'Hello World2'}  "
+                 + "   }                                                       "
+                 + "}}                                                         ";
+        // @formatter:on
+
+        // @formatter:off
+        final String bidJsonString =
+                "{'content':{'demoBusinessEntitys':   "
+              + "   {                                 "
+              + "      '1' : '123',                   "
+              + "      '2' : '456'                    "
+              + "   }                                 "
+              + "}}                                   ";
+        // @formatter:on
+
+        assertEntityWrapperSerialization(mapContainer, entityJsonString);
+        assertEntityWrapperDeserialization(entityJsonString, mapContainer);
+
+        assertBidWrapperSerialization(mapContainer, bidJsonString);
+        assertBidWrapperDeserialization(bidJsonString, mapContainer, element1, element2);
+    }
 
     /**
      * Perform a test to verify a JavaObject ({@code serializContent}) become
@@ -490,6 +615,7 @@ public class SwitchingBusinessEntityModuleTest {
 
         try {
             String jsonResult = configuredObjectMapper().writeValueAsString(enityMarkerContainer);
+            System.out.println(jsonResult);
             try {
                 JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
             } catch (JSONException e) {
