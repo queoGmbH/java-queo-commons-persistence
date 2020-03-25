@@ -13,10 +13,12 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.KeyDeserializer;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.Deserializers;
+import com.fasterxml.jackson.databind.deser.KeyDeserializers;
 import com.fasterxml.jackson.databind.ser.Serializers;
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
@@ -106,6 +108,9 @@ public class BusinessEntityModule extends Module {
 
         context.addSerializers(new BusinessEntitySerializers());
         context.addDeserializers(new BusinessEntityDeserializers(this.generalLoaderDao));
+
+        context.addKeySerializers(new BusinessEntityKeySerializers());
+        context.addKeyDeserializers(new BusinessEntityKeyDeserializers(this.generalLoaderDao));
     }
 
     /**
@@ -131,7 +136,6 @@ public class BusinessEntityModule extends Module {
                 return null;
             }
         }
-
     }
 
     /**
@@ -155,6 +159,55 @@ public class BusinessEntityModule extends Module {
                 jgen.writeNull();
             } else {
                 jgen.writeString(businessEntity.getBusinessId().getAsString());
+            }
+        }
+    }
+
+    /**
+     * A Jackson (Key-){@link Serializers} that provides {@link BusinessEntityKeySerializer}
+     * for Map Keys that extends {@link BusinessEntity}.
+     */
+    static class BusinessEntityKeySerializers extends Serializers.Base {
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.fasterxml.jackson.databind.ser.Serializers.Base#findSerializer(com.fasterxml.jackson.databind.
+         * SerializationConfig, com.fasterxml.jackson.databind.JavaType, com.fasterxml.jackson.databind.BeanDescription)
+         */
+        @Override
+        public JsonSerializer<?> findSerializer(final SerializationConfig config, final JavaType type,
+                final BeanDescription beanDesc) {
+            Check.notNullArgument(type, "type");
+
+            if (BusinessEntity.class.isAssignableFrom(type.getRawClass())) {
+                return new BusinessEntityKeySerializer();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * The Class DealingCompanyKeySerializer.
+     */
+    @SuppressWarnings("rawtypes")
+    static class BusinessEntityKeySerializer extends JsonSerializer<BusinessEntity> {
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.fasterxml.jackson.databind.JsonSerializer#serialize(java.lang.Object,
+         * com.fasterxml.jackson.core.JsonGenerator, com.fasterxml.jackson.databind.SerializerProvider)
+         */
+        @Override
+        public void serialize(final BusinessEntity entity, final JsonGenerator jgen, final SerializerProvider provider)
+                throws IOException, JsonProcessingException {
+
+            if (entity == null) {
+                jgen.writeNull();
+            } else {
+                jgen.writeFieldName(entity.getBusinessId().getAsString());
             }
         }
     }
@@ -268,4 +321,89 @@ public class BusinessEntityModule extends Module {
         }
     }
 
+    /**
+     * A Jackson {@link KeyDeserializers} that provides a {@link BusinessEntityKeyDeserializer}
+     * for every class that extends {@link BusinessEntity}.
+     */
+    static class BusinessEntityKeyDeserializers implements KeyDeserializers {
+
+        /** The general loader dao. */
+        private final GeneralLoaderDao generalLoaderDao;
+
+        /**
+         * Instantiates a new dealing company key deserializers.
+         *
+         * @param generalLoaderDao the general loader dao
+         */
+        BusinessEntityKeyDeserializers(final GeneralLoaderDao generalLoaderDao) {
+            Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
+
+            this.generalLoaderDao = generalLoaderDao;
+        }
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see
+         * com.fasterxml.jackson.databind.deser.KeyDeserializers#findKeyDeserializer(com.fasterxml.jackson.databind.
+         * JavaType, com.fasterxml.jackson.databind.DeserializationConfig,
+         * com.fasterxml.jackson.databind.BeanDescription)
+         */
+        @Override
+        public KeyDeserializer findKeyDeserializer(final JavaType type, final DeserializationConfig config,
+                final BeanDescription beanDesc)
+                throws JsonMappingException {
+            Check.notNullArgument(type, "type");
+
+            if (BusinessEntity.class.isAssignableFrom(type.getRawClass())) {
+                return new BusinessEntityKeyDeserializer(type.getRawClass(), this.generalLoaderDao);
+            } else {
+                return null;
+            }
+        }
+    }
+    
+    /**
+     *  Deserialize a Json String that represent a BusinessID, back to the Business entity, by loading it.
+     */
+    static class BusinessEntityKeyDeserializer<T extends BusinessEntity<T>> extends KeyDeserializer {
+
+        /** The entity class. */
+        private final Class<T> entityClass;
+        
+        /** The general loader dao. */
+        private final GeneralLoaderDao generalLoaderDao;
+        
+        /**
+         * Instantiates a new typed business entity json deserializer.
+         *
+         * @param generalLoaderDao the general loader dao
+         */
+        BusinessEntityKeyDeserializer(final Class<T> entityClass, final GeneralLoaderDao generalLoaderDao) {
+            Check.notNullArgument(entityClass, "entityClass");
+            Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
+            
+            this.entityClass = entityClass;
+            this.generalLoaderDao = generalLoaderDao;
+        }
+
+        /*
+         * (non-Javadoc)
+         *
+         * @see com.fasterxml.jackson.databind.KeyDeserializer#deserializeKey(java.lang.String,
+         * com.fasterxml.jackson.databind.DeserializationContext)
+         */
+        @SuppressWarnings("unchecked")
+        @Override
+        public Object deserializeKey(final String key, final DeserializationContext ctxt)
+                throws IOException, JsonProcessingException {
+            if (key == null) {
+                return null;
+            } else {
+                @SuppressWarnings("rawtypes")
+                BusinessId<T> businessId = BusinessId.parse(key);
+                return this.generalLoaderDao.getByBusinessId(businessId, this.entityClass);
+            }
+        }
+    }
 }
