@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json;
+package com.queomedia.persistence.extra.json.switchingbusinessentity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -29,7 +29,9 @@ import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
-import com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation.BusinessEntitySerialization;
+import com.queomedia.persistence.extra.json.BusinessEntityOmitIdModule;
+import com.queomedia.persistence.extra.json.BusinessIdModule;
+import com.queomedia.persistence.extra.json.switchingbusinessentity.SwitchingBusinessEntityModule;
 
 public class SwitchingBusinessEntityModuleTest {
 
@@ -44,7 +46,7 @@ public class SwitchingBusinessEntityModuleTest {
     public static ObjectMapper configuredObjectMapper(final GeneralLoaderDao generalLoaderDao) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModules(new Jdk8Module(),
-                new SwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerialization.ENTITY),
+                new SwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
                 new BusinessEntityOmitIdModule(),
                 new BusinessIdModule());
         return mapper;
@@ -287,7 +289,7 @@ public class SwitchingBusinessEntityModuleTest {
         }
     }
 
-    @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)
+    @SwitchingBusinessEntityAnnotation(BusinessEntitySerializationMode.ENTITY)
     static class GenericEntityWrapper<T> {
         /** can be null */
         private T content;
@@ -315,7 +317,7 @@ public class SwitchingBusinessEntityModuleTest {
 
     }
 
-    @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.BUSINESS_ID)
+    @SwitchingBusinessEntityAnnotation(BusinessEntitySerializationMode.BUSINESS_ID)
     static class GenericBusinessIdWrapper<T> {
         /** can be null */
         private T content;
@@ -542,7 +544,7 @@ public class SwitchingBusinessEntityModuleTest {
                 + "  }                                              "
                 + "}";
         // @formatter:on
-        final String bidJsonString = "{'content':                                        "
+        final String bidJsonString = "{'content':                     "
                 + "  {                                                "
                 + "     'businessId':'123',                           "
                 + "     'value':'something'                           "

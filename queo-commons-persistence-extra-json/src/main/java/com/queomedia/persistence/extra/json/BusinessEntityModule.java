@@ -142,7 +142,7 @@ public class BusinessEntityModule extends Module {
      * The Class BusinessIdJsonSerializer.
      */
     @SuppressWarnings("rawtypes")
-    static class BusinessEntityJsonSerializer extends JsonSerializer<BusinessEntity> {
+    public static class BusinessEntityJsonSerializer extends JsonSerializer<BusinessEntity> {
 
         /*
          * (non-Javadoc)
@@ -167,7 +167,7 @@ public class BusinessEntityModule extends Module {
      * A Jackson (Key-){@link Serializers} that provides {@link BusinessEntityKeySerializer}
      * for Map Keys that extends {@link BusinessEntity}.
      */
-    static class BusinessEntityKeySerializers extends Serializers.Base {
+    public static class BusinessEntityKeySerializers extends Serializers.Base {
 
         /*
          * (non-Javadoc)
@@ -279,7 +279,7 @@ public class BusinessEntityModule extends Module {
      *
      * @param <T> the generic type that implements {@link BusinessEntity}
      */
-    static class TypedBusinessEntityJsonDeserializer<T extends BusinessEntity<T>> extends JsonDeserializer<T> {
+    public static class TypedBusinessEntityJsonDeserializer<T extends BusinessEntity<T>> extends JsonDeserializer<T> {
 
         /** The entity class. */
         private final Class<T> entityClass;
@@ -293,7 +293,7 @@ public class BusinessEntityModule extends Module {
          * @param entityClass the entity class
          * @param generalLoaderDao the general loader dao
          */
-        TypedBusinessEntityJsonDeserializer(final Class<T> entityClass, final GeneralLoaderDao generalLoaderDao) {
+        public TypedBusinessEntityJsonDeserializer(final Class<T> entityClass, final GeneralLoaderDao generalLoaderDao) {
             Check.notNullArgument(entityClass, "entityClass");
             Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
 
@@ -325,7 +325,7 @@ public class BusinessEntityModule extends Module {
      * A Jackson {@link KeyDeserializers} that provides a {@link BusinessEntityKeyDeserializer}
      * for every class that extends {@link BusinessEntity}.
      */
-    static class BusinessEntityKeyDeserializers implements KeyDeserializers {
+    public static class BusinessEntityKeyDeserializers implements KeyDeserializers {
 
         /** The general loader dao. */
         private final GeneralLoaderDao generalLoaderDao;
@@ -335,7 +335,7 @@ public class BusinessEntityModule extends Module {
          *
          * @param generalLoaderDao the general loader dao
          */
-        BusinessEntityKeyDeserializers(final GeneralLoaderDao generalLoaderDao) {
+        public BusinessEntityKeyDeserializers(final GeneralLoaderDao generalLoaderDao) {
             Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
 
             this.generalLoaderDao = generalLoaderDao;
