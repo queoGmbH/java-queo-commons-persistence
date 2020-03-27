@@ -46,7 +46,8 @@ public class SwitchingBusinessEntityModuleTest {
     public static ObjectMapper configuredObjectMapper(final GeneralLoaderDao generalLoaderDao) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModules(new Jdk8Module(),
-                new SwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
+//                new SwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
+                new SimpleSwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
                 new BusinessEntityOmitIdModule(),
                 new BusinessIdModule());
         return mapper;
@@ -567,9 +568,8 @@ public class SwitchingBusinessEntityModuleTest {
      * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)}}
      * ({@link GenericEntityWrapper}).
      *
-     * @param                    <C> the type of the expected content
-     * @param serializContent    the content that is (wrapped with
-     *                           {@link GenericEntityWrapper}) serialized
+     * @param <C>                the type of the expected content
+     * @param serializContent    the content that is (wrapped with {@link GenericEntityWrapper}) serialized
      * @param expectedJsonString the expected expectedJsonString
      */
     public <C> void assertEntityWrapperSerialization(final C serializContent, final String expectedJsonString) {

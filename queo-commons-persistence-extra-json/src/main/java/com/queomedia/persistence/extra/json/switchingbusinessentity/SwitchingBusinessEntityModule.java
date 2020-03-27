@@ -97,103 +97,104 @@ public class SwitchingBusinessEntityModule extends Module {
 
     }
 
-    //    /*
-    //     * https://www.baeldung.com/jackson-call-default-serializer-from-custom-
-    //     * serializer
-    //     */
-    //    static class SwitchingBusinessEntityJsonSerializer extends StdSerializer<BusinessEntity> {
-    //        private final SwitchingAnnotationScanner switchingAnnotationScanner;
-    //        private final BusinessEntityModule.BusinessEntityJsonSerializer businessEntityJsonSerializer;
-    //
-    //        private final JsonSerializer<Object> defaultSerializer;
-    //
-    //        public SwitchingBusinessEntityJsonSerializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
-    //                final BusinessEntityJsonSerializer businessEntityJsonSerializer,
-    //                final JsonSerializer<Object> defaultSerializer) {
-    //            super(BusinessEntity.class);
-    //
-    //            Check.notNullArgument(switchingAnnotationScanner, "switchingAnnotationScanner");
-    //            Check.notNullArgument(businessEntityJsonSerializer, "businessEntityJsonSerializer");
-    //            Check.notNullArgument(defaultSerializer, "defaultSerializer");
-    //
-    //            this.switchingAnnotationScanner = switchingAnnotationScanner;
-    //            this.businessEntityJsonSerializer = businessEntityJsonSerializer;
-    //
-    //            this.defaultSerializer = defaultSerializer;
-    //        }
-    //
-    //        @Override
-    //        public JsonSerializer<BusinessEntity> unwrappingSerializer(NameTransformer transformer) {
-    //            JsonSerializer unwrappingSerializer = defaultSerializer.unwrappingSerializer(transformer);
-    //            return (JsonSerializer<BusinessEntity>) unwrappingSerializer;
-    //        }
-    //
-    //        @Override
-    //        public void serialize(final BusinessEntity businessEntity, final JsonGenerator jgen,
-    //                final SerializerProvider provider) throws IOException {
-    //
-    //            BusinessEntitySerialization mode = switchingAnnotationScanner
-    //                    .detectSwitchDefinition(jgen.getOutputContext()).orElse(BusinessEntitySerialization.ENTITY);
-    //            switch (mode) {
-    //            case BUSINESS_ID:
-    //                businessEntityJsonSerializer.serialize(businessEntity, jgen, provider);
-    //                return;
-    //            case ENTITY:
-    //                defaultSerializer.serialize(businessEntity, jgen, provider);
-    //                return;
-    //            default:
-    //                throw new NotImplementedCaseException(mode);
-    //            }
-    //        }
-    //    }
+//        /*
+//         * https://www.baeldung.com/jackson-call-default-serializer-from-custom-
+//         * serializer
+//         */
+//        static class SwitchingBusinessEntityJsonSerializer extends StdSerializer<BusinessEntity> {
+//            private final SwitchingAnnotationScanner switchingAnnotationScanner;
+//            private final BusinessEntityModule.BusinessEntityJsonSerializer businessEntityJsonSerializer;
+//    
+//            private final JsonSerializer<Object> defaultSerializer;
+//    
+//            public SwitchingBusinessEntityJsonSerializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
+//                    final BusinessEntityJsonSerializer businessEntityJsonSerializer,
+//                    final JsonSerializer<Object> defaultSerializer) {
+//                super(BusinessEntity.class);
+//    
+//                Check.notNullArgument(switchingAnnotationScanner, "switchingAnnotationScanner");
+//                Check.notNullArgument(businessEntityJsonSerializer, "businessEntityJsonSerializer");
+//                Check.notNullArgument(defaultSerializer, "defaultSerializer");
+//    
+//                this.switchingAnnotationScanner = switchingAnnotationScanner;
+//                this.businessEntityJsonSerializer = businessEntityJsonSerializer;
+//    
+//                this.defaultSerializer = defaultSerializer;
+//            }
+//    
+//            @Override
+//            public JsonSerializer<BusinessEntity> unwrappingSerializer(NameTransformer transformer) {
+//                
+//                JsonSerializer unwrappingSerializer = defaultSerializer.unwrappingSerializer(transformer);
+//                return (JsonSerializer<BusinessEntity>) unwrappingSerializer;
+//            }
+//    
+//            @Override
+//            public void serialize(final BusinessEntity businessEntity, final JsonGenerator jgen,
+//                    final SerializerProvider provider) throws IOException {
+//    
+//                BusinessEntitySerialization mode = switchingAnnotationScanner
+//                        .detectSwitchDefinition(jgen.getOutputContext()).orElse(BusinessEntitySerialization.ENTITY);
+//                switch (mode) {
+//                case BUSINESS_ID:
+//                    businessEntityJsonSerializer.serialize(businessEntity, jgen, provider);
+//                    return;
+//                case ENTITY:
+//                    defaultSerializer.serialize(businessEntity, jgen, provider);
+//                    return;
+//                default:
+//                    throw new NotImplementedCaseException(mode);
+//                }
+//            }
+//        }
 
-    //    // https://stackoverflow.com/questions/18313323/how-do-i-call-the-default-deserializer-from-a-custom-deserializer-in-jackson
-    //    public static class SwitchingBusinessEntityDeserializer extends StdDeserializer<BusinessEntity>
-    //            implements ResolvableDeserializer {
-    //
-    //        private final JsonDeserializer<?> defaultDeserializer;
-    //
-    //        private BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer;
-    //        private Class beanClazz;
-    //
-    //        private GeneralLoaderDao generalLoaderDao;
-    //
-    //        public SwitchingBusinessEntityDeserializer(
-    //                BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,
-    //                final Class beanClazz, JsonDeserializer<?> defaultDeserializer, GeneralLoaderDao generalLoaderDao) {
-    //            super(BusinessEntity.class);
-    //
-    //            this.typedBusinessEntityJsonDeserializer = typedBusinessEntityJsonDeserializer;
-    //            this.beanClazz = beanClazz;
-    //            this.defaultDeserializer = defaultDeserializer;
-    //            this.generalLoaderDao = generalLoaderDao;
-    //        }
-    //
-    //        @Override
-    //        public BusinessEntity deserialize(JsonParser jp, DeserializationContext ctxt)
-    //                throws IOException, JsonProcessingException {
-    //
-    //            JsonToken currentToken = jp.currentToken();
-    //            if (currentToken == JsonToken.VALUE_STRING) {
-    //                String bidString = jp.readValueAs(String.class);
-    //                System.out.println("bidString: " + bidString);
-    //                System.out.println("beanClazz: " + beanClazz);
-    //                return this.generalLoaderDao.getByBusinessId(BusinessId.parse(bidString), beanClazz);
-    //            } else {
-    //                return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
-    //            }
-    //        }
-    //
-    //        @Override
-    //        public JsonDeserializer<BusinessEntity> unwrappingDeserializer(NameTransformer unwrapper) {
-    //            JsonDeserializer<?> unwrappingDeserializer = defaultDeserializer.unwrappingDeserializer(unwrapper);
-    //            return (JsonDeserializer<BusinessEntity>) unwrappingDeserializer;
-    //        }
-    //
-    //        public void resolve(DeserializationContext ctxt) throws JsonMappingException {
-    //            ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
-    //        }
-    //
-    //    }
+//        // https://stackoverflow.com/questions/18313323/how-do-i-call-the-default-deserializer-from-a-custom-deserializer-in-jackson
+//        public static class SwitchingBusinessEntityDeserializer extends StdDeserializer<BusinessEntity>
+//                implements ResolvableDeserializer {
+//    
+//            private final JsonDeserializer<?> defaultDeserializer;
+//    
+//            private BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer;
+//            private Class beanClazz;
+//    
+//            private GeneralLoaderDao generalLoaderDao;
+//    
+//            public SwitchingBusinessEntityDeserializer(
+//                    BusinessEntityModule.TypedBusinessEntityJsonDeserializer typedBusinessEntityJsonDeserializer,
+//                    final Class beanClazz, JsonDeserializer<?> defaultDeserializer, GeneralLoaderDao generalLoaderDao) {
+//                super(BusinessEntity.class);
+//    
+//                this.typedBusinessEntityJsonDeserializer = typedBusinessEntityJsonDeserializer;
+//                this.beanClazz = beanClazz;
+//                this.defaultDeserializer = defaultDeserializer;
+//                this.generalLoaderDao = generalLoaderDao;
+//            }
+//    
+//            @Override
+//            public BusinessEntity deserialize(JsonParser jp, DeserializationContext ctxt)
+//                    throws IOException, JsonProcessingException {
+//    
+//                JsonToken currentToken = jp.currentToken();
+//                if (currentToken == JsonToken.VALUE_STRING) {
+//                    String bidString = jp.readValueAs(String.class);
+//                    System.out.println("bidString: " + bidString);
+//                    System.out.println("beanClazz: " + beanClazz);
+//                    return this.generalLoaderDao.getByBusinessId(BusinessId.parse(bidString), beanClazz);
+//                } else {
+//                    return (BusinessEntity) defaultDeserializer.deserialize(jp, ctxt);
+//                }
+//            }
+//    
+//            @Override
+//            public JsonDeserializer<BusinessEntity> unwrappingDeserializer(NameTransformer unwrapper) {
+//                JsonDeserializer<?> unwrappingDeserializer = defaultDeserializer.unwrappingDeserializer(unwrapper);
+//                return (JsonDeserializer<BusinessEntity>) unwrappingDeserializer;
+//            }
+//    
+//            public void resolve(DeserializationContext ctxt) throws JsonMappingException {
+//                ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
+//            }
+//    
+//        }
 
 }

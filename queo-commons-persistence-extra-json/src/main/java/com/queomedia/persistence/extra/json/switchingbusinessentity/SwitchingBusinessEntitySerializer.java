@@ -23,7 +23,7 @@ import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityJ
  *
  * @author engelmann
  */
-public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
+public class SwitchingBusinessEntitySerializer extends BeanSerializerBase {
 
     private static final long serialVersionUID = 369005311052139994L;
 
@@ -43,7 +43,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
      * @param businessEntityJsonSerializer the business entity json serializer
      * @param defaultSerializer the default serializer
      */
-    public SwitchingBusinessEntityJsonSerializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
+    public SwitchingBusinessEntitySerializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
             final BusinessEntityJsonSerializer businessEntityJsonSerializer,
             final BeanSerializerBase defaultSerializer) {
         super(defaultSerializer);
@@ -57,7 +57,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
         this.defaultSerializer = defaultSerializer;
     }
 
-    protected SwitchingBusinessEntityJsonSerializer(final SwitchingBusinessEntityJsonSerializer src,
+    protected SwitchingBusinessEntitySerializer(final SwitchingBusinessEntitySerializer src,
             final ObjectIdWriter objectIdWriter) {
         super(src, objectIdWriter);
 
@@ -66,7 +66,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
         this.defaultSerializer = src.defaultSerializer;
     }
 
-    protected SwitchingBusinessEntityJsonSerializer(final SwitchingBusinessEntityJsonSerializer src,
+    protected SwitchingBusinessEntitySerializer(final SwitchingBusinessEntitySerializer src,
             final Set<String> toIgnore) {
         super(src, toIgnore);
 
@@ -75,7 +75,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
         this.defaultSerializer = src.defaultSerializer;
     }
 
-    protected SwitchingBusinessEntityJsonSerializer(final SwitchingBusinessEntityJsonSerializer src,
+    protected SwitchingBusinessEntitySerializer(final SwitchingBusinessEntitySerializer src,
             final ObjectIdWriter objectIdWriter, final Object filterId) {
         super(src, objectIdWriter, filterId);
 
@@ -112,12 +112,12 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
             protected void serializeFields(final Object bean, final JsonGenerator jgen,
                     final SerializerProvider provider)
                     throws IOException {
-                BusinessEntitySerializationMode mode = SwitchingBusinessEntityJsonSerializer.this.switchingAnnotationScanner
+                BusinessEntitySerializationMode mode = SwitchingBusinessEntitySerializer.this.switchingAnnotationScanner
                         .getSwitchDefinition(jgen.getOutputContext());
                 switch (mode) {
                 case BUSINESS_ID:
                     jgen.writeFieldName("businessId");
-                    SwitchingBusinessEntityJsonSerializer.this.businessEntityJsonSerializer
+                    SwitchingBusinessEntitySerializer.this.businessEntityJsonSerializer
                             .serialize(((BusinessEntity) bean), jgen, provider);
                     return;
                 case ENTITY:
@@ -132,12 +132,12 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
 
     @Override
     public BeanSerializerBase withObjectIdWriter(final ObjectIdWriter objectIdWriter) {
-        return new SwitchingBusinessEntityJsonSerializer(this, objectIdWriter);
+        return new SwitchingBusinessEntitySerializer(this, objectIdWriter);
     }
 
     @Override
     protected BeanSerializerBase withIgnorals(final Set<String> toIgnore) {
-        return new SwitchingBusinessEntityJsonSerializer(this, toIgnore);
+        return new SwitchingBusinessEntitySerializer(this, toIgnore);
     }
 
     @Override
@@ -157,7 +157,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
 
     @Override
     public BeanSerializerBase withFilterId(final Object filterId) {
-        return new SwitchingBusinessEntityJsonSerializer(this, this._objectIdWriter, filterId);
+        return new SwitchingBusinessEntitySerializer(this, this._objectIdWriter, filterId);
     }
 
 }

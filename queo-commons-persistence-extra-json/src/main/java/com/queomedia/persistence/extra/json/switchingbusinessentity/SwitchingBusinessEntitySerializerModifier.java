@@ -26,7 +26,7 @@ public class SwitchingBusinessEntitySerializerModifier extends BeanSerializerMod
             final JsonSerializer<?> serializer) {
 
         if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
-            return new SwitchingBusinessEntityJsonSerializer(this.switchingAnnotationScanner,
+            return new SwitchingBusinessEntitySerializer(this.switchingAnnotationScanner,
                     this.businessEntityJsonSerializer,
                     (BeanSerializerBase) serializer);
         } else {
