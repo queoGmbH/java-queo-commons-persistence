@@ -80,8 +80,8 @@ public class SwitchingAnnotationScanner {
 
         Object currentValue = context.getCurrentValue();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("currentValue:" + currentValue + " " + (currentValue != null ? currentValue.getClass() : ""));
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("find switching annotation for currentValue: {} ({})", currentValue, (currentValue != null ? currentValue.getClass() : null));
         }
 
         /*
