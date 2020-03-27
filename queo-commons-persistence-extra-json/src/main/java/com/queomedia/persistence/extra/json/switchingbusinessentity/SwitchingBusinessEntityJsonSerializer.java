@@ -112,7 +112,7 @@ public class SwitchingBusinessEntityJsonSerializer extends BeanSerializerBase {
             protected void serializeFields(final Object bean, final JsonGenerator jgen,
                     final SerializerProvider provider)
                     throws IOException {
-                BusinessEntitySerializationMode mode = switchingAnnotationScanner
+                BusinessEntitySerializationMode mode = SwitchingBusinessEntityJsonSerializer.this.switchingAnnotationScanner
                         .getSwitchDefinition(jgen.getOutputContext());
                 switch (mode) {
                 case BUSINESS_ID:

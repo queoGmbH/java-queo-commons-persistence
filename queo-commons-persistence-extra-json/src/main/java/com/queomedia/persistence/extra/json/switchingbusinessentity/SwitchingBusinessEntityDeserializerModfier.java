@@ -26,8 +26,8 @@ class SwitchingBusinessEntityDeserializerModfier extends BeanDeserializerModifie
     }
 
     @Override
-    public JsonDeserializer<?> modifyDeserializer(final DeserializationConfig config,
-            final BeanDescription beanDesc, final JsonDeserializer<?> deserializer) {
+    public JsonDeserializer<?> modifyDeserializer(final DeserializationConfig config, final BeanDescription beanDesc,
+            final JsonDeserializer<?> deserializer) {
         if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
             return new SwitchingBusinessEntityDeserializer(this.switchingAnnotationScanner,
                     new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(),

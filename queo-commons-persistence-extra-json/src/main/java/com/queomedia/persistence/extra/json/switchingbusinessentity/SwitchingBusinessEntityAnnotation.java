@@ -13,22 +13,22 @@ import com.queomedia.persistence.BusinessEntity;
 /**
  * Annotation to control how the Switchting-Business-Entity-Serializer (and -Deserializer) serialize {@link BusinessEntity}s:
  * either as full entity with all properties or just its business id.
- * 
+ *
  * <p>
  * This annotation can be placed at the Business Entity itself or at any parent class or field in the jackson-serialization-path.
  * <br>
  * If it is placed at a class, then this mode is used for all {@link BusinessEntity}s in the jackson-serialization-path that are in a
  * children relation ship to this class.
- * <br> 
+ * <br>
  * If it is placed at a field, then this mode is used for all {@link BusinessEntity}s in the jackson-serialization-path that are in a
  * children relation ship to this field.
- * </p> 
+ * </p>
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD, METHOD })
 public @interface SwitchingBusinessEntityAnnotation {
 
     /** Controll how*/
-    public  BusinessEntitySerializationMode value();
-            
+    public BusinessEntitySerializationMode value();
+
 }

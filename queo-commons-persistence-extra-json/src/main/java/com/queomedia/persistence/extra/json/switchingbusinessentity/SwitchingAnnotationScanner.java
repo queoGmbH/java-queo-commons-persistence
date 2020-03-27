@@ -67,7 +67,7 @@ public class SwitchingAnnotationScanner {
      * Try to find the {@link SwitchingBusinessEntityAnnotation} in the given json {@code context}s
      * {@link JsonStreamContext#getCurrentValue() context.getCurrentValue()} or if not found recursive in the
      * {@link JsonStreamContext#getParent() context.getParent()}.
-     * 
+     *
      * <p>
      * Properties form Superclass are also checked: in this order:
      * </p>
@@ -81,7 +81,9 @@ public class SwitchingAnnotationScanner {
         Object currentValue = context.getCurrentValue();
 
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("find switching annotation for currentValue: {} ({})", currentValue, (currentValue != null ? currentValue.getClass() : null));
+            LOGGER.trace("find switching annotation for currentValue: {} ({})",
+                    currentValue,
+                    (currentValue != null ? currentValue.getClass() : null));
         }
 
         /*
@@ -122,7 +124,7 @@ public class SwitchingAnnotationScanner {
 
     /**
      * Try to find the {@link SwitchingBusinessEntityAnnotation} at a field named {@code jsonPropertyName} at the
-     * given class. 
+     * given class.
      *
      * @param jsonPropertyName the json property name
      * @param clazz the examined class
@@ -194,7 +196,6 @@ public class SwitchingAnnotationScanner {
             }
             currentClass = currentClass.getSuperclass();
         }
-
         return Optional.empty();
     }
 

@@ -13,7 +13,7 @@ import com.queomedia.persistence.extra.json.BusinessEntityModule;
  * This module register 4 serializer/deserializer.
  * ...
  * </p>
- * 
+ *
  * @see com.queomedia.persistence.extra.json.switchingbusinessentity
  */
 public class SwitchingBusinessEntityModule extends Module {
@@ -57,9 +57,9 @@ public class SwitchingBusinessEntityModule extends Module {
             final BusinessEntitySerializationMode defaultMode) {
         this(generalLoaderDao, new SwitchingAnnotationScanner(defaultMode));
     }
-    
+
     /**
-     * Instantiates a new switching business entity module with default mode {@link BusinessEntitySerializationMode#ENTITY}. 
+     * Instantiates a new switching business entity module with default mode {@link BusinessEntitySerializationMode#ENTITY}.
      *
      * @param generalLoaderDao the general loader dao
      */
@@ -87,17 +87,15 @@ public class SwitchingBusinessEntityModule extends Module {
     public void setupModule(final SetupContext context) {
         Check.notNullArgument(context, "context");
 
-        context.addBeanSerializerModifier(new SwitchingBusinessEntitySerializerModifier(switchingAnnotationScanner,
+        context.addBeanSerializerModifier(new SwitchingBusinessEntitySerializerModifier(this.switchingAnnotationScanner,
                 new BusinessEntityModule.BusinessEntityJsonSerializer()));
         context.addBeanDeserializerModifier(
-                new SwitchingBusinessEntityDeserializerModfier(switchingAnnotationScanner, this.generalLoaderDao));
+                new SwitchingBusinessEntityDeserializerModfier(this.switchingAnnotationScanner, this.generalLoaderDao));
 
         context.addKeySerializers(new BusinessEntityModule.BusinessEntityKeySerializers());
         context.addKeyDeserializers(new BusinessEntityModule.BusinessEntityKeyDeserializers(this.generalLoaderDao));
 
-    }    
-
-    
+    }
 
     //    /*
     //     * https://www.baeldung.com/jackson-call-default-serializer-from-custom-
@@ -149,8 +147,6 @@ public class SwitchingBusinessEntityModule extends Module {
     //        }
     //    }
 
-    
-
     //    // https://stackoverflow.com/questions/18313323/how-do-i-call-the-default-deserializer-from-a-custom-deserializer-in-jackson
     //    public static class SwitchingBusinessEntityDeserializer extends StdDeserializer<BusinessEntity>
     //            implements ResolvableDeserializer {
@@ -199,6 +195,5 @@ public class SwitchingBusinessEntityModule extends Module {
     //        }
     //
     //    }
-
 
 }

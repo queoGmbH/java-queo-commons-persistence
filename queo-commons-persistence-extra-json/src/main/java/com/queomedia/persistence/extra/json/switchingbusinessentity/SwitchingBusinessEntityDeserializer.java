@@ -95,12 +95,12 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
                 for (String fieldName = jp.nextFieldName(); fieldName != null; fieldName = jp.nextFieldName()) {
                     if (fieldName.equals("businessId")) {
                         jp.nextToken();
-                        return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
+                        return this.typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
                     }
                 }
                 return null;
             } else {
-                return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
+                return this.typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
             }
         }
         case ENTITY: {
@@ -117,7 +117,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
         //for load by business id, it does not matter if the ctor must be used,
         //and for the default, there is no public _deserializeUsingPropertyBased method, but
         //BeanDeserializer.deserializeFromObject will forward it
-        //and so one can reuse this.deserializeFromObject            
+        //and so one can reuse this.deserializeFromObject
         return deserializeFromObject(jp, ctxt);
     }
 
@@ -136,12 +136,12 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
                 for (String fieldName = jp.nextFieldName(); fieldName != null; fieldName = jp.nextFieldName()) {
                     if (fieldName.equals("businessId")) {
                         jp.nextToken();
-                        return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
+                        return this.typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
                     }
                 }
                 return null;
             } else {
-                return typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
+                return this.typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
             }
         }
         case ENTITY: {
