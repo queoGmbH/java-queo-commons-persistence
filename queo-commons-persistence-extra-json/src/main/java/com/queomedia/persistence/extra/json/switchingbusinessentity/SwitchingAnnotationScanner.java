@@ -138,7 +138,11 @@ public class SwitchingAnnotationScanner {
             // TODO find field instead of use exception
             try {
                 Field field = clazz.getDeclaredField(jsonPropertyName);
-                return Optional.ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                Optional<SwitchingBusinessEntityAnnotation> annotation = Optional
+                        .ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                if (annotation.isPresent()) {
+                    return annotation;
+                }
             } catch (NoSuchFieldException e) {
             }
             currentClass = currentClass.getSuperclass();
@@ -173,7 +177,7 @@ public class SwitchingAnnotationScanner {
     }
 
     /**
-     * Try to find the {@link SwitchingBusinessEntityAnnotation} at the class level.
+     * Try to find the {@link SwitchingBusinessEntityAnnotation} at the class level (the given class and it super classes).
      *
      * @param clazz the examined class
      * @return the found {@link SwitchingBusinessEntityAnnotation}
@@ -181,9 +185,17 @@ public class SwitchingAnnotationScanner {
     private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtClass(final Class<? extends Object> clazz) {
         Check.notNullArgument(clazz, "clazz");
 
-        Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
-                .ofNullable(clazz.getAnnotation(SwitchingBusinessEntityAnnotation.class));
-        return classAnnotation;
+        Class<?> currentClass = clazz;
+        while (currentClass != Object.class) {
+            Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
+                    .ofNullable(clazz.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+            if (classAnnotation.isPresent()) {
+                return classAnnotation;
+            }
+            currentClass = currentClass.getSuperclass();
+        }
+
+        return Optional.empty();
     }
 
     /**
