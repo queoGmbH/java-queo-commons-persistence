@@ -8,8 +8,11 @@ import java.util.Optional;
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.queomedia.commons.checks.Check;
 
+/**
+ * Scan the json-context-path to find a class that is annotated with {@link SwitchingBusinessEntityAnnotation}.  
+ */
 class SwitchingAnnotationScanner {
-
+    
     /** The serialization mode returned if no annotation is found. */
     private final BusinessEntitySerializationMode defaultMode;
 
