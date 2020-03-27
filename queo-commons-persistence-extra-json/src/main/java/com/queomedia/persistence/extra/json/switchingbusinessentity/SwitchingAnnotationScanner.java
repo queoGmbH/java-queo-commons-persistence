@@ -129,18 +129,21 @@ public class SwitchingAnnotationScanner {
      * @return the found {@link SwitchingBusinessEntityAnnotation}
      */
     private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtField(final String jsonPropertyName,
-            final Class<? extends Object> clazz) {
+            final Class<?> clazz) {
         Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
         Check.notNullArgument(clazz, "clazz");
 
-        // TODO find field instead of use exception
-        try {
-
-            Field field = clazz.getDeclaredField(jsonPropertyName);
-            return Optional.ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
-        } catch (NoSuchFieldException e) {
-            return Optional.empty();
+        Class<?> currentClass = clazz;
+        while (currentClass != Object.class) {
+            // TODO find field instead of use exception
+            try {
+                Field field = clazz.getDeclaredField(jsonPropertyName);
+                return Optional.ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+            } catch (NoSuchFieldException e) {
+            }
+            currentClass = currentClass.getSuperclass();
         }
+        return Optional.empty();
     }
 
     /**
@@ -152,7 +155,7 @@ public class SwitchingAnnotationScanner {
      * @return the found {@link SwitchingBusinessEntityAnnotation}
      */
     private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtGetter(final String jsonPropertyName,
-            final Class<? extends Object> clazz) {
+            final Class<?> clazz) {
         Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
         Check.notNullArgument(clazz, "clazz");
 
@@ -175,8 +178,7 @@ public class SwitchingAnnotationScanner {
      * @param clazz the examined class
      * @return the found {@link SwitchingBusinessEntityAnnotation}
      */
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtClass(
-            final Class<? extends Object> clazz) {
+    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtClass(final Class<? extends Object> clazz) {
         Check.notNullArgument(clazz, "clazz");
 
         Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
