@@ -13,17 +13,27 @@ import com.fasterxml.jackson.core.JsonStreamContext;
 import com.queomedia.commons.checks.Check;
 
 /**
- * Scan the json-context-path to find a class that is annotated with {@link SwitchingBusinessEntityAnnotation}.  
+ * Scan the json-context-path to find a class that is annotated with {@link SwitchingBusinessEntityAnnotation}.
+ * 
+ * <p>
+ * This scanner scan for the annotation (in this order) at the field that match the json-name,
+ * the getter that match the field name and then at the class. If no annotation is found, then the scanner check
+ * the parent json context ({@link JsonStreamContext#getParent()}).
+ * </p>
  */
 public class SwitchingAnnotationScanner {
     
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingAnnotationScanner.class);
-
     
     /** The serialization mode returned if no annotation is found. */
     private final BusinessEntitySerializationMode defaultMode;
 
+    /**
+     * Instantiates a new switching annotation scanner with the given {@code defaultMode}
+     *
+     * @param defaultMode which mode is retuned if no annotation is found
+     */
     public SwitchingAnnotationScanner(final BusinessEntitySerializationMode defaultMode) {
         Check.notNullArgument(defaultMode, "defaultMode");
 
@@ -31,10 +41,14 @@ public class SwitchingAnnotationScanner {
     }
 
     BusinessEntitySerializationMode getSwitchDefinition(final JsonStreamContext context) {
+        Check.notNullArgument(context, "context");
+        
         return findSwitchDefinition(context).orElse(this.defaultMode);
     }
 
     Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext context) {
+        Check.notNullArgument(context, "context");
+        
         return findSwitchingBusinessEntityAnnotation(context).map(SwitchingBusinessEntityAnnotation::value);
     }
 
@@ -64,19 +78,19 @@ public class SwitchingAnnotationScanner {
             Class<? extends Object> currentClass = currentValue.getClass();
 
             if (context.getCurrentName() != null) {
-                                
-                Optional<SwitchingBusinessEntityAnnotation> fieldAnnotation = findAnnotationAtField(context, currentClass);
+                String jsonPropertyName = context.getCurrentName();
+                
+                Optional<SwitchingBusinessEntityAnnotation> fieldAnnotation = findAnnotationAtField(jsonPropertyName, currentClass);
                 if (fieldAnnotation.isPresent()) {
                     return fieldAnnotation;
                 }
                 
-                Optional<SwitchingBusinessEntityAnnotation> methodAnnotation = findAnnotationAtGetter(context, currentClass);
+                Optional<SwitchingBusinessEntityAnnotation> methodAnnotation = findAnnotationAtGetter(jsonPropertyName, currentClass);
                 if (methodAnnotation.isPresent()) {
                     return methodAnnotation;
                 }
             }
-            Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
-                    .ofNullable(currentClass.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+            Optional<SwitchingBusinessEntityAnnotation> classAnnotation = findAnnotationAtClass(currentClass);
             if (classAnnotation.isPresent()) {
                 return classAnnotation;
             }
@@ -89,12 +103,16 @@ public class SwitchingAnnotationScanner {
 
         return Optional.empty();
     }
+   
   
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtField(final JsonStreamContext context, Class<? extends Object> currentClass) {
+    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtField(final String jsonPropertyName, Class<? extends Object> currentClass) {
+        Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
+        Check.notNullArgument(currentClass, "currentClass");
+
         // TODO find field instead of use exception
         try {
 
-            Field field = currentClass.getDeclaredField(context.getCurrentName());
+            Field field = currentClass.getDeclaredField(jsonPropertyName);
             return Optional
                     .ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
         } catch (NoSuchFieldException e) {
@@ -102,19 +120,30 @@ public class SwitchingAnnotationScanner {
         }
     }
     
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtGetter(final JsonStreamContext context, Class<? extends Object> currentClass) {
-        // TODO find methos instead of use exception
+    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtGetter(final String jsonPropertyName, Class<? extends Object> currentClass) {        
+        Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
+        Check.notNullArgument(currentClass, "currentClass");
+
+        // TODO find method instead of use exception
         try {
             /*
              * Getter are always public, so we can use getMethoth instead of
              * getDeclaredMethods and not not need a manual scan in super classes.
              */
-            Method method = currentClass.getMethod(getterName(context.getCurrentName()));
+            Method method = currentClass.getMethod(getterName(jsonPropertyName));
             return Optional
                     .ofNullable(method.getAnnotation(SwitchingBusinessEntityAnnotation.class));
         } catch (NoSuchMethodException e) {
             return Optional.empty();
         }
+    }
+    
+    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtClass(Class<? extends Object> currentClass) {
+        Check.notNullArgument(currentClass, "currentClass");
+
+        Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
+                .ofNullable(currentClass.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+        return classAnnotation;
     }
 
     /**
@@ -126,6 +155,8 @@ public class SwitchingAnnotationScanner {
     public static String getterName(final String fieldName) {
         Check.notNullArgument(fieldName, "fieldName");
 
+        //we do not need to check for isser-because there can not be a boolean in hits path
+        
         return "get" + fieldName.substring(0, 1).toUpperCase(Locale.ENGLISH) + fieldName.substring(1);
     }
 }
