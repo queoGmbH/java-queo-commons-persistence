@@ -119,6 +119,9 @@ public class SwitchingAnnotationScanner {
 
     /**
      * Returns a String which capitalizes the first letter of the string.
+     *
+     * @param fieldName the field name
+     * @return the name of the Getter for the field.
      */
     public static String getterName(final String fieldName) {
         Check.notNullArgument(fieldName, "fieldName");
