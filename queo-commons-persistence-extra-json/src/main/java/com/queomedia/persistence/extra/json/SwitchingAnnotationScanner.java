@@ -4,12 +4,14 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonStreamContext;
 import com.queomedia.commons.checks.Check;
+import com.queomedia.persistence.extra.json.SwitchingBusinessEntityModule.SwitchingBusinessEntityJsonSerializer;
 
 /**
  * Scan the json-context-path to find a class that is annotated with {@link SwitchingBusinessEntityAnnotation}.
@@ -125,6 +127,13 @@ public class SwitchingAnnotationScanner {
     /**
      * Try to find the {@link SwitchingBusinessEntityAnnotation} at a field named {@code jsonPropertyName} at the
      * given class.
+     * 
+     * <p>
+     * If the field is not declared in the given class, then its super class is checked.
+     * This also mean, if a field of one name is declared twice, then then only the annotation fo field in the child class
+     * is returned. Even this the child class field has no {@link SwitchingBusinessEntityAnnotation} annotation,
+     * then the super class in NOT checked!
+     * </p>
      *
      * @param jsonPropertyName the json property name
      * @param clazz the examined class
@@ -137,15 +146,13 @@ public class SwitchingAnnotationScanner {
 
         Class<?> currentClass = clazz;
         while (currentClass != Object.class) {
-            // TODO find field instead of use exception
-            try {
-                Field field = clazz.getDeclaredField(jsonPropertyName);
-                Optional<SwitchingBusinessEntityAnnotation> annotation = Optional
-                        .ofNullable(field.getAnnotation(SwitchingBusinessEntityAnnotation.class));
-                if (annotation.isPresent()) {
-                    return annotation;
-                }
-            } catch (NoSuchFieldException e) {
+            // @formatter:off
+            Optional<Field> foundField = Stream.of(clazz.getDeclaredFields())
+                    .filter(field -> field.getName().equals(jsonPropertyName))
+                    .findAny();
+            // @formatter:on
+            if (foundField.isPresent()) {
+                return Optional.ofNullable(foundField.get().getAnnotation(SwitchingBusinessEntityAnnotation.class));
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -165,17 +172,14 @@ public class SwitchingAnnotationScanner {
         Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
         Check.notNullArgument(clazz, "clazz");
 
-        // TODO find method instead of use exception
-        try {
-            /*
-             * Getter are always public, so we can use getMethoth instead of
-             * getDeclaredMethods and not not need a manual scan in super classes.
-             */
-            Method method = clazz.getMethod(getterName(jsonPropertyName));
-            return Optional.ofNullable(method.getAnnotation(SwitchingBusinessEntityAnnotation.class));
-        } catch (NoSuchMethodException e) {
-            return Optional.empty();
-        }
+        String getterName = getterName(jsonPropertyName);
+
+        // @formatter:off
+        return Stream.of(clazz.getMethods())
+                .filter(method -> method.getName().equals(getterName))
+                .findAny()
+                .flatMap(method -> Optional.ofNullable(method.getAnnotation(SwitchingBusinessEntityAnnotation.class)));
+        // @formatter:on
     }
 
     /**
