@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json.complexswitchingbusinessentity;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -9,14 +9,15 @@ import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.BusinessEntityModule;
+import com.queomedia.persistence.extra.json.SwitchingAnnotationScanner;
 
-class SwitchingBusinessEntityDeserializerModfier extends BeanDeserializerModifier {
+class ComplexSwitchingBusinessEntityDeserializerModfier extends BeanDeserializerModifier {
 
     private final SwitchingAnnotationScanner switchingAnnotationScanner;
 
     private final GeneralLoaderDao generalLoaderDao;
 
-    public SwitchingBusinessEntityDeserializerModfier(final SwitchingAnnotationScanner switchingAnnotationScanner,
+    public ComplexSwitchingBusinessEntityDeserializerModfier(final SwitchingAnnotationScanner switchingAnnotationScanner,
             final GeneralLoaderDao generalLoaderDao) {
         Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
         Check.notNullArgument(switchingAnnotationScanner, "switchingAnnotationScanner");
@@ -29,7 +30,7 @@ class SwitchingBusinessEntityDeserializerModfier extends BeanDeserializerModifie
     public JsonDeserializer<?> modifyDeserializer(final DeserializationConfig config, final BeanDescription beanDesc,
             final JsonDeserializer<?> deserializer) {
         if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
-            return new SwitchingBusinessEntityDeserializer(this.switchingAnnotationScanner,
+            return new ComplexSwitchingBusinessEntityDeserializer(this.switchingAnnotationScanner,
                     new BusinessEntityModule.TypedBusinessEntityJsonDeserializer(beanDesc.getBeanClass(),
                             this.generalLoaderDao),
                     (BeanDeserializerBase) deserializer);

@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -45,7 +45,7 @@ public class SwitchingAnnotationScanner {
      * @param context the Json-Context
      * @return the switch definition - with fallback to {@link #defaultMode} if no annotation is found
      */
-    BusinessEntitySerializationMode getSwitchDefinition(final JsonStreamContext context) {
+    public BusinessEntitySerializationMode getSwitchDefinition(final JsonStreamContext context) {
         Check.notNullArgument(context, "context");
 
         return findSwitchDefinition(context).orElse(this.defaultMode);
@@ -57,7 +57,7 @@ public class SwitchingAnnotationScanner {
      * @param context the Json-Context
      * @return the switch definition, or empty if no annotation is found
      */
-    Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext context) {
+    public Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext context) {
         Check.notNullArgument(context, "context");
 
         return findSwitchingBusinessEntityAnnotation(context).map(SwitchingBusinessEntityAnnotation::value);

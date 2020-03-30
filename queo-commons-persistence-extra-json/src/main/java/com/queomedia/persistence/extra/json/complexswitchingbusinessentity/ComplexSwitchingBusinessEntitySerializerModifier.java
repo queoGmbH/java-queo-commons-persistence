@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json.complexswitchingbusinessentity;
 
 import com.fasterxml.jackson.databind.BeanDescription;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -7,15 +7,16 @@ import com.fasterxml.jackson.databind.ser.BeanSerializerModifier;
 import com.fasterxml.jackson.databind.ser.std.BeanSerializerBase;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.extra.json.BusinessEntityModule;
+import com.queomedia.persistence.extra.json.SwitchingAnnotationScanner;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityJsonSerializer;
 
-public class SwitchingBusinessEntitySerializerModifier extends BeanSerializerModifier {
+public class ComplexSwitchingBusinessEntitySerializerModifier extends BeanSerializerModifier {
 
     private final SwitchingAnnotationScanner switchingAnnotationScanner;
 
     private final BusinessEntityModule.BusinessEntityJsonSerializer businessEntityJsonSerializer;
 
-    public SwitchingBusinessEntitySerializerModifier(final SwitchingAnnotationScanner switchingAnnotationScanner,
+    public ComplexSwitchingBusinessEntitySerializerModifier(final SwitchingAnnotationScanner switchingAnnotationScanner,
             final BusinessEntityJsonSerializer businessEntityJsonSerializer) {
         this.switchingAnnotationScanner = switchingAnnotationScanner;
         this.businessEntityJsonSerializer = businessEntityJsonSerializer;
@@ -26,7 +27,7 @@ public class SwitchingBusinessEntitySerializerModifier extends BeanSerializerMod
             final JsonSerializer<?> serializer) {
 
         if (BusinessEntity.class.isAssignableFrom(beanDesc.getBeanClass())) {
-            return new SwitchingBusinessEntitySerializer(this.switchingAnnotationScanner,
+            return new ComplexSwitchingBusinessEntitySerializer(this.switchingAnnotationScanner,
                     this.businessEntityJsonSerializer,
                     (BeanSerializerBase) serializer);
         } else {

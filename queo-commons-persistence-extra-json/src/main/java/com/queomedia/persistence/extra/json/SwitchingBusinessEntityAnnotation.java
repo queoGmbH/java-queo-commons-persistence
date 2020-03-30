@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;

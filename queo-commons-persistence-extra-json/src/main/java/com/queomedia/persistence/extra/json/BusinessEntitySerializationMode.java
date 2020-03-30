@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json;
 
 import org.hibernate.boot.model.relational.Database;
 

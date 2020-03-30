@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -31,7 +31,7 @@ import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.BusinessEntityOmitIdModule;
 import com.queomedia.persistence.extra.json.BusinessIdModule;
-import com.queomedia.persistence.extra.json.switchingbusinessentity.SwitchingBusinessEntityModule;
+import com.queomedia.persistence.extra.json.SwitchingBusinessEntityModule;
 
 public class SwitchingBusinessEntityModuleTest {
 
@@ -46,17 +46,17 @@ public class SwitchingBusinessEntityModuleTest {
     public static ObjectMapper configuredObjectMapper(final GeneralLoaderDao generalLoaderDao) {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModules(new Jdk8Module(),
-//                new SwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
-                new SimpleSwitchingBusinessEntityModule(generalLoaderDao, BusinessEntitySerializationMode.ENTITY),
-                new BusinessEntityOmitIdModule(),
-                new BusinessIdModule());
+                new SwitchingBusinessEntityModule(generalLoaderDao,
+                        BusinessEntitySerializationMode.ENTITY,
+                        true,
+                        true));
         return mapper;
     }
 
     private int generalLoaderDaoMockCounter = 0;
 
     /**
-     * Build a Jackson Object Mappwer with {@link SwitchingBusinessEntityModule}
+     * Build a Jackson Object Mapper with {@link SwitchingBusinessEntityModule}
      * that use a {@link GeneralLoaderDao}-mock that expect exactly one invocation
      * of {@link GeneralLoaderDao#getByBusinessId(BusinessId, Class)} for each given
      * entity (from {@code entities}).

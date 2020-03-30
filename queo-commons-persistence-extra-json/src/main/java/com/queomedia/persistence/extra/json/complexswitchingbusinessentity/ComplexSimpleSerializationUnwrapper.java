@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json.complexswitchingbusinessentity;
 
 import java.io.IOException;
 
@@ -10,9 +10,12 @@ import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotImplementedCaseException;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.extra.json.BusinessEntityModule;
+import com.queomedia.persistence.extra.json.BusinessEntitySerializationMode;
+import com.queomedia.persistence.extra.json.SwitchingAnnotationScanner;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.BusinessEntityJsonSerializer;
 
-public class SimpleSerializationUnwrapper extends JsonSerializer<BusinessEntity> {
+
+public class ComplexSimpleSerializationUnwrapper extends JsonSerializer<BusinessEntity> {
 
     /** Detect the mode how to serialize */
     private final SwitchingAnnotationScanner switchingAnnotationScanner;
@@ -31,7 +34,7 @@ public class SimpleSerializationUnwrapper extends JsonSerializer<BusinessEntity>
      */
     private final NameTransformer unwrapper;
 
-    public SimpleSerializationUnwrapper(final SwitchingAnnotationScanner switchingAnnotationScanner,
+    public ComplexSimpleSerializationUnwrapper(final SwitchingAnnotationScanner switchingAnnotationScanner,
             final BusinessEntityJsonSerializer businessEntityJsonSerializer,
             final JsonSerializer<Object> defaultSerializer, final NameTransformer unwrapper) {
         Check.notNullArgument(switchingAnnotationScanner, "switchingAnnotationScanner");
@@ -43,6 +46,11 @@ public class SimpleSerializationUnwrapper extends JsonSerializer<BusinessEntity>
         this.businessEntityJsonSerializer = businessEntityJsonSerializer;
         this.defaultSerializer = defaultSerializer;
         this.unwrapper = unwrapper;
+    }
+    
+    @Override
+    public boolean isUnwrappingSerializer() {
+        return true;
     }
 
     @Override

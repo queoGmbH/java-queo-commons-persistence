@@ -1,22 +1,24 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json.complexswitchingbusinessentity;
 
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.Module;
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.GeneralLoaderDao;
 import com.queomedia.persistence.extra.json.BusinessEntityModule;
+import com.queomedia.persistence.extra.json.BusinessEntitySerializationMode;
+import com.queomedia.persistence.extra.json.SwitchingAnnotationScanner;
 
 /**
  * Jackson Module that activate the Switching Business Enitity Functionality (see
- * {@link com.queomedia.persistence.extra.json.switchingbusinessentity packagedoc}).
+ * {@link com.queomedia.persistence.extra.json.complexswitchingbusinessentity packagedoc}).
  * <p>
  * This module register 4 serializer/deserializer.
  * ...
  * </p>
  *
- * @see com.queomedia.persistence.extra.json.switchingbusinessentity
+ * @see com.queomedia.persistence.extra.json.complexswitchingbusinessentity
  */
-public class SwitchingBusinessEntityModule extends Module {
+public class ComplexSwitchingBusinessEntityModule extends Module {
 
     /** The general loader dao. */
     private final GeneralLoaderDao generalLoaderDao;
@@ -38,7 +40,7 @@ public class SwitchingBusinessEntityModule extends Module {
      * @param generalLoaderDao the general loader dao
      * @param switchingAnnotationScanner the switching annotation scanner
      */
-    public SwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao,
+    public ComplexSwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao,
             final SwitchingAnnotationScanner switchingAnnotationScanner) {
         Check.notNullArgument(generalLoaderDao, "generalLoaderDao");
         Check.notNullArgument(switchingAnnotationScanner, "switchingAnnotationScanner");
@@ -53,7 +55,7 @@ public class SwitchingBusinessEntityModule extends Module {
      * @param generalLoaderDao the general loader dao
      * @param defaultMode the default serialization mode used if no explicit mode is defined.
      */
-    public SwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao,
+    public ComplexSwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao,
             final BusinessEntitySerializationMode defaultMode) {
         this(generalLoaderDao, new SwitchingAnnotationScanner(defaultMode));
     }
@@ -63,7 +65,7 @@ public class SwitchingBusinessEntityModule extends Module {
      *
      * @param generalLoaderDao the general loader dao
      */
-    public SwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao) {
+    public ComplexSwitchingBusinessEntityModule(final GeneralLoaderDao generalLoaderDao) {
         this(generalLoaderDao, BusinessEntitySerializationMode.ENTITY);
     }
 
@@ -87,10 +89,10 @@ public class SwitchingBusinessEntityModule extends Module {
     public void setupModule(final SetupContext context) {
         Check.notNullArgument(context, "context");
 
-        context.addBeanSerializerModifier(new SwitchingBusinessEntitySerializerModifier(this.switchingAnnotationScanner,
+        context.addBeanSerializerModifier(new ComplexSwitchingBusinessEntitySerializerModifier(this.switchingAnnotationScanner,
                 new BusinessEntityModule.BusinessEntityJsonSerializer()));
         context.addBeanDeserializerModifier(
-                new SwitchingBusinessEntityDeserializerModfier(this.switchingAnnotationScanner, this.generalLoaderDao));
+                new ComplexSwitchingBusinessEntityDeserializerModfier(this.switchingAnnotationScanner, this.generalLoaderDao));
 
         context.addKeySerializers(new BusinessEntityModule.BusinessEntityKeySerializers());
         context.addKeyDeserializers(new BusinessEntityModule.BusinessEntityKeyDeserializers(this.generalLoaderDao));

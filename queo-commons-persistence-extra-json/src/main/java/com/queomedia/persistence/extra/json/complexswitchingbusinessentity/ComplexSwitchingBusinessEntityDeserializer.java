@@ -1,4 +1,4 @@
-package com.queomedia.persistence.extra.json.switchingbusinessentity;
+package com.queomedia.persistence.extra.json.complexswitchingbusinessentity;
 
 import java.io.IOException;
 import java.util.Set;
@@ -18,10 +18,12 @@ import com.fasterxml.jackson.databind.util.NameTransformer;
 import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotImplementedCaseException;
 import com.queomedia.persistence.BusinessEntity;
+import com.queomedia.persistence.extra.json.BusinessEntitySerializationMode;
+import com.queomedia.persistence.extra.json.SwitchingAnnotationScanner;
 import com.queomedia.persistence.extra.json.BusinessEntityModule.TypedBusinessEntityJsonDeserializer;
 
 // https://stackoverflow.com/questions/18313323/how-do-i-call-the-default-deserializer-from-a-custom-deserializer-in-jackson
-public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> extends BeanDeserializerBase
+public class ComplexSwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> extends BeanDeserializerBase
         implements ResolvableDeserializer {
 
     private static final long serialVersionUID = 6686258398018608306L;
@@ -34,7 +36,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
 
     private final boolean unwarppedMode;
 
-    public SwitchingBusinessEntityDeserializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
+    public ComplexSwitchingBusinessEntityDeserializer(final SwitchingAnnotationScanner switchingAnnotationScanner,
             final TypedBusinessEntityJsonDeserializer<T> typedBusinessEntityJsonDeserializer,
             final BeanDeserializerBase defaultDeserializer) {
         super(defaultDeserializer);
@@ -47,7 +49,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
         this.unwarppedMode = false;
     }
 
-    protected SwitchingBusinessEntityDeserializer(final SwitchingBusinessEntityDeserializer<T> src,
+    protected ComplexSwitchingBusinessEntityDeserializer(final ComplexSwitchingBusinessEntityDeserializer<T> src,
             final NameTransformer unwrapper) {
         super(src, unwrapper);
 
@@ -58,7 +60,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
         this.unwarppedMode = true;
     }
 
-    protected SwitchingBusinessEntityDeserializer(final SwitchingBusinessEntityDeserializer<T> src,
+    protected ComplexSwitchingBusinessEntityDeserializer(final ComplexSwitchingBusinessEntityDeserializer<T> src,
             final ObjectIdReader oir) {
         super(src, oir);
 
@@ -69,7 +71,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
         this.unwarppedMode = false;
     }
 
-    protected SwitchingBusinessEntityDeserializer(final SwitchingBusinessEntityDeserializer<T> src,
+    protected ComplexSwitchingBusinessEntityDeserializer(final ComplexSwitchingBusinessEntityDeserializer<T> src,
             final Set<String> ignorableProps) {
         super(src, ignorableProps);
 
@@ -167,7 +169,7 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
 
         // bit kludgy but we don't want to accidentally change type; sub-classes
         // MUST override this method to support unwrapped properties...
-        if (getClass() != SwitchingBusinessEntityDeserializer.class) {
+        if (getClass() != ComplexSwitchingBusinessEntityDeserializer.class) {
             return this;
         }
         // 25-Mar-2017, tatu: Not clean at all, but for [databind#383] we do need
@@ -177,20 +179,20 @@ public class SwitchingBusinessEntityDeserializer<T extends BusinessEntity<T>> ex
         }
         this._currentlyTransforming = transformer;
         try {
-            return new SwitchingBusinessEntityDeserializer<T>(this, transformer);
+            return new ComplexSwitchingBusinessEntityDeserializer<T>(this, transformer);
         } finally {
             this._currentlyTransforming = null;
         }
     }
 
     @Override
-    public SwitchingBusinessEntityDeserializer<T> withObjectIdReader(final ObjectIdReader oir) {
-        return new SwitchingBusinessEntityDeserializer<T>(this, oir);
+    public ComplexSwitchingBusinessEntityDeserializer<T> withObjectIdReader(final ObjectIdReader oir) {
+        return new ComplexSwitchingBusinessEntityDeserializer<T>(this, oir);
     }
 
     @Override
-    public SwitchingBusinessEntityDeserializer<T> withIgnorableProperties(final Set<String> ignorableProps) {
-        return new SwitchingBusinessEntityDeserializer<T>(this, ignorableProps);
+    public ComplexSwitchingBusinessEntityDeserializer<T> withIgnorableProperties(final Set<String> ignorableProps) {
+        return new ComplexSwitchingBusinessEntityDeserializer<T>(this, ignorableProps);
     }
 
     @Override
