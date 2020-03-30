@@ -28,7 +28,7 @@ import com.queomedia.persistence.BusinessEntity;
 @Target({ TYPE, FIELD, METHOD })
 public @interface SwitchingBusinessEntityAnnotation {
 
-    /** Controll how*/
+    /** Control how to serialize Business Entities. */
     public BusinessEntitySerializationMode value();
 
 }
