@@ -1,12 +1,18 @@
 package com.queomedia.persistence.extra.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import org.jmock.Expectations;
 import org.jmock.integration.junit4.JUnitRuleMockery;
 import org.jmock.lib.legacy.ClassImposteriser;
 import org.junit.Rule;
 import org.junit.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompareMode;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,6 +35,7 @@ public class BusinessEntityModuleTest {
             setImposteriser(ClassImposteriser.INSTANCE);
         }
     };
+
     /**
      * A demo entity only used in this test.
      * Attention: this class must not have a @Entity annotation (in order to prevent Hibernate from creating
@@ -98,6 +105,100 @@ public class BusinessEntityModuleTest {
 
         /* then: the json string is just the business id json-string */
         assertEquals(businessEntity, result);
+    }
+
+    public static class MapEntityKeyContainer {
+        private Map<DemoBusinessEntity, Integer> map = new HashMap<>();
+
+        public MapEntityKeyContainer() {
+            super();
+        }
+
+        public MapEntityKeyContainer(Map<DemoBusinessEntity, Integer> map) {
+            this.map = map;
+        }
+
+        public Map<DemoBusinessEntity, Integer> getMap() {
+            return map;
+        }
+
+        public void setMap(Map<DemoBusinessEntity, Integer> map) {
+            this.map = map;
+        }
+
+    }
+
+    /**
+     * Scenario: serialize a Map where the keys are Business Entityies
+     *
+     * @throws Exception - no exception should not been thrown in this test case
+     */
+    @Test
+    public void testSerializerForBusinessEntityKey() throws Exception {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123));
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456));
+        Map<DemoBusinessEntity, Integer> map = new HashMap<>();
+        map.put(element1, 1);
+        map.put(element2, 2);
+        MapEntityKeyContainer mapContainer = new MapEntityKeyContainer(map);
+
+        // @formatter:off
+        final String expectedJson =
+                   "{'map': {        " 
+                 + "  '123' : 1,     "
+                 + "  '456' : 2      "
+                 + "}}               ";
+        // @formatter:on
+
+        /* when: using jackson with the BussinessEntiyModule to serialize the map of Business entity */
+        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new BusinessEntityModule(generalLoaderDao));
+
+        String jsonResult = mapper.writeValueAsString(mapContainer);
+
+        JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+    }
+
+    /**
+     * Scenario: serialize a Map where the keys are Business Entityies
+     *
+     * @throws Exception - no exception should not been thrown in this test case
+     */
+    @Test
+    public void testDeserializerForBusinessEntityKey() throws Exception {
+        DemoBusinessEntity element1 = new DemoBusinessEntity(new BusinessId<>(123));
+        DemoBusinessEntity element2 = new DemoBusinessEntity(new BusinessId<>(456));
+        Map<DemoBusinessEntity, Integer> map = new HashMap<>();
+        map.put(element1, 1);
+        map.put(element2, 2);
+        MapEntityKeyContainer expectedMapContainer = new MapEntityKeyContainer(map);
+
+        // @formatter:off
+        final String jsonString =(
+                   "{'map': {        " 
+                 + "  '123' : 1,     "
+                 + "  '456' : 2      "
+                 + "}}               ").replaceAll("'", "\"");
+        // @formatter:on
+
+        final GeneralLoaderDao generalLoaderDao = this.context.mock(GeneralLoaderDao.class);
+        ObjectMapper mapper = new ObjectMapper();
+        this.context.checking(new Expectations() {
+            {
+                oneOf(generalLoaderDao).getByBusinessId(element1.getBusinessId(), DemoBusinessEntity.class);
+                will(returnValue(element1));
+
+                oneOf(generalLoaderDao).getByBusinessId(element2.getBusinessId(), DemoBusinessEntity.class);
+                will(returnValue(element2));
+            }
+        });
+        mapper.registerModule(new BusinessEntityModule(generalLoaderDao));
+
+        /* when: using jackson with the BussinessEntiyModule to deserialize to a map of Business entity */
+        MapEntityKeyContainer result = mapper.readValue(jsonString, MapEntityKeyContainer.class);
+
+        assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals().isEqualTo(expectedMapContainer);
     }
 
 }
