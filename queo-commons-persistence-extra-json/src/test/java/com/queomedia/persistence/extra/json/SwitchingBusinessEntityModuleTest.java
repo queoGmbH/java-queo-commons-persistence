@@ -29,7 +29,6 @@ import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 import com.queomedia.persistence.GeneralLoaderDao;
-import com.queomedia.persistence.extra.json.SwitchingBusinessEntityModule;
 
 public class SwitchingBusinessEntityModuleTest {
 
@@ -288,7 +287,7 @@ public class SwitchingBusinessEntityModuleTest {
         }
     }
 
-    @SwitchingBusinessEntityAnnotation(BusinessEntitySerializationMode.ENTITY)
+    @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.ENTITY)
     static class GenericEntityWrapper<T> {
         /** can be null */
         private T content;
@@ -316,7 +315,63 @@ public class SwitchingBusinessEntityModuleTest {
 
     }
 
-    @SwitchingBusinessEntityAnnotation(BusinessEntitySerializationMode.BUSINESS_ID)
+    static class GenericEntityWrapperField<T> {
+
+        /** can be null */
+        @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.ENTITY)
+        private T content;
+
+        public GenericEntityWrapperField() {
+            super();
+        }
+
+        public GenericEntityWrapperField(final T content) {
+            this.content = content;
+        }
+
+        public T getContent() {
+            return this.content;
+        }
+
+        public void setContent(final T content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "GenericEntityWrapperField [content=" + this.content + "]";
+        }
+    }
+
+    static class GenericEntityWrapperGetter<T> {
+
+        /** can be null */
+        private T content;
+
+        public GenericEntityWrapperGetter() {
+            super();
+        }
+
+        public GenericEntityWrapperGetter(final T content) {
+            this.content = content;
+        }
+
+        @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.ENTITY)
+        public T getContent() {
+            return this.content;
+        }
+
+        public void setContent(final T content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "GenericEntityWrapperField [content=" + this.content + "]";
+        }
+    }
+
+    @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.BUSINESS_ID)
     static class GenericBusinessIdWrapper<T> {
         /** can be null */
         private T content;
@@ -341,7 +396,60 @@ public class SwitchingBusinessEntityModuleTest {
         public String toString() {
             return "GenericBusinessIdWrapper [content=" + this.content + "]";
         }
+    }
 
+    static class GenericBusinessIdWrapperField<T> {
+        /** can be null */
+        @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.BUSINESS_ID)
+        private T content;
+
+        public GenericBusinessIdWrapperField() {
+            super();
+        }
+
+        public GenericBusinessIdWrapperField(final T content) {
+            this.content = content;
+        }
+
+        public T getContent() {
+            return this.content;
+        }
+
+        public void setContent(final T content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "GenericBusinessIdWrapper [content=" + this.content + "]";
+        }
+    }
+
+    static class GenericBusinessIdWrapperGetter<T> {
+        /** can be null */
+        private T content;
+
+        public GenericBusinessIdWrapperGetter() {
+            super();
+        }
+
+        public GenericBusinessIdWrapperGetter(final T content) {
+            this.content = content;
+        }
+
+        @BusinessEntityJsonSerialization(BusinessEntitySerializationMode.BUSINESS_ID)
+        public T getContent() {
+            return this.content;
+        }
+
+        public void setContent(final T content) {
+            this.content = content;
+        }
+
+        @Override
+        public String toString() {
+            return "GenericBusinessIdWrapper [content=" + this.content + "]";
+        }
     }
 
     @Test
@@ -563,7 +671,7 @@ public class SwitchingBusinessEntityModuleTest {
      * Perform a test to verify a JavaObject ({@code serializContent}) become
      * serialized to the expected json string ({@code expectedJsonString}) when it
      * is wrapped in an container annotated with
-     * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)}}
+     * {@code @BusinessEntityJsonSerialization(BusinessEntitySerialization.ENTITY)}}
      * ({@link GenericEntityWrapper}).
      *
      * @param <C>                the type of the expected content
@@ -575,22 +683,28 @@ public class SwitchingBusinessEntityModuleTest {
         Check.notEmptyArgument(expectedJsonString, "expectedJsonString");
 
         String expectedJson = expectedJsonString.replace("'", "\"");
-        asserIsValidJason(expectedJson);
+        assertIsValidJson(expectedJson);
 
-        GenericEntityWrapper<C> enityMarkerContainer = new GenericEntityWrapper<>(serializContent);
+        List<Object> markerContainer = Arrays.asList(
+                new GenericEntityWrapper<>(serializContent), // entity marker container
+                new GenericEntityWrapperField<>(serializContent), // field marker container
+                new GenericEntityWrapperGetter<>(serializContent) // getter marker container
+        );
 
-        try {
-            String jsonResult = configuredObjectMapper().writeValueAsString(enityMarkerContainer);
+        for (Object container : markerContainer) {
             try {
-                JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
-            } catch (JSONException e) {
-                throw new RuntimeException(
-                        "error while read json for JsonAssert, expectedJsonString: `" + expectedJson
-                                + "`\n jsonResult: `" + jsonResult + "`",
-                        e);
+                String jsonResult = configuredObjectMapper().writeValueAsString(container);
+                try {
+                    JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+                } catch (JSONException e) {
+                    throw new RuntimeException(
+                            "error while read json for JsonAssert, expectedJsonString: `" + expectedJson
+                                    + "`\n jsonResult: `" + jsonResult + "`",
+                            e);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("error while write json, JavaObject: `" + container + "`", e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("error while write json, JavaObject: `" + enityMarkerContainer + "`", e);
         }
 
         this.context.assertIsSatisfied();
@@ -599,7 +713,7 @@ public class SwitchingBusinessEntityModuleTest {
     /**
      * Perform a test to verify the Json Deserialization for an Json String that
      * contains the full entity and and loaded into an container annotated with
-     * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)}}
+     * {@code @BusinessEntityJsonSerialization(BusinessEntitySerialization.ENTITY)}}
      * ({@link GenericEntityWrapper}) works as expected.
      *
      * @param <C> the generic type
@@ -619,7 +733,7 @@ public class SwitchingBusinessEntityModuleTest {
         Check.notNullArgument(generalLoaderEntities, "generalLoaderEntities");
 
         String json = jsonString.replace("'", "\"");
-        asserIsValidJason(json);
+        assertIsValidJson(json);
 
         ObjectMapper jacksonMapper = configuredObjectMapper(generalLoaderEntities);
         try {
@@ -646,7 +760,7 @@ public class SwitchingBusinessEntityModuleTest {
      *
      * Perform a test to verify the Json Deserialization for an Json String that
      * contains the full entity and and loaded into an container annotated with
-     * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.ENTITY)}}
+     * {@code @BusinessEntityJsonSerialization(BusinessEntitySerialization.ENTITY)}}
      * ({@link GenericEntityWrapper}) works as expected.
      *
      * @param <C>             the type of the expected content
@@ -670,7 +784,7 @@ public class SwitchingBusinessEntityModuleTest {
      * Perform a test to verify a JavaObject ({@code serializContent}) become
      * serialized to the expected json string ({@code expectedJsonString}) when it
      * is wrapped in an container annotated with
-     * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.BUSINESS_ID)}}
+     * {@code @BusinessEntityJsonSerialization(BusinessEntitySerialization.BUSINESS_ID)}}
      * ({@link GenericBusinessIdWrapper}).
      *
      * @param <C>                  the type of the expected content
@@ -683,23 +797,28 @@ public class SwitchingBusinessEntityModuleTest {
         Check.notEmptyArgument(expectedJsonString, "expectedJsonString");
 
         String expectedJson = expectedJsonString.replace("'", "\"");
-        asserIsValidJason(expectedJson);
+        assertIsValidJson(expectedJson);
 
-        GenericBusinessIdWrapper<C> enityMarkerContainer = new GenericBusinessIdWrapper<>(serializContent);
+        List<Object> markerContainer = Arrays.asList(
+                new GenericBusinessIdWrapper<>(serializContent), // entity marker container
+                new GenericBusinessIdWrapperField<>(serializContent), // field marker container
+                new GenericBusinessIdWrapperGetter<>(serializContent) // getter marker container
+        );
 
-        try {
-            String jsonResult = configuredObjectMapper().writeValueAsString(enityMarkerContainer);
-            System.out.println(jsonResult);
+        for (Object container : markerContainer) {
             try {
-                JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
-            } catch (JSONException e) {
-                throw new RuntimeException(
-                        "error while read json for JsonAssert, expectedJsonString: `" + expectedJson
-                                + "`\n jsonResult: `" + jsonResult + "`",
-                        e);
+                String jsonResult = configuredObjectMapper().writeValueAsString(container);
+                try {
+                    JSONAssert.assertEquals(expectedJson, jsonResult, JSONCompareMode.NON_EXTENSIBLE);
+                } catch (JSONException e) {
+                    throw new RuntimeException(
+                            "error while read json for JsonAssert, expectedJsonString: `" + expectedJson
+                                    + "`\n jsonResult: `" + jsonResult + "`",
+                            e);
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("error while write json, JavaObject: `" + container + "`", e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException("error while write json, JavaObject: `" + enityMarkerContainer + "`", e);
         }
 
         this.context.assertIsSatisfied();
@@ -708,7 +827,7 @@ public class SwitchingBusinessEntityModuleTest {
     /**
      * Perform a test to verify the Json Deserialization for an Json String that
      * contains the full entity and and loaded into an container annotated with
-     * {@code @SwitchingBusinessEntityAnnotation(BusinessEntitySerialization.BUSINESS_ID)}}
+     * {@code @BusinessEntityJsonSerialization(BusinessEntitySerialization.BUSINESS_ID)}}
      * ({@link GenericBusinessIdWrapper}) works as expected.
      *
      * @param <C>                   the type of the expected content
@@ -727,9 +846,10 @@ public class SwitchingBusinessEntityModuleTest {
         Check.notNullArgument(generalLoaderEntities, "generalLoaderEntities");
 
         String json = jsonString.replace("'", "\"");
-        asserIsValidJason(json);
+        assertIsValidJson(json);
 
         ObjectMapper jacksonMapper = configuredObjectMapper(generalLoaderEntities);
+
         try {
             JavaType deserializationType = jacksonMapper.getTypeFactory()
                     .constructParametricType(GenericBusinessIdWrapper.class, contentClass);
@@ -740,7 +860,6 @@ public class SwitchingBusinessEntityModuleTest {
                     expectedContent);
             assertThat(result).usingRecursiveComparison().ignoringAllOverriddenEquals()
                     .isEqualTo(expectedBusinessIdMarkerContainer);
-
         } catch (IOException e) {
             throw new RuntimeException("error while parse json: `" + json + "`", e);
         }
@@ -784,7 +903,7 @@ public class SwitchingBusinessEntityModuleTest {
         }
     }
 
-    public void asserIsValidJason(final String json) {
+    public void assertIsValidJson(final String json) {
         Check.notEmptyArgument(json, "json");
 
         try {

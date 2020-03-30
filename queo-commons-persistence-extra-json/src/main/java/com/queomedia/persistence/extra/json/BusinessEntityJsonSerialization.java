@@ -26,7 +26,7 @@ import com.queomedia.persistence.BusinessEntity;
  */
 @Retention(RUNTIME)
 @Target({ TYPE, FIELD, METHOD })
-public @interface SwitchingBusinessEntityAnnotation {
+public @interface BusinessEntityJsonSerialization {
 
     /**
      * Control how to serialize Business Entities.

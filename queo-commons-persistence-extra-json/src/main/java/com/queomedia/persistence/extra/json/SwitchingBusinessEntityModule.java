@@ -39,7 +39,7 @@ import com.queomedia.persistence.extra.json.BusinessIdModule.BusinessIdJsonSeria
  * This Jackson Module registere a serializer and deserializer as well as KeySerializer/Deserializer for
  * {@link com.queomedia.persistence.BusinessEntity}s that can either serialized as plain entity or just with there
  * BusinessID (like the {@link BusinessEntityModule}). The switch between this two serialization modes can be controlled by
- * {@link com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation}. A annotation that can be placed by
+ * {@link com.queomedia.persistence.extra.json.BusinessEntityJsonSerialization}. A annotation that can be placed by
  * any parent class in the json-serialization path.
  * </p>
  *
@@ -49,7 +49,7 @@ import com.queomedia.persistence.extra.json.BusinessIdModule.BusinessIdJsonSeria
  * </p>
  *
  * <p>
- * The {@link com.queomedia.persistence.extra.json.SwitchingBusinessEntityAnnotation} defined
+ * The {@link com.queomedia.persistence.extra.json.BusinessEntityJsonSerialization} defined
  * how the business entities are serialized. The annotation is picked up by
  * {@link com.queomedia.persistence.extra.json.SwitchingAnnotationScanner} which is invoked by
  * the serializers and deserializers when they needs to serialize/deserialize an

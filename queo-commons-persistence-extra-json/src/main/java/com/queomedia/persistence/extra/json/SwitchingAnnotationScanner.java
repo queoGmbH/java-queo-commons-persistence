@@ -12,7 +12,7 @@ import com.fasterxml.jackson.core.JsonStreamContext;
 import com.queomedia.commons.checks.Check;
 
 /**
- * Scan the json-context-path to find a class that is annotated with {@link SwitchingBusinessEntityAnnotation}.
+ * Scan the json-context-path to find a class that is annotated with {@link BusinessEntityJsonSerialization}.
  *
  * <p>
  * This scanner scan for the annotation (in this order) at the field that match the json-name,
@@ -60,11 +60,11 @@ public class SwitchingAnnotationScanner {
     public Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext context) {
         Check.notNullArgument(context, "context");
 
-        return findSwitchingBusinessEntityAnnotation(context).map(SwitchingBusinessEntityAnnotation::value);
+        return findSwitchingBusinessEntityAnnotation(context).map(BusinessEntityJsonSerialization::value);
     }
 
     /**
-     * Try to find the {@link SwitchingBusinessEntityAnnotation} in the given json {@code context}s
+     * Try to find the {@link BusinessEntityJsonSerialization} in the given json {@code context}s
      * {@link JsonStreamContext#getCurrentValue() context.getCurrentValue()} or if not found recursive in the
      * {@link JsonStreamContext#getParent() context.getParent()}.
      *
@@ -73,9 +73,9 @@ public class SwitchingAnnotationScanner {
      * </p>
      *
      * @param context the {@link JsonStreamContext} thats currentValue and parentContext is scanned
-     * @return the first found {@link SwitchingBusinessEntityAnnotation}
+     * @return the first found {@link BusinessEntityJsonSerialization}
      */
-    Optional<SwitchingBusinessEntityAnnotation> findSwitchingBusinessEntityAnnotation(final JsonStreamContext context) {
+    Optional<BusinessEntityJsonSerialization> findSwitchingBusinessEntityAnnotation(final JsonStreamContext context) {
         Check.notNullArgument(context, "context");
 
         Object currentValue = context.getCurrentValue();
@@ -96,19 +96,19 @@ public class SwitchingAnnotationScanner {
             if (context.getCurrentName() != null) {
                 String jsonPropertyName = context.getCurrentName();
 
-                Optional<SwitchingBusinessEntityAnnotation> fieldAnnotation = findAnnotationAtField(jsonPropertyName,
+                Optional<BusinessEntityJsonSerialization> fieldAnnotation = findAnnotationAtField(jsonPropertyName,
                         currentClass);
                 if (fieldAnnotation.isPresent()) {
                     return fieldAnnotation;
                 }
 
-                Optional<SwitchingBusinessEntityAnnotation> methodAnnotation = findAnnotationAtGetter(jsonPropertyName,
+                Optional<BusinessEntityJsonSerialization> methodAnnotation = findAnnotationAtGetter(jsonPropertyName,
                         currentClass);
                 if (methodAnnotation.isPresent()) {
                     return methodAnnotation;
                 }
             }
-            Optional<SwitchingBusinessEntityAnnotation> classAnnotation = findAnnotationAtClass(currentClass);
+            Optional<BusinessEntityJsonSerialization> classAnnotation = findAnnotationAtClass(currentClass);
             if (classAnnotation.isPresent()) {
                 return classAnnotation;
             }
@@ -123,21 +123,21 @@ public class SwitchingAnnotationScanner {
     }
 
     /**
-     * Try to find the {@link SwitchingBusinessEntityAnnotation} at a field named {@code jsonPropertyName} at the
+     * Try to find the {@link BusinessEntityJsonSerialization} at a field named {@code jsonPropertyName} at the
      * given class.
      *
      * <p>
      * If the field is not declared in the given class, then its super class is checked.
-     * This also mean, if a field of one name is declared twice, then then only the annotation fo field in the child class
-     * is returned. Even this the child class field has no {@link SwitchingBusinessEntityAnnotation} annotation,
+     * This also mean, if a field of one name is declared twice, then only the annotation for field in the child class
+     * is returned. Even if the child class field has no {@link BusinessEntityJsonSerialization} annotation,
      * then the super class in NOT checked!
      * </p>
      *
      * @param jsonPropertyName the json property name
      * @param clazz the examined class
-     * @return the found {@link SwitchingBusinessEntityAnnotation}
+     * @return the found {@link BusinessEntityJsonSerialization}
      */
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtField(final String jsonPropertyName,
+    private Optional<BusinessEntityJsonSerialization> findAnnotationAtField(final String jsonPropertyName,
             final Class<?> clazz) {
         Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
         Check.notNullArgument(clazz, "clazz");
@@ -150,7 +150,7 @@ public class SwitchingAnnotationScanner {
                     .findAny();
             // @formatter:on
             if (foundField.isPresent()) {
-                return Optional.ofNullable(foundField.get().getAnnotation(SwitchingBusinessEntityAnnotation.class));
+                return Optional.ofNullable(foundField.get().getAnnotation(BusinessEntityJsonSerialization.class));
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -158,14 +158,14 @@ public class SwitchingAnnotationScanner {
     }
 
     /**
-     * Try to find the {@link SwitchingBusinessEntityAnnotation} at a Getter named after {@code jsonPropertyName} at
+     * Try to find the {@link BusinessEntityJsonSerialization} at a Getter named after {@code jsonPropertyName} at
      * the given class.
      *
      * @param jsonPropertyName the json property name
      * @param clazz the examined class
-     * @return the found {@link SwitchingBusinessEntityAnnotation}
+     * @return the found {@link BusinessEntityJsonSerialization}
      */
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtGetter(final String jsonPropertyName,
+    private Optional<BusinessEntityJsonSerialization> findAnnotationAtGetter(final String jsonPropertyName,
             final Class<?> clazz) {
         Check.notEmptyArgument(jsonPropertyName, "jsonPropertyName");
         Check.notNullArgument(clazz, "clazz");
@@ -176,23 +176,23 @@ public class SwitchingAnnotationScanner {
         return Stream.of(clazz.getMethods())
                 .filter(method -> method.getName().equals(getterName))
                 .findAny()
-                .flatMap(method -> Optional.ofNullable(method.getAnnotation(SwitchingBusinessEntityAnnotation.class)));
+                .flatMap(method -> Optional.ofNullable(method.getAnnotation(BusinessEntityJsonSerialization.class)));
         // @formatter:on
     }
 
     /**
-     * Try to find the {@link SwitchingBusinessEntityAnnotation} at the class level (the given class and it super classes).
+     * Try to find the {@link BusinessEntityJsonSerialization} at the class level (the given class and it super classes).
      *
      * @param clazz the examined class
-     * @return the found {@link SwitchingBusinessEntityAnnotation}
+     * @return the found {@link BusinessEntityJsonSerialization}
      */
-    private Optional<SwitchingBusinessEntityAnnotation> findAnnotationAtClass(final Class<? extends Object> clazz) {
+    private Optional<BusinessEntityJsonSerialization> findAnnotationAtClass(final Class<? extends Object> clazz) {
         Check.notNullArgument(clazz, "clazz");
 
         Class<?> currentClass = clazz;
         while (currentClass != Object.class) {
-            Optional<SwitchingBusinessEntityAnnotation> classAnnotation = Optional
-                    .ofNullable(clazz.getAnnotation(SwitchingBusinessEntityAnnotation.class));
+            Optional<BusinessEntityJsonSerialization> classAnnotation = Optional
+                    .ofNullable(clazz.getAnnotation(BusinessEntityJsonSerialization.class));
             if (classAnnotation.isPresent()) {
                 return classAnnotation;
             }
@@ -208,9 +208,9 @@ public class SwitchingAnnotationScanner {
      * @return the name of the Getter for the field.
      */
     private static String getterName(final String fieldName) {
-        Check.notNullArgument(fieldName, "fieldName");
+        Check.notEmptyArgument(fieldName, "fieldName");
 
-        /* we do not need to check for isser-because there can not be a boolean in hits path */
+        /* we do not need to check for isser-because there can not be a boolean in its path */
         return "get" + fieldName.substring(0, 1).toUpperCase(Locale.ENGLISH) + fieldName.substring(1);
     }
 }
