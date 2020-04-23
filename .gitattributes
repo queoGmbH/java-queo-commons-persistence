@@ -1,0 +1,53 @@
+#Hint: When more than one pattern matches the path, a later line overrides an earlier line. This overriding is done per attribute.
+
+# Set the default behavior for all text files is to use Unix style (lf)
+* text=auto eol=lf
+
+# ordered alphabetical
+# text files
+*.adoc       text
+*.bat        text eol=crlf
+*.cmd        text eol=crlf
+*.css        text
+*.ftl        text
+*.java       text
+*.js         text
+*.json       text
+*.jsp        text
+*.jspx       text
+*.less       text
+*.log        text
+*.html       text
+*.htmlx      text
+*.md         text
+*.MF         text
+*.properties text
+*.scss       text
+*.sql        text
+*.xml        text
+*.yml        text
+*.yaml       text
+*.xhtml      text
+
+# explicit text files
+pom.xml      text eol=lf
+
+# binary files
+*.doc        binary
+*.docx       binary
+*.eot        binary
+*.ico        binary
+*.gif        binary
+*.jar        binary
+*.jpg        binary
+*.pdf        binary
+*.png        binary
+# Although SVG files are technically based on XML file, the best way for Git to handle SVG files is as binary
+*.svg        binary
+*.ttf        binary
+*.woff       binary
+*.woff2      binary
+*.xls        binary
+*.xlsx       binary
+*.zip        binary
+
