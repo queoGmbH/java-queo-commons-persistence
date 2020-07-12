@@ -1,0 +1,154 @@
+#!groovy
+
+// separated with whitespace
+emailAddresses = ""
+
+def printStackTrace(exception) {
+    // TODO in order to use the following classes some admin configuration within jenkins
+    //        is necessary - it's not working out of the box
+    //def sw = new StringWriter()
+    //def pw = new PrintWriter(sw)
+    //exception.printStackTrace(pw)
+    //echo sw.toString()
+    echo exception.toString()
+}
+
+def setToFailure() {
+    currentBuild.result = 'FAILURE'
+}
+
+// Sets the current build status to UNSTABLE
+// (if the status is already FAILURE then it remains FAILURE - we don't set  UNSTABLE to FAILURE)
+def setToUnstable() {
+    if (currentBuild.result != 'FAILURE') {
+        currentBuild.result = 'UNSTABLE'
+    }
+}
+
+def printBuildResult() {
+   echo "[CURRENT BUILD] currentBuild.currentResult=${currentBuild.currentResult}"
+}
+
+def publishToDos() {
+    openTasks canComputeNew: false,
+        defaultEncoding: '',
+        excludePattern: '',
+        healthy: '',
+        high: 'FIXME, XXX',
+        low: '',
+        normal: 'TODO, REVIEW',
+        pattern: '**/src/**/*.java',
+        unHealthy: ''
+    printBuildResult()
+}
+
+// ignores missing files
+def publishCheckstyle() {
+    checkstyle canComputeNew: false,
+        defaultEncoding: '',
+        healthy: '',
+        pattern: '**/target/checkstyle-result.xml',
+        unHealthy: ''
+    printBuildResult()
+}
+
+// ignores missing files
+def publishSpotbugs() {
+    findbugs canComputeNew: false,
+        defaultEncoding: '',
+        excludePattern: '',
+        healthy: '',
+        includePattern: '',
+        pattern: '**/target/spotbugsXml.xml',
+        unHealthy: ''
+    printBuildResult()
+}
+
+// ignores missing files
+def publishOwaspDependencyCheckResults() {
+    step([$class: 'DependencyCheckPublisher',
+        pattern: 'target/site/dependency-check-report.xml'
+    ])
+    printBuildResult()
+}
+
+// ignores missing files
+def publishHtmlReports(reportDir = 'target/staging/') {
+    publishHTML([allowMissing: true,
+                 alwaysLinkToLastBuild: true,
+                 keepAll: true,
+                 reportDir: reportDir,
+                 reportFiles: 'index.html',
+                 reportName: 'Maven Site',
+                 reportTitles: ''])
+    printBuildResult()
+}
+
+// ignores missing files
+def publishXunitReports() {
+    step([$class: 'XUnitBuilder',
+        testTimeMargin: '3000',
+        thresholdMode: 1,
+        thresholds: [
+            [$class: 'FailedThreshold',
+                failureNewThreshold: '1000',
+                failureThreshold: '1000',
+                unstableNewThreshold: '0',
+                unstableThreshold: '0'
+            ],
+            [$class: 'SkippedThreshold',
+                failureNewThreshold: '500',
+                failureThreshold: '500',
+                unstableNewThreshold: '1000',
+                unstableThreshold: '1000'
+            ]
+        ],
+        tools: [
+            [$class: 'JUnitType',
+                deleteOutputFiles: true,
+                failIfNotNew: false,
+                pattern: '**/target/surefire-reports/**/*.xml, **/target/failsafe-reports/*.xml, **/target/karma-reports/*.xml ',
+                skipNoTestFiles: true,
+                stopProcessingIfError: false
+            ]
+        ]
+    ])
+    printBuildResult()
+}
+
+// ignores missing files
+def publishJaCoCoTestCoverage() {
+    jacoco classPattern: '**/target/classes',
+        exclusionPattern: '**/*Test*.class, **/*IT.class, **/*Dto.class, **/*Command.class, **/*Exception.class',
+        execPattern: '**/target/jacoco-reports/jacoco.exec',
+        maximumBranchCoverage: '40',
+        maximumClassCoverage: '60',
+        maximumComplexityCoverage: '40',
+        maximumInstructionCoverage: '40',
+        maximumLineCoverage: '40',
+        maximumMethodCoverage: '40',
+        sourcePattern: '**/src/main/java'
+    printBuildResult()
+}
+
+
+def notifyViaMail() {
+    step([$class: 'Mailer',
+        notifyEveryUnstableBuild: true,
+        recipients: emailAddresses,
+        sendToIndividuals: true
+    ])
+    printBuildResult()
+}
+
+def setJobProperties() {
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '',
+                                        artifactNumToKeepStr: '',
+                                        daysToKeepStr: '',
+                                        numToKeepStr: '75')),
+                disableConcurrentBuilds()])
+}
+
+
+
+return this

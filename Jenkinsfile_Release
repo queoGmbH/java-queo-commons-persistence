@@ -1,0 +1,117 @@
+#!groovy
+
+pipeline {
+    agent{ node {label 'docker-slave'}}
+    environment {
+        JAVA_HOME="${ tool 'openJDK_8' }"
+        M2_HOME="${tool 'maven_3.6.0'}"
+        PATH = "${PATH}"+":${M2_HOME}/bin"+":${JAVA_HOME}/bin"
+        DOCKER_PATH = "${ tool 'docker_latest' }"
+        
+        releasePrepareSuccessful = false;
+        
+    }
+
+    stages {
+         stage('Prepare') {  // fail > failure
+             steps {                 
+                checkout scm
+                script {
+                    lib = load 'jenkins.lib'
+                    lib.setJobProperties()
+                }
+            }
+        }
+
+        stage('Release Prepare') {  // fail > failure
+            steps {
+                configFileProvider([configFile(fileId: "GlobalMavenSettings", replaceTokens: true, variable: 'MVN_SETTINGS')]) {
+                    sshagent (credentials: ['sys-jenkins-maven']) {
+                        script {
+                            try {
+                                //run mvn release:prepare without running Selenium-IT-Tests [RUM-1046]
+                                sh " mvn clean release:prepare " +
+                                " -Dbuildtime.output.log=true " +
+                                " -Dbuildtime.output.csv=true " +
+                                " -Dbuildtime.output.csv.file=mvnReleasePreparePerformanceLog.csv " +
+                                " -Darguments=-Dbuildnode.name=jenkinsjava_${EXECUTOR_NUMBER} " +
+                                " -s $MVN_SETTINGS "
+                                
+                                releasePrepareSuccessful = true;
+                            } catch (exception) {
+                                lib.setToFailure()
+                                lib.printStackTrace(exception)
+                            }
+                            lib.printBuildResult()        
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Release Perform') {  // fail > failure
+            //environment is needed to set system variables for the following steps
+            environment {
+            
+                //must be executed in a stage, so it runs on the docker node, not the main jenkins
+                //connects to the docker daemon, inspecting the network settings for the current host, getting the port mapping for 8080. 
+                //This is needed to give the selenium grid the right entry point.
+                //The docker host address was configured in the default bridge network of the docker demon on the host, where all build nodes should start. 
+                //The variable DOCKER_HOST_ADDRESS is a global jenkins parameter and must be kept in sync with this docker setting. 
+                //rmi and ajp are not needed outside of the host
+                
+                HTTP_PORT = (sh(script: '$DOCKER_PATH/docker -H ${DOCKER_HOST_ADDRESS} inspect --format=\'{{(index (index .NetworkSettings.Ports \"8080/tcp\") 0).HostPort}}\' `hostname` ', returnStdout: true)).trim()
+
+                EXTERNAL_APPLICATION_BASE_URL_WITHOUTPORT = "http://${JENKINS_SERVER_NAME}"
+            }
+            steps {
+                configFileProvider([configFile(fileId: "GlobalMavenSettings", replaceTokens: true, variable: 'MVN_SETTINGS')]) {
+                    sshagent (credentials: ['sys-jenkins-maven']) {
+                        script {
+                            if (releasePrepareSuccessful) {
+                                lib.printBuildResult()
+                                try {
+                                    sh " mvn release:perform " +
+                                    " -PQueoCIServer,integrationGridFirefox " +
+                                    " -Dbuildtime.output.log=true " +
+                                    " -Dbuildtime.output.csv=true " +
+                                    " -Dbuildtime.output.csv.file=mvnReleasePerformPerformanceLog.csv " +
+                                    " -Darguments=\"" + //arguments for the forked build execution in the release plugin
+                                        " -Dbuildnode.name=jenkinsjava_${EXECUTOR_NUMBER} " +
+                                        " -Dit.webApp.serverBaseUrl.urlWithoutPort=${EXTERNAL_APPLICATION_BASE_URL_WITHOUTPORT} " +
+                                        " -Dit.webApp.serverBaseUrl.port.http=${HTTP_PORT} " +
+                                        " -Dit.webApp.serverBaseUrl.port.http.internal=8080 " +
+                                        " -Dtest.baseUrl=${EXTERNAL_APPLICATION_BASE_URL_WITHOUTPORT}:${HTTP_PORT}/springrumpf " +
+                                    "\" " +
+                                    " -s $MVN_SETTINGS "
+                                } catch (exception) {
+                                    lib.setToFailure()
+                                    lib.printStackTrace(exception)
+                                }
+                                lib.printBuildResult()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Results') {  // fail > unstable
+            steps {
+                script {
+                    lib.printBuildResult()
+                    try {
+                       lib.publishToDos()
+                        lib.publishHtmlReports('target/checkout/target/staging/')
+                        lib.publishXunitReports()
+                        lib.notifyViaMail()
+                    } catch (exception) {
+                        lib.setToUnstable()
+                        lib.printStackTrace(exception)
+                    }
+                    lib.printBuildResult()
+                }
+            }
+        }
+    }
+}

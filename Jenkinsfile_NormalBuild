@@ -1,0 +1,72 @@
+#!groovy
+
+pipeline {
+    // define a jenkins agent with a globally configured docker agent template labeled 'docker-slave', which also has the docker cloud configuration
+    agent { node { label 'docker-slave' } }
+
+    environment {
+
+        // installing the globally defined tools in every node that is used, referenced by their labels
+        JAVA_HOME = "${tool 'openJDK_8'}"
+        M2_HOME = "${tool 'maven_3.6.0'}"
+        PATH = "${PATH}" + ":${M2_HOME}/bin" + ":${JAVA_HOME}/bin"
+
+        // does not enable the start of local containers, the docker cli is used for remote access
+        DOCKER_PATH = "${tool 'docker_latest'}"
+
+        buildSuccessful = false
+    }
+
+    stages {
+        stage('Prepare') {  // fail > failure
+            steps {
+                checkout scm
+                script {
+                    // loading our custom lib
+                    lib = load 'jenkins.lib'
+                    lib.setJobProperties()
+                }
+            }
+        }
+        stage('Build Test') {  // fail > failure
+            steps {
+                script {
+                    lib.printBuildResult()
+                    try {
+                        sh " mvn clean install " +
+                            " -DskipITs " +
+                            " -PQueoCIServer,JaCoCo " +
+                            " -Dbuildtime.output.log=true " +
+                            " -Dbuildtime.output.csv=true " +
+                            " -Dbuildtime.output.csv.file=mvnBuildPerformanceLog.csv " +
+                            " -Dbuildnode.name=jenkinsjava_${EXECUTOR_NUMBER} "
+
+                        buildSuccessful = true
+                    } catch (exception) {
+                        lib.setToFailure()
+                        lib.printStackTrace(exception)
+                    }
+                    lib.printBuildResult()
+                }
+            }
+        }
+
+        stage('Results') { // fail > unstable
+            steps {
+                script {
+                    lib.printBuildResult()
+                    try {
+                        lib.publishToDos()
+                        lib.publishHtmlReports()
+                        lib.publishXunitReports()
+                        lib.notifyViaMail()
+                    } catch (exception) {
+                        lib.setToUnstable()
+                        lib.printStackTrace(exception)
+                    }
+                    lib.printBuildResult()
+                }
+            }
+        }
+    }
+}
