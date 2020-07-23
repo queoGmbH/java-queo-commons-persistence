@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.queomedia.commons.checks.Check;
 import com.queomedia.persistence.BusinessEntity;
@@ -913,5 +914,44 @@ public class SwitchingBusinessEntityModuleTest {
         } catch (IOException e) {
             throw new RuntimeException("error while parse json: `" + json + "`");
         }
+    }
+
+    @Test
+    public void testDefaultMode() throws IOException, JSONException {
+        DemoBusinessEntity demoBusinessEntity = new DemoBusinessEntity(new BusinessId<>(123), "myContent");
+
+        ObjectMapper objectMapper = configuredObjectMapper();
+
+        ObjectWriter writerModeEntity = objectMapper
+                .writer()
+                .withAttribute(SwitchingAnnotationScanner.CONTEXT_DEFAULT_MODE,
+                        BusinessEntitySerializationMode.ENTITY);
+
+        ObjectWriter writerModeBid = objectMapper
+                .writer()
+                .withAttribute(SwitchingAnnotationScanner.CONTEXT_DEFAULT_MODE,
+                        BusinessEntitySerializationMode.BUSINESS_ID);
+
+        ObjectWriter writerDefault = objectMapper.writer();
+
+        String bidJson = "\"123\"";
+        String entityJson = "{'businessId':'123', 'content':'myContent'}";
+
+        //according to RFC 7159 and ECMA-404 any JSON Value can be top level element
+        //http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf
+
+        JSONAssert.assertEquals(entityJson,
+                writerModeEntity.writeValueAsString(demoBusinessEntity),
+                JSONCompareMode.NON_EXTENSIBLE);
+
+        assertThat(writerModeBid.writeValueAsString(demoBusinessEntity)).isEqualTo(bidJson);
+        
+        JSONAssert.assertEquals(entityJson,
+                writerDefault.writeValueAsString(demoBusinessEntity),
+                JSONCompareMode.NON_EXTENSIBLE);
+        
+        JSONAssert.assertEquals(entityJson,
+                objectMapper.writeValueAsString(demoBusinessEntity),
+                JSONCompareMode.NON_EXTENSIBLE);
     }
 }

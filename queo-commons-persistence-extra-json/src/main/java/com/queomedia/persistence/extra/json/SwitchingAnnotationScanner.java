@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonStreamContext;
+import com.fasterxml.jackson.databind.DatabindContext;
 import com.queomedia.commons.checks.Check;
 
 /**
@@ -21,6 +22,9 @@ import com.queomedia.commons.checks.Check;
  * </p>
  */
 public class SwitchingAnnotationScanner {
+
+    public static final String CONTEXT_DEFAULT_MODE = SwitchingAnnotationScanner.class.getName()
+            + ".CONTEXT_DEFAULT_MODE";
 
     /** Logger for this class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(SwitchingAnnotationScanner.class);
@@ -42,25 +46,30 @@ public class SwitchingAnnotationScanner {
     /**
      * Get the {@link BusinessEntitySerializationMode} for the current object of the given Json-Context.
      *
-     * @param context the Json-Context
+     * @param jsonStreamContext the Json-Context
+     * @param databindContext the databind context
      * @return the switch definition - with fallback to {@link #defaultMode} if no annotation is found
      */
-    public BusinessEntitySerializationMode getSwitchDefinition(final JsonStreamContext context) {
-        Check.notNullArgument(context, "context");
+    public BusinessEntitySerializationMode getSwitchDefinition(final JsonStreamContext jsonStreamContext,
+            final DatabindContext databindContext) {
+        Check.notNullArgument(jsonStreamContext, "jsonStreamContext");
 
-        return findSwitchDefinition(context).orElse(this.defaultMode);
+        return findSwitchDefinition(jsonStreamContext)
+                .or(() -> Optional.ofNullable(
+                        (BusinessEntitySerializationMode) databindContext.getAttribute(CONTEXT_DEFAULT_MODE)))
+                .orElse(this.defaultMode);
     }
 
     /**
      * Get the {@link BusinessEntitySerializationMode} for the current object of the given Json-Context without fallback to default.
      *
-     * @param context the Json-Context
+     * @param jsonStreamContext the Json-Context
      * @return the switch definition, or empty if no annotation is found
      */
-    public Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext context) {
-        Check.notNullArgument(context, "context");
+    public Optional<BusinessEntitySerializationMode> findSwitchDefinition(final JsonStreamContext jsonStreamContext) {
+        Check.notNullArgument(jsonStreamContext, "jsonStreamContext");
 
-        return findSwitchingBusinessEntityAnnotation(context).map(BusinessEntityJsonSerialization::value);
+        return findSwitchingBusinessEntityAnnotation(jsonStreamContext).map(BusinessEntityJsonSerialization::value);
     }
 
     /**
@@ -72,13 +81,14 @@ public class SwitchingAnnotationScanner {
      * Properties form Superclass are also checked: in this order:
      * </p>
      *
-     * @param context the {@link JsonStreamContext} thats currentValue and parentContext is scanned
+     * @param jsonStreamContext the {@link JsonStreamContext} thats currentValue and parentContext is scanned
      * @return the first found {@link BusinessEntityJsonSerialization}
      */
-    Optional<BusinessEntityJsonSerialization> findSwitchingBusinessEntityAnnotation(final JsonStreamContext context) {
-        Check.notNullArgument(context, "context");
+    Optional<BusinessEntityJsonSerialization> findSwitchingBusinessEntityAnnotation(
+            final JsonStreamContext jsonStreamContext) {
+        Check.notNullArgument(jsonStreamContext, "jsonStreamContext");
 
-        Object currentValue = context.getCurrentValue();
+        Object currentValue = jsonStreamContext.getCurrentValue();
 
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("find switching annotation for currentValue: {} ({})",
@@ -93,8 +103,8 @@ public class SwitchingAnnotationScanner {
         if (currentValue != null) {
             Class<? extends Object> currentClass = currentValue.getClass();
 
-            if (context.getCurrentName() != null) {
-                String jsonPropertyName = context.getCurrentName();
+            if (jsonStreamContext.getCurrentName() != null) {
+                String jsonPropertyName = jsonStreamContext.getCurrentName();
 
                 Optional<BusinessEntityJsonSerialization> fieldAnnotation = findAnnotationAtField(jsonPropertyName,
                         currentClass);
@@ -115,8 +125,8 @@ public class SwitchingAnnotationScanner {
         }
 
         /* recursion to json parent */
-        if (context.getParent() != null) {
-            return findSwitchingBusinessEntityAnnotation(context.getParent());
+        if (jsonStreamContext.getParent() != null) {
+            return findSwitchingBusinessEntityAnnotation(jsonStreamContext.getParent());
         }
 
         return Optional.empty();

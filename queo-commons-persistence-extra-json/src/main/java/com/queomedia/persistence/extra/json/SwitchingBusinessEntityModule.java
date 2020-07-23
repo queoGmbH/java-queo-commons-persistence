@@ -277,9 +277,9 @@ public class SwitchingBusinessEntityModule extends Module {
         @Override
         public void serialize(final T businessEntity, final JsonGenerator jgen, final SerializerProvider provider)
                 throws IOException {
-
+            
             BusinessEntitySerializationMode mode = this.switchingAnnotationScanner
-                    .getSwitchDefinition(jgen.getOutputContext());
+                    .getSwitchDefinition(jgen.getOutputContext(), provider);
             switch (mode) {
             case BUSINESS_ID:
                 this.businessEntityJsonSerializer.serialize(businessEntity, jgen, provider);
@@ -314,19 +314,19 @@ public class SwitchingBusinessEntityModule extends Module {
 
                 @Override
                 public void serialize(final T businessEntity, final JsonGenerator jgen,
-                        final SerializerProvider providers)
+                        final SerializerProvider provider)
                         throws IOException {
                     BusinessEntitySerializationMode mode = SwitchingBusinessEntityJsonSerializer.this.switchingAnnotationScanner
-                            .getSwitchDefinition(jgen.getOutputContext());
+                            .getSwitchDefinition(jgen.getOutputContext(), provider);
                     switch (mode) {
                     case BUSINESS_ID:
                         jgen.writeFieldName("businessId");
                         SwitchingBusinessEntityJsonSerializer.this.businessEntityJsonSerializer
-                                .serialize(businessEntity, jgen, providers);
+                                .serialize(businessEntity, jgen, provider);
                         return;
                     case ENTITY:
                         SwitchingBusinessEntityJsonSerializer.this.defaultSerializer.unwrappingSerializer(unwrapper)
-                                .serialize(businessEntity, jgen, providers);
+                                .serialize(businessEntity, jgen, provider);
                         return;
                     default:
                         throw new NotImplementedCaseException(mode);
@@ -420,8 +420,9 @@ public class SwitchingBusinessEntityModule extends Module {
         public T deserialize(final JsonParser jp, final DeserializationContext ctxt)
                 throws IOException, JsonProcessingException {
 
+ 
             BusinessEntitySerializationMode mode = this.switchingAnnotationScanner
-                    .getSwitchDefinition(jp.getParsingContext());
+                    .getSwitchDefinition(jp.getParsingContext(), ctxt);
             switch (mode) {
             case BUSINESS_ID: {
                 return this.typedBusinessEntityJsonDeserializer.deserialize(jp, ctxt);
@@ -455,7 +456,7 @@ public class SwitchingBusinessEntityModule extends Module {
                         throws IOException, JsonProcessingException {
 
                     BusinessEntitySerializationMode mode = SwitchingBusinessEntityDeserializer.this.switchingAnnotationScanner
-                            .getSwitchDefinition(jp.getParsingContext());
+                            .getSwitchDefinition(jp.getParsingContext(), ctxt);
                     switch (mode) {
                     case BUSINESS_ID:
                         if (!jp.hasToken(JsonToken.START_OBJECT)) {
