@@ -10,7 +10,7 @@
 #
 # * Caches downloaded dependencies and plugins between invocation.
 
-image: dockerhub.cloud.queo.org/queo.software/java/commons/queo-commons-gitlabci:latest
+image: dockerhub.cloud.queo.org/queo.software/java/commons/queo-commons-gitlabci:java8
 
 # this script has only one stange, in order to run it as fast as possible (not to run maven compile twice)
 stages:
