@@ -137,25 +137,11 @@ public class SchemaGeneratorJpa {
     */
     public void generateDdlFile(final String persistenceUnitName, final String fileName, final String delimiter,
             final boolean skipDropStatements) {
-
-        //TODO: use try-with-resource after update to java7
-        Writer writer = null;
-        try {
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"));
+        
+        try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {         
             writer.write(generateDdlScript(persistenceUnitName, delimiter, skipDropStatements));
-        } catch (IOException ex) {
-            throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`");
-        } finally {
-            try {
-                if (writer != null) {
-                    writer.close();
-                }
-            } catch (Exception ex) {
-                throw new RuntimeException(
-                        "error in generate ddl script while closing file - filename=`" + fileName + "`");
-            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`", e);
         }
     }
 
