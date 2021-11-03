@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.comparators.ReverseComparator;
@@ -98,6 +100,11 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     @Override
     public T getOne(final Long primaryKey) {
         return this.findById(primaryKey).orElseThrow(() -> new RuntimeException("not found"));
+    }
+    
+    @Override
+    public T getById(Long id) {
+        return this.getOne(id);
     }
 
     @Override
@@ -279,4 +286,29 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     public <S extends T> List<S> findAll(final Example<S> example, final Sort sort) {
         throw new NotImplementedException();
     }
+
+    @Override
+    public void deleteAllById(Iterable<? extends Long> ids) {
+        ids.forEach(this::deleteById);
+    }
+
+    @Override
+    public <S extends T> List<S> saveAllAndFlush(Iterable<S> entities) {
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(this::saveAndFlush)                
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void deleteAllInBatch(Iterable<T> entities) {
+        this.deleteAll(entities);
+
+    }
+
+    @Override
+    public void deleteAllByIdInBatch(Iterable<Long> ids) {
+        this.deleteAllById(ids);
+    }
+
+    
 }
