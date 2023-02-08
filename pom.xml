@@ -10,18 +10,29 @@
 	<name>queo commons persistence</name>
 	<description>queo basic persistence - based on JPA (Hibernate) and Spring Data</description>
 
+	<inceptionYear>2014</inceptionYear>
+	
 	<organization>
-		<name>queo-flow</name>
-		<url>http://www.queo-flow.com</url>
+		<name>queo GmbH</name>
+		<url>https://www.queo.de</url>
 	</organization>
 
 	<developers>
 		<developer>
-			<organization>queo</organization>
+			<organization>queo GmbH</organization>
 			<name>Ralph Engelmann</name>
-			<email>ralph.engelmann@queo-flow.com</email>
+			<email>r.engelmann@queo-group.com</email>
 		</developer>
 	</developers>
+	
+	<licenses>
+		<license>
+			<name>Apache 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+			<comments>A business-friendly OSS license</comments>
+		</license>
+	</licenses>
 
 	<properties>
 		<!-- Hiberante 5.2 requires Java8 -->
