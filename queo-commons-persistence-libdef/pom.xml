@@ -19,7 +19,7 @@
 
 		<spring-data-releasetrain.version>Moore-RELEASE</spring-data-releasetrain.version>
 		<slf4j.version>1.7.28</slf4j.version>
-		<hamcrest.version>2.1</hamcrest.version>
+		<hamcrest.version>2.2</hamcrest.version>
 
 		<aspectj.version>1.9.3</aspectj.version>
 
