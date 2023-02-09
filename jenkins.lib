@@ -86,7 +86,7 @@ def publishHtmlReports(reportDir = 'target/staging/') {
 
 // ignores missing files
 def publishXunitReports() {
-    step([$class: 'XUnitBuilder',
+    step([$class: 'XUnitPublisher',
         testTimeMargin: '3000',
         thresholdMode: 1,
         thresholds: [
