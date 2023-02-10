@@ -3,7 +3,7 @@
 pipeline {
     agent{ node {label 'docker-slave'}}
     environment {
-        JAVA_HOME="${ tool 'openJDK_8' }"
+        JAVA_HOME="${ tool 'openJDK_11' }"
         M2_HOME="${tool 'maven_3.6.0'}"
         PATH = "${PATH}"+":${M2_HOME}/bin"+":${JAVA_HOME}/bin"
         DOCKER_PATH = "${ tool 'docker_latest' }"

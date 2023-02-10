@@ -56,7 +56,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		
+		<dependency>
+			<!-- was part of Java in Java8 but not in Java9+ -->
+			<groupId>jakarta.annotation</groupId>
+			<artifactId>jakarta.annotation-api</artifactId>
+		</dependency>
 
 		<!-- unit tests -->
 		<dependency>

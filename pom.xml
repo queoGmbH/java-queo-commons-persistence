@@ -35,8 +35,7 @@
 	</licenses>
 
 	<properties>
-		<!-- Hiberante 5.2 requires Java8 -->
-		<java.version>1.8</java.version>
+		<java.version>11</java.version>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -103,7 +102,7 @@
 				<plugin>
 					<groupId>org.bsc.maven</groupId>
 					<artifactId>maven-processor-plugin</artifactId>
-					<version>3.3.3</version>
+					<version>4.5</version>
 				</plugin>
 
 				<plugin>
