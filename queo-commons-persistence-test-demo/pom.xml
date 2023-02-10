@@ -15,7 +15,7 @@
 
 	<properties>
 		<logback.version>1.2.3</logback.version>
-		<aspectj.version>1.9.2</aspectj.version>
+		<aspectj.version>1.9.7</aspectj.version>
 	</properties>
 
 	<dependencyManagement>
