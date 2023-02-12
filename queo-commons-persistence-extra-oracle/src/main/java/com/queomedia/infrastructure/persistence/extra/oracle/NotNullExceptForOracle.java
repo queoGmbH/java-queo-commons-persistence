@@ -28,7 +28,7 @@ import javax.validation.Payload;
  * </p>
  * <pre><code>
  *  {@literal @}NotNullExceptForOracle
- *  {@literal @}Type(type = "com.queomedia.infrastructure.persistence.NotNullString")
+ *  {@literal @}Type(type = "com.queomedia.infrastructure.persistence.extra.oracle.NotNullString")
  *  private String comment;
  * </code></pre>
  *
