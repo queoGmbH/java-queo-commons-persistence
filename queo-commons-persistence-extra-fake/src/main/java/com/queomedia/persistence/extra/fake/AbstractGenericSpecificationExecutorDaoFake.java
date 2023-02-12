@@ -50,4 +50,9 @@ public class AbstractGenericSpecificationExecutorDaoFake<T extends BusinessEntit
         throw new NotImplementedException();
     }
 
+    @Override
+    public boolean exists(Specification<T> spec) {
+        throw new NotImplementedException();
+    }
+
 }

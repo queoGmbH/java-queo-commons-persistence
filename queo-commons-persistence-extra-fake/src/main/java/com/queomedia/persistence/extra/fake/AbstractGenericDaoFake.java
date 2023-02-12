@@ -9,6 +9,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.apache.commons.beanutils.BeanComparator;
 import org.apache.commons.collections.comparators.ReverseComparator;
@@ -19,11 +22,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.FluentQuery.FetchableFluentQuery;
 import org.springframework.util.ReflectionUtils;
 
 import com.queomedia.commons.checks.Check;
 import com.queomedia.commons.exceptions.NotFoundRuntimeException;
-import com.queomedia.commons.exceptions.NotImplementedCaseException;
 import com.queomedia.persistence.BusinessEntity;
 import com.queomedia.persistence.BusinessId;
 
@@ -81,23 +84,56 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
 
     @Override
     public <S extends T> List<S> saveAll(final Iterable<S> entities) {
-        ArrayList<S> result = new ArrayList<S>();
-
-        for (S entity : entities) {
-            result.add(this.save(entity));
-        }
-
-        return result;
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(this::save)
+                .collect(Collectors.toList());
     }
 
     @Override
     public <S extends T> S saveAndFlush(final S entity) {
         return this.save(entity);
     }
-
+    
     @Override
-    public T getOne(final Long primaryKey) {
-        return this.findById(primaryKey).orElseThrow(() -> new RuntimeException("not found"));
+    public <S extends T> List<S> saveAllAndFlush(Iterable<S> entities) {
+        return StreamSupport.stream(entities.spliterator(), false)
+                .map(this::saveAndFlush)
+                .collect(Collectors.toList());
+    }
+
+
+    /**
+     * Returns a reference to the entity with the given identifier.
+     * 
+     * @param id must not be {@literal null}.
+     * @return a reference to the entity with the given identifier.
+     * 
+     * @deprecated use {@link AbstractGenericDaoFake#getReferenceById(Long)} instead.
+     */
+    @Deprecated
+    @Override
+    public T getOne(final Long id) {
+        return getReferenceById(id);
+    }
+
+    /**
+     * Returns a reference to the entity with the given identifier.
+     * 
+     * @param id must not be {@literal null}.
+     * @return a reference to the entity with the given identifier.
+     * 
+     * @deprecated use {@link AbstractGenericDaoFake#getReferenceById(Long)} instead.
+     */
+    @Deprecated
+    @Override
+    public T getById(Long id) {
+        return getReferenceById(id);
+    }
+    
+    public T getReferenceById(Long id) {
+        Check.notNullArgument(id, "id");
+
+        return this.findById(id).orElseThrow(() -> new RuntimeException("not found"));
     }
 
     @Override
@@ -160,6 +196,11 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     }
 
     @Override
+    public void deleteAllInBatch(Iterable<T> entities) {
+        deleteAll(entities);
+    }
+
+    @Override
     public void flush() {
         //nothing to do
     }
@@ -195,6 +236,17 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
     @Override
     public void deleteById(final Long id) {
         this.delete(this.getOne(id));
+    }
+
+    @Override
+    public void deleteAllById(Iterable<? extends Long> ids) {
+        ids.forEach(this::deleteById);
+    }
+
+
+    @Override
+    public void deleteAllByIdInBatch(Iterable<Long> ids) {
+        deleteAllById(ids);
     }
 
     @Override
@@ -244,39 +296,106 @@ public class AbstractGenericDaoFake<T extends BusinessEntity<T>> implements JpaR
         ReflectionUtils.setField(field, target, value);
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @return the optional
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> Optional<S> findOne(final Example<S> example) {
         throw new NotImplementedException();
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @param pageable the pageable
+     * @return the page
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> Page<S> findAll(final Example<S> example, final Pageable pageable) {
         throw new NotImplementedException();
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @return the long
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> long count(final Example<S> example) {
         throw new NotImplementedException();
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @return true, if successful
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> boolean exists(final Example<S> example) {
         throw new NotImplementedException();
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @return the list
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> List<S> findAll(final Example<S> example) {
         throw new NotImplementedException();
     }
 
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param example the example
+     * @param sort the sort
+     * @return the list
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
     @Deprecated
     @Override
     public <S extends T> List<S> findAll(final Example<S> example, final Sort sort) {
         throw new NotImplementedException();
     }
+    
+    /**
+     * WARNING: no fake implementation.
+     *
+     * @param <S> the generic type
+     * @param <R> the generic type
+     * @param example the example
+     * @param queryFunction the query function
+     * @return the r
+     * @deprecated used as signal for warning that the method is not implemented.
+     */
+    @Deprecated
+    @Override
+    public <S extends T, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
+        throw new NotImplementedException();
+    }
+
 }

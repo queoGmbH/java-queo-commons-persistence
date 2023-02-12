@@ -17,7 +17,8 @@
 		<javassist.version>3.25.0-GA</javassist.version>
 		<bytebuddy.version>1.10.1</bytebuddy.version>
 
-		<spring-data-releasetrain.version>Moore-RELEASE</spring-data-releasetrain.version>
+		<!--  spring-data.version 2021.2.7 contains: spring-data-commons and spring-data-jpa version 2.7.7 -->
+		<spring-data.version>2021.2.7</spring-data.version>
 		<slf4j.version>1.7.36</slf4j.version>
 		<hamcrest.version>2.2</hamcrest.version>
 
@@ -93,14 +94,14 @@
 			<dependency>
 				<groupId>org.springframework</groupId>
 				<artifactId>spring-framework-bom</artifactId>
-				<version>5.2.0.RELEASE</version>
+				<version>5.3.25</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.springframework.data</groupId>
-				<artifactId>spring-data-releasetrain</artifactId>
-				<version>${spring-data-releasetrain.version}</version>
+				<artifactId>spring-data-bom</artifactId>
+				<version>${spring-data.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
