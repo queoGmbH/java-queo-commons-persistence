@@ -13,7 +13,7 @@
 	</parent>
 
 	<properties>
-		<hibernate.version>5.4.4.Final</hibernate.version>
+		<hibernate.version>5.6.15.Final</hibernate.version>
 		<javassist.version>3.25.0-GA</javassist.version>
 		<bytebuddy.version>1.10.1</bytebuddy.version>
 

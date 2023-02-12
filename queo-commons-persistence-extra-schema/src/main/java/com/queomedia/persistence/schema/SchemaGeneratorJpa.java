@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import javax.persistence.Persistence;
 import javax.persistence.spi.PersistenceProvider;
@@ -48,7 +49,7 @@ public class SchemaGeneratorJpa {
 
     /** The dialect. */
     private final Dialect dialect;
-    
+
     /** External statment postprocessors */
     private final List<StatementPostProcessor> statementPostProcessors = new ArrayList<>();
 
@@ -105,8 +106,7 @@ public class SchemaGeneratorJpa {
     public void generate(final String persistenceUnitName, final String fileName) {
         generateDdlFile(persistenceUnitName, fileName, ";", false);
     }
-    
-    
+
     /**
      * Gets the statement post processors.
      *
@@ -115,7 +115,7 @@ public class SchemaGeneratorJpa {
     public List<StatementPostProcessor> getStatementPostProcessors() {
         return statementPostProcessors;
     }
-    
+
     /**
      * Adds the statement post processor.
      *
@@ -137,8 +137,8 @@ public class SchemaGeneratorJpa {
     */
     public void generateDdlFile(final String persistenceUnitName, final String fileName, final String delimiter,
             final boolean skipDropStatements) {
-        
-        try(Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {         
+
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(fileName), "utf-8"))) {
             writer.write(generateDdlScript(persistenceUnitName, delimiter, skipDropStatements));
         } catch (IOException | NoSuchAlgorithmException e) {
             throw new RuntimeException("error while writing ddl script - filename=`" + fileName + "`", e);
@@ -168,7 +168,9 @@ public class SchemaGeneratorJpa {
             final boolean skipDropStatements)
             throws NoSuchAlgorithmException {
 
-        final List<String> statements = generateCoreStatementsJpa21way(persistenceUnitName);
+        final List<String> statements = sqlWithoutDelimitor(
+                generateCoreStatementsJpa21way(persistenceUnitName));
+
         String primaryScript = postProcessStatements(statements, delimiter, skipDropStatements);
 
         AdditionalScript additionalScript = AdditionalScript.load(this.dialect);
@@ -367,14 +369,14 @@ public class SchemaGeneratorJpa {
             formattedStatements.append("\n");
         }
         return formattedStatements.toString();
-    }    
+    }
 
     /** Forward all statements to external statement postprocessors */
     private List<String> externalPostProcessStatements(final List<String> statements) {
         List<String> postProcessedStatements = new ArrayList<>(statements);
         for (StatementPostProcessor postProcessor : statementPostProcessors) {
             List<String> processorResult = new ArrayList<>();
-            for(String statement : postProcessedStatements) {
+            for (String statement : postProcessedStatements) {
                 processorResult.addAll(postProcessor.postProcess(statement));
             }
             postProcessedStatements = processorResult;
@@ -394,7 +396,7 @@ public class SchemaGeneratorJpa {
         ArrayList<String> withSeparator = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             boolean isComment = statement.startsWith("--");
-            
+
             if (isComment) {
                 withSeparator.add(statement + seperator.replaceAll("\n", "\n-- "));
             } else {
@@ -464,13 +466,28 @@ public class SchemaGeneratorJpa {
         List<String> result = new ArrayList<String>(statements.size());
         for (String statement : statements) {
             if (this.dropSequenceStatementPatternOracle.matcher(statement).matches()) {
-                result.add((skipDropStatements ? "-- " : "") + "begin execute immediate '" + statement
-                        + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
+                result.add(
+                        (skipDropStatements ? "-- " : "") + "begin execute immediate '" + statement
+                                + "'; exception when others then if sqlcode != -2289 then raise; end if; end;");
             } else {
                 result.add(statement);
             }
         }
         return result;
+    }
+
+    private static final String sqlWithoutDelimitor(String sqlStatement) {
+        if (sqlStatement.endsWith(";")) {
+            return sqlStatement.substring(0, sqlStatement.length() - 1);
+        } else {
+            return sqlStatement;
+        }
+    }
+
+    private static List<String> sqlWithoutDelimitor(List<String> sqlStatements) {
+        return sqlStatements.stream()
+                .map(SchemaGeneratorJpa::sqlWithoutDelimitor)
+                .collect(Collectors.toList());
     }
 
     private Pattern dropConstraintStatementPatternOracle = Pattern.compile("alter table \\S* drop foreign key \\S*");
