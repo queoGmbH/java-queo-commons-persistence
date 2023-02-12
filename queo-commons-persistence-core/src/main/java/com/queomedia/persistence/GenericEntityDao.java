@@ -117,7 +117,7 @@ public interface GenericEntityDao<T> {
     /**
      * Remove this instance from the session cache. Changes to the instance will
      * not be synchronized with the database. This operation cascades to associated
-     * instances if the association is mapped with <tt>cascade="evict"</tt>.
+     * instances if the association is mapped with {@code cascade="evict"}.
      *
      * @param entity a persistent instance
      */
@@ -126,7 +126,7 @@ public interface GenericEntityDao<T> {
     /**
      * Remove this instance from the session cache. Changes to the instance will
      * not be synchronized with the database. This operation cascades to associated
-     * instances if the association is mapped with <tt>cascade="evict"</tt>.
+     * instances if the association is mapped with {@code cascade="evict"}.
      *
      * @param entities a list of persistent instances
      */
@@ -140,7 +140,7 @@ public interface GenericEntityDao<T> {
      * <ul>
      * <li>where a database trigger alters the object state upon insert or update
      * <li>after executing direct SQL (eg. a mass update) in the same session
-     * <li>after inserting a <tt>Blob</tt> or <tt>Clob</tt>
+     * <li>after inserting a  {@code Blob} or  {@code Clob}
      * </ul>
      *
      * @param entity a persistent or detached instance
@@ -155,7 +155,7 @@ public interface GenericEntityDao<T> {
      * <ul>
      * <li>where a database trigger alters the object state upon insert or update
      * <li>after executing direct SQL (eg. a mass update) in the same session
-     * <li>after inserting a <tt>Blob</tt> or <tt>Clob</tt>
+     * <li>after inserting a  {@code Blob} or  {@code Clob}
      * </ul>
      *
      * @param entities a list of persistent or detached instances
@@ -177,7 +177,7 @@ public interface GenericEntityDao<T> {
      * given instance is unsaved, save a copy of and return it as a newly persistent
      * instance. The given instance does not become associated with the session.
      * This operation cascades to associated instances if the association is mapped
-     * with <tt>cascade="merge"</tt>.<br>
+     * with  {@code cascade="merge"}.<br>
      * <br>
      * The semantics of this method are defined by JSR-220.
      *
