@@ -109,7 +109,7 @@
 			<dependency>
 				<groupId>de.humanfork.springdatajpaextension</groupId>
 				<artifactId>spring-data-jpa-extension</artifactId>
-				<version>0.4.2</version>
+				<version>0.4.4</version>
 			</dependency>
 
 			<!-- hibernate / jpa -->
