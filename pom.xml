@@ -10,6 +10,7 @@
 	<name>queo commons persistence</name>
 	<description>queo basic persistence - based on JPA (Hibernate) and Spring Data</description>
 
+	<url>https://github.com/queoGmbH/java-queo-commons-persistence</url>
 	<inceptionYear>2014</inceptionYear>
 	
 	<organization>
@@ -42,13 +43,9 @@
 	</properties>
 
 	<scm>
-		<!--
-			a typical git urls for a queo project is:
-			https://gitlab.cloud.queo.org/queo.software/java/commons/PROJECT-NAME.git
-		-->
-		<connection>scm:git:https://gitlab.cloud.queo.org/queo.software/java/commons/queo-commons-persistence.git</connection>
-		<developerConnection>scm:git:ssh://git@gitlab.cloud.queo.org:7836/queo.software/java/commons/queo-commons-persistence.git</developerConnection>
-		<url>https://gitlab.cloud.queo.org/queo.software/java/commons/queo-commons-persistence</url>
+		<connection>scm:git:https://github.com/queoGmbH/java-queo-commons-persistence.git</connection>
+		<developerConnection>scm:git:ssh://git@github.com/queoGmbH/java-queo-commons-persistence.git</developerConnection>
+		<url>https://github.com/queoGmbH/java-queo-commons-persistence</url>
 		<tag>HEAD</tag>
 	</scm>
 
