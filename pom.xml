@@ -4,7 +4,7 @@
 
 	<groupId>com.queomedia.commons.persistence</groupId>
 	<artifactId>queo-commons-persistence</artifactId>
-	<version>4.8.4</version>
+	<version>4.8.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>queo commons persistence</name>
@@ -46,7 +46,7 @@
 		<connection>scm:git:https://github.com/queoGmbH/java-queo-commons-persistence.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/queoGmbH/java-queo-commons-persistence.git</developerConnection>
 		<url>https://github.com/queoGmbH/java-queo-commons-persistence</url>
-		<tag>queo-commons-persistence-4.8.4</tag>
+		<tag>queo-commons-persistence-4.8.3</tag>
 	</scm>
 
 	<issueManagement>
