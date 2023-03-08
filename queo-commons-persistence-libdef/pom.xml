@@ -59,7 +59,7 @@
 			<dependency>
 				<groupId>com.queomedia</groupId>
 				<artifactId>queo-commons-exceptions</artifactId>
-				<version>1.2.1</version>
+				<version>1.2.4</version>
 			</dependency>
 
 			<!-- apache/jarkarta/... commons -->
