@@ -49,17 +49,6 @@
 		<tag>HEAD</tag>
 	</scm>
 
-	<distributionManagement>
-		<repository>
-			<id>com.queomedia</id>
-			<url>https://nexus.dev.queo-group.com/repository/com.queomedia/</url>
-		</repository>
-		<snapshotRepository>
-			<id>com.queomedia-snapshot</id>
-			<url>https://nexus.dev.queo-group.com/repository/com.queomedia-snapshot/</url>
-		</snapshotRepository>
-	</distributionManagement>
-
 	<issueManagement>
 		<system>JIRA</system>
 		<url>https://jira.queo-group.com/browse/JQC-PERSISTENCE</url>
